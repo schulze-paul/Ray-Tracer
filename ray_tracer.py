@@ -7,8 +7,7 @@ from random import random
 from hittables import HittableList, Sphere
 from ray import Ray
 from camera import Camera
-from vector_utils import Color, random_in_unit_sphere
-from vector_cython import Vector
+from vector_cython import Color, random_in_unit_sphere, Vector
 
 
 def write_color(out_file, pixel_color: Color, number_samples: int) -> None:
@@ -36,11 +35,10 @@ def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
     hit_record = world.hit(ray, 0, inf)
     if hit_record is not None:
         target = hit_record.hit_point + hit_record.normal + random_in_unit_sphere()
-        return 0.5*ray_color(
-            Ray(hit_record.hit_point, target - hit_record.point),
+        return ray_color(
+            Ray(hit_record.hit_point, target - hit_record.hit_point),
             world,
-            depth-1
-        )
+            depth - 1)/2
 
     unit_direction = ray.direction / ray.direction.length()
     t = 0.5*unit_direction.y() + 0.5

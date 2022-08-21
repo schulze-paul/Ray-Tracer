@@ -12,4 +12,4 @@ class Ray():
 
     def __call__(self, t: float) -> Vector:
         """get position of ray at t"""
-        return self.origin + t*self.direction
+        return self.origin + self.direction*t
