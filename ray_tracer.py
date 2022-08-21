@@ -1,5 +1,5 @@
-from tqdm import tqdm
 from dataclasses import dataclass
+from tqdm import tqdm
 import numpy as np
 
 def write_color(out_file, pixel_color: np.ndarray) -> None:
@@ -10,6 +10,24 @@ def write_color(out_file, pixel_color: np.ndarray) -> None:
     rgb_string = f" {red} {green} {blue}\n"
     out_file.write(rgb_string)
 
+
+@dataclass
+class Ray():
+    """ray class """
+    origin: np.ndarray
+    direction: np.ndarray
+
+    def origin(self) -> np.ndarray:
+        """get origin of ray"""
+        return self.origin
+
+    def direction(self) -> np.ndarray:
+        """get direction of ray"""
+        return self.direction
+
+    def at(self, t: float) -> np.ndarray:
+        """get position of ray at t"""
+        return self.origin + t*self.direction
 
 def main():
     """main function of the ray tracer"""
