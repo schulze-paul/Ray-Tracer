@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pickletools import read_unicodestring1
 import numpy as np
 from abc import ABC, abstractmethod
+
 # local imports
 from ray import Ray
 
@@ -24,7 +25,7 @@ class Hittable(ABC):
     """Base class for all hitables"""
 
     @abstractmethod
-    def hit(self, ray: Ray, t_min: float, t_max: float, hit_record: HitRecord) -> bool:
+    def hit(self, ray: Ray, t_min: float, t_max: float) -> HitRecord:
         pass
 
 
@@ -46,7 +47,7 @@ class Sphere(Hittable):
         c = np.dot(origin_to_center, origin_to_center) - self.radius**2
         discriminant = half_b*half_b - a*c
 
-        if discriminant > 0:
+        if discriminant < 0:
             # no hit
             return None
 
@@ -64,7 +65,7 @@ class Sphere(Hittable):
         hit_point = ray(t_hit)
         surface_normal = self.get_surface_normal(hit_point)
 
-        hit_record = HitRecord(t_hit, hit_point)
+        hit_record = HitRecord(hit_point, t_hit)
         hit_record.set_face_normal(ray, surface_normal)
 
         return hit_record
@@ -74,23 +75,22 @@ class Sphere(Hittable):
         return (surface_point - self.center) / self.radius
 
 
-def hit_sphere(center: np.ndarray, radius: float, ray: Ray) -> float:
-    """
-    computes if the given ray hits the sphere:
+class HittableList(Hittable):
+    def __init__(self, hittable: Hittable) -> None:
+        self.hittable_objects = [hittable]
 
-    the result depends on the root of this equation
-    t^2*b*b + 2*t*b*(A-C) + (A-C)*(A-C)-r^2=0
-    """
+    def add(self, hittable: Hittable) -> None:
+        self.hittable_objects.append(hittable)
 
-    origin_to_center = ray.origin - center
-    a = np.dot(ray.direction, ray.direction)
-    half_b = np.dot(origin_to_center, ray.direction)
-    c = np.dot(origin_to_center, origin_to_center) - radius**2
-    discriminant = half_b*half_b - a*c
+    def hit(self, *args, **kwargs) -> HitRecord:
+        """compute the closest hit to origin"""
+        closest_hit = None
 
-    if discriminant < 0:
-        # no solution
-        return -1
-    else:
-        # get t of closest hit point
-        return -(half_b + np.sqrt(discriminant)) / a
+        for hittable in self.hittable_objects:
+            hit_record = hittable.hit(*args, **kwargs)
+            if hit_record is not None:
+                if closest_hit is None:
+                    closest_hit = hit_record
+                elif closest_hit.t > hit_record.t:
+                    closest_hit = hit_record
+        return closest_hit
