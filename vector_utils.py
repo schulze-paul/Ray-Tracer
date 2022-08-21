@@ -1,5 +1,5 @@
-from mimetypes import init
 import numpy as np
+import math
 
 
 class Vector(np.ndarray):
@@ -21,9 +21,16 @@ class Vector(np.ndarray):
     def z(self):
         return self[0]
 
+    @staticmethod
+    def random(min_value: float, max_value: float):
+        random_vals = np.random.uniform(min_value, max_value, 3)
+        return Vector(*random_vals)
 
-def length(vec: Vector) -> float:
-    return vec.x()**2 + vec.y()**2 + vec.z()**2
+    def length_sq(self) -> float:
+        return self.x()**2 + self.y()**2 + self.z()**2
+
+    def length(self) -> float:
+        return math.sqrt(self.length_sq)
 
 
 def dot(a: Vector, b: Vector) -> float:
@@ -41,10 +48,29 @@ class Color(np.ndarray):
         self[2] = b
 
     def r(self):
-        return self[0]
+        return self.__cut(self[0])
 
     def g(self):
-        return self[0]
+        return self.__cut(self[1])
 
     def b(self):
-        return self[0]
+        return self.__cut(self[2])
+
+    def __cut(x: float) -> float:
+        minimum = 0
+        maximum = 0.999
+        if x < minimum:
+            return minimum
+        if x > maximum:
+            return maximum
+        else:
+            return x
+
+
+def random_in_unit_sphere() -> Vector:
+    while (True):
+        point = Vector.random(-1, 1)
+        if point.length_sq() > 1:
+            pass
+        else:
+            return point
