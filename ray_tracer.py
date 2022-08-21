@@ -7,41 +7,39 @@ from random import random
 from hittables import HittableList, Sphere
 from ray import Ray
 from camera import Camera
-from vector_utils import Vector, Color
+from vector_utils import Vector, Color, random_in_unit_sphere
 
 
 def write_color(out_file, pixel_color: Color, number_samples: int) -> None:
-
-    def cut(x: float) -> float:
-        minimum = 0
-        maximum = 0.999
-        if x < minimum:
-            return minimum
-        if x > maximum:
-            return maximum
-        else:
-            return x
-
+    """append an rbg color to the file"""
     pixel_color /= number_samples
 
     max_rgb = 255.999
 
-    red = max_rgb * cut(pixel_color.r())
-    green = max_rgb * cut(pixel_color.g())
-    blue = max_rgb * cut(pixel_color.b())
+    red = max_rgb * pixel_color.r()
+    green = max_rgb * pixel_color.g()
+    blue = max_rgb * pixel_color.b()
 
     rgb_string = f" {int(red)} {int(green)} {int(blue)}\n"
     out_file.write(rgb_string)
 
 
-def ray_color(ray: Ray, world: HittableList) -> Color:
+def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
     """computes rgb color of a ray"""
+
+    # terminate recursion if ray bounce limit is reached, no light contribution
+    if depth <= 0:
+        return Color(0, 0, 0)
 
     # check and where world is hit
     hit_record = world.hit(ray, 0, inf)
     if hit_record is not None:
-        color = hit_record.normal/2 + Vector(1, 1, 1)/2
-        return Color(*color)
+        target = hit_record.hit_point + hit_record.normal + random_in_unit_sphere
+        return 0.5*ray_color(
+            Ray(hit_record.hit_point, target - hit_record.point),
+            world,
+            depth-1
+        )
 
     unit_direction = ray.direction / len(ray.direction)
     t = 0.5*unit_direction[1] + 0.5
@@ -56,11 +54,13 @@ def main():
         x = (i + random()) / (image_width - 1)
         y = (j + random()) / (image_height - 1)
         return x, y
+
     # Image
     aspect_ratio = 16/9
     image_width = 400
     image_height = int(image_width/aspect_ratio)
     number_samples = 100
+    max_depth = 50
 
     # World
     world = HittableList(Sphere([0, 0, -1], 0.5))
@@ -79,8 +79,7 @@ def main():
                 for _ in range(number_samples):
                     u, v = get_x_y(i, j)
                     ray = camera.get_ray(u, v)
-
-                    color += ray_color(ray, world)
+                    color += ray_color(ray, world, max_depth)/number_samples
 
                 write_color(image_file, color, number_samples)
 
