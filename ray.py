@@ -1,7 +1,7 @@
 # local imports
 from dataclasses import dataclass
 
-from vector_utils import Vector
+from vector_cython import Vector
 
 
 @dataclass

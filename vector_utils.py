@@ -1,40 +1,7 @@
 import numpy as np
 import math
 
-
-class Vector(np.ndarray):
-    """class for 3d vectors"""
-    def __new__(cls, x=0, y=0, z=0):
-        return np.ndarray.__new__(cls, 3)
-
-    def __init__(self, x=0, y=0, z=0):
-        self[0] = x
-        self[1] = y
-        self[2] = z
-
-    def x(self):
-        return self[0]
-
-    def y(self):
-        return self[0]
-
-    def z(self):
-        return self[0]
-
-    @staticmethod
-    def random(min_value: float, max_value: float):
-        random_vals = np.random.uniform(min_value, max_value, 3)
-        return Vector(*random_vals)
-
-    def length_sq(self) -> float:
-        return self.x()**2 + self.y()**2 + self.z()**2
-
-    def length(self) -> float:
-        return math.sqrt(self.length_sq)
-
-
-def dot(a: Vector, b: Vector) -> float:
-    return np.dot(a, b)
+from vector_cython import Vector
 
 
 class Color(np.ndarray):
@@ -56,7 +23,7 @@ class Color(np.ndarray):
     def b(self):
         return self.__cut(self[2])
 
-    def __cut(x: float) -> float:
+    def __cut(self, x: float) -> float:
         minimum = 0
         maximum = 0.999
         if x < minimum:
@@ -65,6 +32,10 @@ class Color(np.ndarray):
             return maximum
         else:
             return x
+
+    @staticmethod
+    def from_vector(vec: Vector):
+        return Color(vec.x(), vec.y(), vec.z())
 
 
 def random_in_unit_sphere() -> Vector:

@@ -4,7 +4,8 @@ import math
 
 # local imports
 from ray import Ray
-from vector_utils import Vector, dot
+from vector_utils import Vector
+from vector_cython import dot
 
 
 @dataclass

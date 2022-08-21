@@ -7,7 +7,8 @@ from random import random
 from hittables import HittableList, Sphere
 from ray import Ray
 from camera import Camera
-from vector_utils import Vector, Color, random_in_unit_sphere
+from vector_utils import Color, random_in_unit_sphere
+from vector_cython import Vector
 
 
 def write_color(out_file, pixel_color: Color, number_samples: int) -> None:
@@ -34,17 +35,17 @@ def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
     # check and where world is hit
     hit_record = world.hit(ray, 0, inf)
     if hit_record is not None:
-        target = hit_record.hit_point + hit_record.normal + random_in_unit_sphere
+        target = hit_record.hit_point + hit_record.normal + random_in_unit_sphere()
         return 0.5*ray_color(
             Ray(hit_record.hit_point, target - hit_record.point),
             world,
             depth-1
         )
 
-    unit_direction = ray.direction / len(ray.direction)
-    t = 0.5*unit_direction[1] + 0.5
+    unit_direction = ray.direction / ray.direction.length()
+    t = 0.5*unit_direction.y() + 0.5
 
-    return (1 - t) * Vector(1, 1, 1) + t*Vector(0.5, 0.7, 1.0)
+    return Color.from_vector(Vector(1, 1, 1) * (1 - t) + Vector(0.5, 0.7, 1.0) * t)
 
 
 def main():
@@ -63,8 +64,8 @@ def main():
     max_depth = 50
 
     # World
-    world = HittableList(Sphere([0, 0, -1], 0.5))
-    world.add(Sphere([0, -100.5, -1], 100))
+    world = HittableList(Sphere(Vector(0, 0, -1), 0.5))
+    world.add(Sphere(Vector(0, -100.5, -1), 100))
 
     camera = Camera()
 
@@ -79,7 +80,8 @@ def main():
                 for _ in range(number_samples):
                     u, v = get_x_y(i, j)
                     ray = camera.get_ray(u, v)
-                    color += ray_color(ray, world, max_depth)/number_samples
+                    color = color + \
+                        ray_color(ray, world, max_depth)/number_samples
 
                 write_color(image_file, color, number_samples)
 
