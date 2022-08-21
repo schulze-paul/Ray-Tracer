@@ -18,28 +18,32 @@ class Ray():
     origin: np.ndarray
     direction: np.ndarray
 
-    def at(self, time: float) -> np.ndarray:
-        """get position of ray at time"""
-        return self.origin + time*self.direction
+    def at(self, t: float) -> np.ndarray:
+        """get position of ray at t"""
+        return self.origin + t*self.direction
 
 
 def ray_color(ray: Ray) -> np.ndarray:
     """computes rgb color of a ray"""
 
-    # check if sphere is hit
+    # check and where if sphere is hit
     sphere_origin = np.array([0, 0, -1])
     sphere_radius = 0.5
-    if hit_sphere(sphere_origin, sphere_radius, ray):
-        # return red
-        return np.array([1, 0, 0])
+    t = hit_sphere(sphere_origin, sphere_radius, ray)
+
+    # if sphere was hit:
+    if t > 0:
+        normal = ray.at(t) - np.array([0, 0, -1])
+        unit_normal = normal / np.linalg.norm(normal)
+        return 0.5*np.array([unit_normal[0]+1, unit_normal[1]+1, unit_normal[2]+1])
 
     # draw background gradient
     unit_direction = ray.direction / np.linalg.norm(ray.direction)
-    time = 0.5*unit_direction[1] + 0.5
-    return (1 - time) * np.array([1.0, 1.0, 1.0]) + time*np.array([0.5, 0.7, 1.0])
+    t = 0.5*unit_direction[1] + 0.5
+    return (1 - t) * np.array([1.0, 1.0, 1.0]) + t*np.array([0.5, 0.7, 1.0])
 
 
-def hit_sphere(center: np.ndarray, radius: float, ray: Ray) -> bool:
+def hit_sphere(center: np.ndarray, radius: float, ray: Ray) -> float:
     """
     computes if the given ray hits the sphere:
 
@@ -52,9 +56,12 @@ def hit_sphere(center: np.ndarray, radius: float, ray: Ray) -> bool:
     c = np.dot(origin_to_center, origin_to_center) - radius**2
     discriminant = b*b - 4*a*c
 
-    return (discriminant > 0)
-
-    return discriminant > 0
+    if discriminant < 0:
+        # no solution
+        return -1
+    else:
+        # get t of closest hit point
+        return (-b - np.sqrt(discriminant)) / (2*a)
 
 
 def main():
