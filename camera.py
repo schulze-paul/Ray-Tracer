@@ -1,5 +1,5 @@
-import numpy as np
 from ray import Ray
+from vector_utils import Vector
 
 
 class Camera():
@@ -8,11 +8,14 @@ class Camera():
     viewport_width = viewport_height * aspect_ratio
     focal_length = 1.0
 
-    __origin = np.array([0, 0, 0])
-    __horizontal = np.array([viewport_width, 0, 0])
-    __vertical = np.array([0, viewport_height, 0])
+    __origin = Vector()
+    __horizontal = Vector(x=viewport_width)
+    __vertical = Vector(y=viewport_height)
     __lower_left_corner = __origin - __horizontal/2 - \
-        __vertical/2 - np.array([0, 0, focal_length])
+        __vertical/2 - Vector(z=focal_length)
+
+    def __init__(self) -> None:
+        pass
 
     def get_ray(self, x_pixel: float, y_pixel: float) -> Ray:
         return Ray(self.__origin,
