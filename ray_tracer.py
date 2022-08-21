@@ -2,6 +2,10 @@ from dataclasses import dataclass
 from tqdm import tqdm
 import numpy as np
 
+# local imports
+from hittables import hit_sphere
+from ray import Ray
+
 
 def write_color(out_file, pixel_color: np.ndarray) -> None:
     red = int(255.999*pixel_color[0])
@@ -10,17 +14,6 @@ def write_color(out_file, pixel_color: np.ndarray) -> None:
 
     rgb_string = f" {red} {green} {blue}\n"
     out_file.write(rgb_string)
-
-
-@dataclass
-class Ray():
-    """ray class """
-    origin: np.ndarray
-    direction: np.ndarray
-
-    def at(self, t: float) -> np.ndarray:
-        """get position of ray at t"""
-        return self.origin + t*self.direction
 
 
 def ray_color(ray: Ray) -> np.ndarray:
@@ -33,7 +26,7 @@ def ray_color(ray: Ray) -> np.ndarray:
 
     # if sphere was hit:
     if t > 0:
-        normal = ray.at(t) - np.array([0, 0, -1])
+        normal = ray(t) - np.array([0, 0, -1])
         unit_normal = normal / np.linalg.norm(normal)
         return 0.5*np.array([unit_normal[0]+1, unit_normal[1]+1, unit_normal[2]+1])
 
@@ -41,27 +34,6 @@ def ray_color(ray: Ray) -> np.ndarray:
     unit_direction = ray.direction / np.linalg.norm(ray.direction)
     t = 0.5*unit_direction[1] + 0.5
     return (1 - t) * np.array([1.0, 1.0, 1.0]) + t*np.array([0.5, 0.7, 1.0])
-
-
-def hit_sphere(center: np.ndarray, radius: float, ray: Ray) -> float:
-    """
-    computes if the given ray hits the sphere:
-
-    the result depends on the root of this equation
-    t^2*b*b + 2*t*b*(A-C) + (A-C)*(A-C)-r^2=0
-    """
-    origin_to_center = ray.origin - center
-    a = np.dot(ray.direction, ray.direction)
-    b = 2.0 * np.dot(origin_to_center, ray.direction)
-    c = np.dot(origin_to_center, origin_to_center) - radius**2
-    discriminant = b*b - 4*a*c
-
-    if discriminant < 0:
-        # no solution
-        return -1
-    else:
-        # get t of closest hit point
-        return (-b - np.sqrt(discriminant)) / (2*a)
 
 
 def main():
