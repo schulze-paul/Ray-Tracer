@@ -25,9 +25,36 @@ class Ray():
 
 def ray_color(ray: Ray) -> np.ndarray:
     """computes rgb color of a ray"""
+
+    # check if sphere is hit
+    sphere_origin = np.array([0, 0, -1])
+    sphere_radius = 0.5
+    if hit_sphere(sphere_origin, sphere_radius, ray):
+        # return red
+        return np.array([1, 0, 0])
+
+    # draw background gradient
     unit_direction = ray.direction / np.linalg.norm(ray.direction)
     time = 0.5*unit_direction[1] + 0.5
     return (1 - time) * np.array([1.0, 1.0, 1.0]) + time*np.array([0.5, 0.7, 1.0])
+
+
+def hit_sphere(center: np.ndarray, radius: float, ray: Ray) -> bool:
+    """
+    computes if the given ray hits the sphere:
+
+    the result depends on the root of this equation
+    t^2*b*b + 2*t*b*(A-C) + (A-C)*(A-C)-r^2=0
+    """
+    origin_to_center = ray.origin - center
+    a = np.dot(ray.direction, ray.direction)
+    b = 2.0 * np.dot(origin_to_center, ray.direction)
+    c = np.dot(origin_to_center, origin_to_center) - radius**2
+    discriminant = b*b - 4*a*c
+
+    return (discriminant > 0)
+
+    return discriminant > 0
 
 
 def main():
