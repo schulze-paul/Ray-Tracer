@@ -1,6 +1,6 @@
 
 
-from libc.math cimport sqrt
+from libc.math cimport sqrt, fabs
 
 import numpy as np
 cimport numpy as np
@@ -84,7 +84,14 @@ cdef class Vector:
             return True
         else:
             return False
-
+            
+    def near_zero(self):
+        cdef double eps = 1e-8
+        
+        return fabs(self.x()) < eps and fabs(self.y()) < eps and fabs(self.z()) < eps 
+        
+Vector reflect(Vector vector_in, Vector normal):
+    return vector_in - 2*dot(vector_in, normal) * normal
 
 
 cdef class Color(Vector):
@@ -126,3 +133,16 @@ cpdef Vector random_in_unit_sphere():
             pass
         else:
             return point
+
+cpdef Vector random_unit_vector():
+    return unit_vector(random_in_unit_sphere())
+    
+cpdef Vector random_in_hemisphere(Vector normal):
+    
+    Vector in_unit_sphere = random_in_unit_sphere()
+    
+    if dot(in_unit_sphere, normal) > 0.0:
+        # same direction
+        return in_unit_sphere
+    else:
+        return -in_unit_spere
