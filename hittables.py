@@ -5,12 +5,13 @@ import math
 # local imports
 from ray import Ray
 from vector_cython import Vector, dot
-
+from material import Material
 
 @dataclass
 class HitRecord():
     hit_point: Vector
     t: float
+    material: Material
 
     def set_face_normal(self, ray: Ray, normal: Vector) -> None:
         """set normal and save if hit from inside or outside"""
@@ -35,6 +36,7 @@ class Sphere(Hittable):
 
     center: Vector
     radius: float
+    material: Material
 
     def hit(self, ray: Ray, t_min: float, t_max: float) -> HitRecord:
         """
@@ -67,6 +69,7 @@ class Sphere(Hittable):
 
         hit_record = HitRecord(hit_point, t_hit)
         hit_record.set_face_normal(ray, surface_normal)
+        hit_record.material = self.material
 
         return hit_record
 
