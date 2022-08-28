@@ -146,3 +146,10 @@ cpdef Vector random_in_hemisphere(Vector normal):
         return in_unit_sphere
     else:
         return -in_unit_spere
+        
+        
+cpdef Vector refract(Vector vector_in, Vector normal, double refractive_indeces_fraction):
+    double cos_theta = fmin(dot(vector_in, normal), 1.0)
+    Vector out_perpendicular = refractive_indeces_fraction * (vector_in + cos_theta * normal)
+    Vector out_parallel = -sqrt(fabs(1.0-out_perpendicular.length_sq()))
+    return out_perpendicular + out_parallel
