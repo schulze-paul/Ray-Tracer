@@ -66,8 +66,8 @@ def main():
     # World
     material_ground = Lambertian(Color(0.8,0.8,0.0))
     material_center = Lambertian(Color(0.7,0.3,0.3))
-    material_left = Metal(Color(0.8,0.8,0.8))
-    material_right = Metal(Color(0.8,0.6,0.2))
+    material_left = Metal(Color(0.8,0.8,0.8), 0.3)
+    material_right = Metal(Color(0.8,0.6,0.2), 1)
     
     
     
