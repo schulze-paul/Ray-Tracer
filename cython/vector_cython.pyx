@@ -147,6 +147,13 @@ cpdef Vector random_in_hemisphere(Vector normal):
     else:
         return -in_unit_spere
         
+cpdef Vector random_in_unit_disk():
+        while:
+            Vector point = Vector(random.random(1,-1),random.random(1,-1), 0)
+            if point.length_sq() < 1:
+                return point
+            
+        
         
 cpdef Vector refract(Vector vector_in, Vector normal, double refractive_indeces_fraction):
     double cos_theta = fmin(dot(vector_in, normal), 1.0)
