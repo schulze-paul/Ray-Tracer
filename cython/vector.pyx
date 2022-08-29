@@ -1,6 +1,6 @@
 
 
-from libc.math cimport sqrt
+from libc.math cimport sqrt, fabs, fmin
 
 import numpy as np
 cimport numpy as np
@@ -84,7 +84,21 @@ cdef class Vector:
             return True
         else:
             return False
+            
+    def near_zero(self):
+        cdef double eps = 1e-8
+        
+        return fabs(self.x()) < eps and fabs(self.y()) < eps and fabs(self.z()) < eps 
 
+
+cpdef Vector outer(Vector vector_a, Vector vector_b):
+    cdef double x = vector_a.x() * vector_b.x()
+    cdef double y = vector_a.y() * vector_b.y()
+    cdef double z = vector_a.z() * vector_b.z()
+    return Vector(x, y, z)
+
+cpdef Vector reflect(Vector vector_in, Vector normal):
+    return vector_in + normal * - 2*dot(vector_in, normal)
 
 
 cdef class Color(Vector):
@@ -126,3 +140,26 @@ cpdef Vector random_in_unit_sphere():
             pass
         else:
             return point
+
+cpdef Vector unit_vector(Vector vector):
+    return vector / vector.length()
+
+cpdef Vector random_unit_vector():
+    return unit_vector(random_in_unit_sphere())
+    
+cpdef Vector random_in_hemisphere(Vector normal):
+    
+    cdef Vector in_unit_sphere = random_in_unit_sphere()
+    
+    if dot(in_unit_sphere, normal) > 0.0:
+        # same direction
+        return in_unit_sphere
+    else:
+        return -in_unit_sphere
+        
+        
+cpdef Vector refract(Vector vector_in, Vector normal, double refractive_indeces_fraction):
+    cdef double cos_theta = fmin(dot(vector_in, normal), 1.0)
+    cdef Vector out_perpendicular = (vector_in + normal * cos_theta) * refractive_indeces_fraction
+    cdef Vector out_parallel = normal * -sqrt(fabs(1.0-out_perpendicular.length_sq()))
+    return out_perpendicular + out_parallel
