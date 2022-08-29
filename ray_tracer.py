@@ -2,10 +2,10 @@ from cmath import inf
 from math import sqrt
 from tqdm import tqdm
 
-from random import random
+import random
 
 # local imports
-from hittables import HittableList, Sphere
+from hittables import Hittable, HittableList, Material, Sphere
 from camera import Camera
 from ray import Color, Ray, Vector, random_in_unit_sphere, outer
 from hittables import Lambertian, Dielectric, Metal
@@ -49,34 +49,74 @@ def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
     return Color.from_vector(Vector(1, 1, 1) * (1 - t) + Vector(0.5, 0.7, 1.0) * t)
 
 
+def random_scene() -> HittableList:
+    ground_material = Lambertian(Color(0.5, 0.5, 0.5))
+    world = HittableList(Sphere(Vector(0, -1000, 0), 1000, ground_material))
+
+    for a in range(-11, 11):
+        for b in range(-11, 11):
+            choose_mat = random.random()
+            center = Vector(a + 0.9*random.random(), 0.2,
+                            b + 0.9*random.random())
+
+            if (center - Vector(4, 0.2, 0)).length() > 0.9:
+
+                if choose_mat < 0.8:
+                    # diffuse
+                    albedo = outer(Color.random(0, 1), Color.random(0, 1))
+                    sphere_material = Lambertian(albedo)
+                    world.add(Sphere(center, 0.2, sphere_material))
+                elif choose_mat < 0.95:
+                    # metal
+                    albedo = Color.random(0.5, 1)
+                    fuzz = random.random()/2
+                    sphere_material = Metal(albedo, fuzz)
+                    world.add(Sphere(center, 0.2, sphere_material))
+                else:
+                    # glass
+                    sphere_material = Dielectric(1.5)
+                    world.add(Sphere(center, 0.2, sphere_material))
+
+    material1 = Dielectric(1.5)
+    world.add(Sphere(Vector(0, 1, 0), 1.0, material1))
+
+    material2 = Lambertian(Color(0.4, 0.2, 0.1))
+    world.add(Sphere(Vector(-4, 1, 0), 1.0, material2))
+
+    material3 = Metal(Color(0.7, 0.6, 0.5), 0.0)
+    world.add(Sphere(Vector(4, 1, 0), 1.0, material3))
+
+    return world
+
+
 def main():
     """main function of the ray tracer"""
 
     def get_x_y(i: int, j: int) -> tuple:
-        x = (i + random()) / (image_width - 1)
-        y = (j + random()) / (image_height - 1)
+        x = (i + random.random()) / (image_width - 1)
+        y = (j + random.random()) / (image_height - 1)
         return x, y
 
     # Image
     aspect_ratio = 16/9
-    image_width = 400
+    image_width = 200
     image_height = int(image_width/aspect_ratio)
-    number_samples = 100
+    number_samples = 10
     max_depth = 50
 
-    # World
-    material_ground = Lambertian(Color(0.8, 0.8, 0.0))
-    material_center = Lambertian(Color(0.1, 0.2, 0.5))
-    material_left = Dielectric(1.5)
-    material_right = Metal(Color(0.8, 0.6, 0.2), 0)
+    world = random_scene()
 
-    world = HittableList(Sphere(Vector(0, -100.5, -1), 100, material_ground))
-    world.add(Sphere(Vector(0, 0, -1), 0.5, material_center))
-    world.add(Sphere(Vector(-1, 0, -1), 0.5, material_left))
-    world.add(Sphere(Vector(-1, 0, -1), -0.4, material_left))
-    world.add(Sphere(Vector(1, 0, -1), 0.5, material_right))
+    # set up camera
+    look_from = Vector(13, 2, 3)
+    look_at = Vector(0, 0, 0)
+    view_up = Vector(0, 1, 0)
+    aspect_ratio = 16/9
+    vertical_field_of_view = 20
+    distance_to_focus = 10
+    aperture = 0.1
 
-    camera = Camera()
+    camera = Camera(look_from, look_at, view_up, vertical_field_of_view,
+                    aspect_ratio, aperture, distance_to_focus)
 
     # Render
     with open("image.ppm", "w+") as image_file:

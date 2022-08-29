@@ -1,6 +1,6 @@
 import math
 
-from ray import Ray, Vector, unit_vector, random_in_unit_disk
+from ray import Ray, Vector, unit_vector, random_in_unit_disk, cross
 
 
 def degrees_to_radians(degrees: float):
@@ -31,15 +31,15 @@ class Camera():
         self.v = cross(self.w, self.u)
 
         self.origin = look_from
-        self.horizontal = focus_distance*self.viewport_width * self.u
-        self.vertical = focus_distance*self.viewport_height * self.v
+        self.horizontal = self.u * focus_distance*self.viewport_width
+        self.vertical = self.v * focus_distance*self.viewport_height
         self.lower_left_corner = self.origin - self.horizontal / \
-            2 - self.vertical/2 - focus_distance*self.w
+            2 - self.vertical/2 - self.w * focus_distance
 
         self.lens_radius = aperture/2
 
     def get_ray(self, x_pixel: float, y_pixel: float) -> Ray:
-        random_origin = self.lens_radius*random_in_unit_disk()
+        random_origin = random_in_unit_disk() * self.lens_radius
         offset = self.u * random_origin.x() + self.v * random_origin.y()
         return Ray(self.origin + offset,
                    self.lower_left_corner +

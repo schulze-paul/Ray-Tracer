@@ -3,6 +3,7 @@
 from libc.math cimport sqrt, fabs, fmin
 
 import numpy as np
+import random
 cimport numpy as np
 
 
@@ -157,9 +158,25 @@ cpdef Vector random_in_hemisphere(Vector normal):
     else:
         return -in_unit_sphere
         
-        
+cpdef Vector random_in_unit_disk():
+    while(True):
+        point = Vector.random(-1, 1)
+        point = Vector(point.x(), point.y(), 0)
+        if point.length_sq() > 1:
+            pass
+        else:
+            return point
+
+
 cpdef Vector refract(Vector vector_in, Vector normal, double refractive_indeces_fraction):
     cdef double cos_theta = fmin(dot(vector_in, normal), 1.0)
     cdef Vector out_perpendicular = (vector_in + normal * cos_theta) * refractive_indeces_fraction
     cdef Vector out_parallel = normal * -sqrt(fabs(1.0-out_perpendicular.length_sq()))
     return out_perpendicular + out_parallel
+
+
+cpdef Vector cross(Vector vector_a, Vector vector_b):
+    cdef x = vector_a.y() * vector_b.z() - vector_a.z() * vector_b.y()
+    cdef y = vector_a.z() * vector_b.x() - vector_a.x() * vector_b.z()
+    cdef z = vector_a.x() * vector_b.y() - vector_a.y() * vector_b.x()
+    return Vector(x, y, z)

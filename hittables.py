@@ -22,9 +22,6 @@ class Material(ABC):
         pass
 
 
->>>>>> > main
-
-
 @dataclass
 class HitRecord():
     hit_point: Vector
