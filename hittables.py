@@ -1,11 +1,29 @@
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 import math
+import random
 
 # local imports
 from ray import Ray
-from vector_cython import Vector, dot
-from material import Material
+from ray import Vector, Color, dot, unit_vector, random_unit_vector, reflect, refract, random_in_unit_sphere
+
+
+class Material(ABC):
+
+    @abstractmethod
+    def scatter(ray_in, hit_record) -> tuple:
+        pass
+
+
+class Material(ABC):
+
+    @abstractmethod
+    def scatter(ray_in, hit_record) -> tuple:
+        pass
+
+
+>>>>>> > main
+
 
 @dataclass
 class HitRecord():
@@ -43,7 +61,7 @@ class Sphere(Hittable):
         computes hit event with a ray
 
         """
-        origin_to_center = ray.origin - self.center
+        origin_to_center = ray.get_origin() - self.center
         a = dot(ray.direction, ray.direction)
         half_b = dot(origin_to_center, ray.direction)
         c = dot(origin_to_center, origin_to_center) - self.radius**2
@@ -67,7 +85,7 @@ class Sphere(Hittable):
         hit_point = ray(t_hit)
         surface_normal = self.get_surface_normal(hit_point)
 
-        hit_record = HitRecord(hit_point, t_hit)
+        hit_record = HitRecord(hit_point, t_hit, self.material)
         hit_record.set_face_normal(ray, surface_normal)
         hit_record.material = self.material
 
@@ -97,3 +115,69 @@ class HittableList(Hittable):
                 elif closest_hit.t > hit_record.t:
                     closest_hit = hit_record
         return closest_hit
+
+
+@dataclass
+class Lambertian(Material):
+
+    albedo: Color
+
+    def scatter(self, ray_in, hit_record):
+        scatter_direction = hit_record.normal + random_unit_vector()
+        if scatter_direction.near_zero():
+            scatter_direction = hit_record.normal
+
+        scattered = Ray(hit_record.hit_point, scatter_direction)
+
+        return True, scattered, self.albedo
+
+
+class Metal(Material):
+    def __init__(self, albedo: Color, fuzz: float):
+        self.albedo = albedo
+        if fuzz < 1:
+            self.fuzz = fuzz
+        else:
+            self.fuzz = 1
+
+    def scatter(self, ray_in, hit_record):
+        vector_in = unit_vector(ray_in.direction)
+        reflected = reflect(vector_in, hit_record.normal)
+        scattered = Ray(hit_record.hit_point, reflected +
+                        random_in_unit_sphere()*self.fuzz)
+        is_scattered = dot(scattered.direction, hit_record.normal) > 0
+
+        return is_scattered, scattered, self.albedo
+
+
+@dataclass
+class Dielectric(Material):
+    index_of_refraction: float
+
+    def scatter(self, ray_in, hit_record):
+        attenuation = Color(1, 1, 1)
+        if hit_record.hit_from_outside:
+            refraction_ratio = 1/self.index_of_refraction
+        else:
+            refraction_ratio = self.index_of_refraction
+
+        unit_direction = unit_vector(ray_in.direction)
+        cos_theta = min(dot(unit_direction*-1, hit_record.normal), 1.0)
+        sin_theta = math.sqrt(1.0-cos_theta**2)
+        cannot_refract = refraction_ratio*sin_theta > 1
+        reflectance = self.__reflectance(cos_theta, refraction_ratio)
+        if cannot_refract or reflectance > random.random():
+            direction = reflect(unit_direction, hit_record.normal)
+        else:
+            direction = refract(
+                unit_direction, hit_record.normal, refraction_ratio)
+
+        scattered = Ray(hit_record.hit_point, direction)
+
+        return True, scattered, attenuation
+
+    def __reflectance(self, cos_theta: float, refraction_ratio: float) -> float:
+        # Schlick's approximation
+        r0 = (1-refraction_ratio) / (1+refraction_ratio)
+        r0 = r0**2
+        return r0 * (1-r0)*(1-cos_theta)**5

@@ -1,25 +1,25 @@
-from cmath import inf, sqrt
+from cmath import inf
+from math import sqrt
 from tqdm import tqdm
 
 from random import random
 
 # local imports
 from hittables import HittableList, Sphere
-from ray import Ray
 from camera import Camera
-from vector_cython import Color, random_in_unit_sphere, Vector
+from ray import Color, Ray, Vector, random_in_unit_sphere, outer
+from hittables import Lambertian, Dielectric, Metal
 
 
-def write_color(out_file, pixel_color: Color, number_samples: int) -> None:
+def write_color(out_file, pixel_color: Color) -> None:
     """append an rbg color to the file"""
-    pixel_color /= number_samples
 
     max_rgb = 255.999
 
     # gamma correct for gamma=2
-    red = sqrt(max_rgb * pixel_color.r())
-    green = sqrt(max_rgb * pixel_color.g())
-    blue = sqrt(max_rgb * pixel_color.b())
+    red = max_rgb * sqrt(pixel_color.r())
+    green = max_rgb * sqrt(pixel_color.g())
+    blue = max_rgb * sqrt(pixel_color.b())
 
     rgb_string = f" {int(red)} {int(green)} {int(blue)}\n"
     out_file.write(rgb_string)
@@ -36,11 +36,12 @@ def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
     hit_tolerance = 1e-3
     hit_record = world.hit(ray, hit_tolerance, inf)
     if hit_record is not None:
-        is_scattered, scattered, attenuation = hit_record.material.scatter(ray, hit_record)
+        is_scattered, scattered, attenuation = hit_record.material.scatter(
+            ray, hit_record)
         if is_scattered:
-            return attenuation*ray_color(scattered, world, depth-1)
+            return outer(ray_color(scattered, world, depth-1), attenuation)
         else:
-            return Color(0,0,0)
+            return Color(0, 0, 0)
 
     unit_direction = ray.direction / ray.direction.length()
     t = 0.5*unit_direction.y() + 0.5
@@ -64,16 +65,15 @@ def main():
     max_depth = 50
 
     # World
-    material_ground = Lambertian(Color(0.8,0.8,0.0))
-    material_center = Lambertian(Color(0.1,0.2,0.5))
+    material_ground = Lambertian(Color(0.8, 0.8, 0.0))
+    material_center = Lambertian(Color(0.1, 0.2, 0.5))
     material_left = Dielectric(1.5)
-    material_right = Metal(Color(0.8,0.6,0.2), 0)
-    
-    
-    
+    material_right = Metal(Color(0.8, 0.6, 0.2), 0)
+
     world = HittableList(Sphere(Vector(0, -100.5, -1), 100, material_ground))
     world.add(Sphere(Vector(0, 0, -1), 0.5, material_center))
     world.add(Sphere(Vector(-1, 0, -1), 0.5, material_left))
+    world.add(Sphere(Vector(-1, 0, -1), -0.4, material_left))
     world.add(Sphere(Vector(1, 0, -1), 0.5, material_right))
 
     camera = Camera()
@@ -92,7 +92,7 @@ def main():
                     color = color + \
                         ray_color(ray, world, max_depth)/number_samples
 
-                write_color(image_file, color, number_samples)
+                write_color(image_file, color)
 
 
 if __name__ == '__main__':
