@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 import math
 import random
+import numpy as np
 
 # local imports
 from hittable import Ray
@@ -95,18 +96,24 @@ class HittableList(Hittable):
     def add(self, hittable: Hittable) -> None:
         self.hittable_objects.append(hittable)
 
-    def hit(self, *args, **kwargs) -> HitRecord:
+    def hit(self, ray, t_min, t_max) -> HitRecord:
         # compute the closest hit to origin
-        closest_hit = None
+        closest_t_hit = None
+        closest_index = None
+        t_hit = np.empty(1)
 
-        for hittable in self.hittable_objects:
-            hit_record = hittable.hit(*args, **kwargs)
-            if hit_record is not None:
-                if closest_hit is None:
-                    closest_hit = hit_record
-                elif closest_hit.t > hit_record.t:
-                    closest_hit = hit_record
-        return closest_hit
+        for hittable_index, hittable in enumerate(self.hittable_objects):
+            if hittable.is_hit(ray, t_min, t_max, t_hit):
+                if closest_t_hit is None:
+                    closest_t_hit = t_hit[0]
+                    closest_index = hittable_index
+                elif closest_t_hit > t_hit[0]:
+                    closest_t_hit = t_hit[0]
+                    closest_index = hittable_index
+        if closest_index is None:
+            return None
+        else:
+            return self.hittable_objects[closest_index].get_hit_record(ray, closest_t_hit)
 
 
 @dataclass

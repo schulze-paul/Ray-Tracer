@@ -36,7 +36,7 @@ cdef class HitRecord:
 
 cdef class Hittable:
 
-    def hit(self, Ray ray, double t_min, double t_max) -> HitRecord:
+    cpdef int is_hit(self, Ray ray, double t_min, double t_max, double[:] t_hit):
         pass
 
 
@@ -53,7 +53,7 @@ cdef class Sphere(Hittable):
         self.material = material
 
     @cython.cdivision(True)
-    def hit(self, Ray ray, double t_min, double t_max) -> HitRecord:
+    cpdef int is_hit(self, Ray ray, double t_min, double t_max, double[:] t_hit):
         # computes hit event with a ray
 
         cdef Vector origin_to_center = ray.origin - self.center
@@ -64,18 +64,22 @@ cdef class Sphere(Hittable):
 
         if discriminant < 0:
             # no hit
-            return None
+            return 0
 
         # hit registered, is hit in range?
         cdef double sqrt_discriminant = sqrt(discriminant)
-        cdef double t_hit = -(half_b + sqrt_discriminant) / a
+        t_hit[0] = -(half_b + sqrt_discriminant) / a
 
-        if t_hit < t_min or t_hit > t_max:
+        if t_hit[0] < t_min or t_hit[0] > t_max:
             -(half_b - sqrt_discriminant) / a
-            if t_hit < t_min or t_hit > t_max:
+            if t_hit[0] < t_min or t_hit[0] > t_max:
                 # outside of range
-                return None
+                return 0
 
+        
+        return 1
+
+    cpdef HitRecord get_hit_record(self, Ray ray, double t_hit):
         # collect data about hit:
         cdef Vector hit_point = ray(t_hit)
         cdef Vector surface_normal = self.get_surface_normal(hit_point)
