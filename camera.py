@@ -1,5 +1,4 @@
-from ray import Ray
-from ray import Vector
+from ray import Ray, Vector
 
 
 class Camera():
