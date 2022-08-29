@@ -1,6 +1,6 @@
 import math
 
-from ray import Ray, Vector, unit_vector, random_in_unit_disk, cross
+from hittable import Ray, Vector, unit_vector, random_in_unit_disk, cross
 
 
 def degrees_to_radians(degrees: float):

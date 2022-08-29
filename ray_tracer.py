@@ -7,7 +7,7 @@ import random
 # local imports
 from hittables import Hittable, HittableList, Material, Sphere
 from camera import Camera
-from ray import Color, Ray, Vector, random_in_unit_sphere, outer
+from hittable import Color, Ray, Vector, random_in_unit_sphere, outer
 from hittables import Lambertian, Dielectric, Metal
 
 

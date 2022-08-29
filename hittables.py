@@ -4,17 +4,12 @@ import math
 import random
 
 # local imports
-from ray import Ray
-from ray import Vector, Color, dot, unit_vector, random_unit_vector, reflect, refract, random_in_unit_sphere
+from hittable import Ray
+from hittable import Vector, Color, dot, unit_vector, random_unit_vector, reflect, refract, random_in_unit_sphere
+from hittable import HitRecord, Hittable, Material
 
 
-class Material(ABC):
-
-    @abstractmethod
-    def scatter(ray_in, hit_record) -> tuple:
-        pass
-
-
+"""
 class Material(ABC):
 
     @abstractmethod
@@ -29,7 +24,7 @@ class HitRecord():
     material: Material
 
     def set_face_normal(self, ray: Ray, normal: Vector) -> None:
-        """set normal and save if hit from inside or outside"""
+        #set normal and save if hit from inside or outside
         self.hit_from_outside = dot(ray.direction, normal)
         if self.hit_from_outside:
             self.normal = normal
@@ -37,12 +32,15 @@ class HitRecord():
             self.normal = -normal
 
 
+
 class Hittable(ABC):
-    """Base class for all hitables"""
+    #Base class for all hitables
 
     @abstractmethod
     def hit(self, ray: Ray, t_min: float, t_max: float) -> HitRecord:
         pass
+
+"""
 
 
 @dataclass
@@ -84,7 +82,6 @@ class Sphere(Hittable):
 
         hit_record = HitRecord(hit_point, t_hit, self.material)
         hit_record.set_face_normal(ray, surface_normal)
-        hit_record.material = self.material
 
         return hit_record
 
@@ -153,7 +150,7 @@ class Dielectric(Material):
 
     def scatter(self, ray_in, hit_record):
         attenuation = Color(1, 1, 1)
-        if hit_record.hit_from_outside:
+        if hit_record.hit_from_outside==1:
             refraction_ratio = 1/self.index_of_refraction
         else:
             refraction_ratio = self.index_of_refraction

@@ -294,36 +294,32 @@ body.cython { font-family: courier; font-size: 12; }
     <span style="background-color: #FFFF00">Yellow lines</span> hint at Python interaction.<br />
     Click on a line that starts with a "<code>+</code>" to see the C code that Cython generated for it.
 </p>
-<p>Raw output: <a href="ray.c">ray.c</a></p>
-<div class="cython"><pre class="cython line score-8" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">01</span>: include "vector.pyx"</pre>
-<pre class='cython code score-8 '>  __pyx_t_1 = <span class='pyx_c_api'>__Pyx_PyDict_NewPresized</span>(0);<span class='error_goto'> if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 1, __pyx_L1_error)</span>
-  <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_t_1);
-  if (<span class='py_c_api'>PyDict_SetItem</span>(__pyx_d, __pyx_n_s_test, __pyx_t_1) &lt; 0) <span class='error_goto'>__PYX_ERR(2, 1, __pyx_L1_error)</span>
-  <span class='pyx_macro_api'>__Pyx_DECREF</span>(__pyx_t_1); __pyx_t_1 = 0;
-</pre><pre class="cython line score-0">&#xA0;<span class="">02</span>: </pre>
+<p>Raw output: <a href="ray.pyx">ray.pyx</a></p>
+<div class="cython"><pre class="cython line score-0">&#xA0;<span class="">01</span>: include "vector.pyx"</pre>
+<pre class="cython line score-0">&#xA0;<span class="">02</span>: </pre>
 <pre class="cython line score-0" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">03</span>: cdef class Ray:</pre>
-<pre class='cython code score-0 '>struct __pyx_obj_3ray_Ray {
+<pre class='cython code score-0 '>struct __pyx_obj_8hittable_Ray {
   PyObject_HEAD
-  struct __pyx_obj_3ray_Vector *origin;
-  struct __pyx_obj_3ray_Vector *direction;
+  struct __pyx_obj_8hittable_Vector *origin;
+  struct __pyx_obj_8hittable_Vector *direction;
 };
 
 </pre><pre class="cython line score-0">&#xA0;<span class="">04</span>:     """ray class """</pre>
 <pre class="cython line score-11" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">05</span>:     cdef public Vector origin</pre>
 <pre class='cython code score-11 '>/* Python wrapper */
-static PyObject *__pyx_pw_3ray_3Ray_6origin_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_3ray_3Ray_6origin_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_8hittable_3Ray_6origin_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_8hittable_3Ray_6origin_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3ray_3Ray_6origin___get__(((struct __pyx_obj_3ray_Ray *)__pyx_v_self));
+  __pyx_r = __pyx_pf_8hittable_3Ray_6origin___get__(((struct __pyx_obj_8hittable_Ray *)__pyx_v_self));
 
   /* function exit code */
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3ray_3Ray_6origin___get__(struct __pyx_obj_3ray_Ray *__pyx_v_self) {
+static PyObject *__pyx_pf_8hittable_3Ray_6origin___get__(struct __pyx_obj_8hittable_Ray *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__get__", 0);
@@ -340,29 +336,29 @@ static PyObject *__pyx_pf_3ray_3Ray_6origin___get__(struct __pyx_obj_3ray_Ray *_
 }
 
 /* Python wrapper */
-static int __pyx_pw_3ray_3Ray_6origin_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value); /*proto*/
-static int __pyx_pw_3ray_3Ray_6origin_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value) {
+static int __pyx_pw_8hittable_3Ray_6origin_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value); /*proto*/
+static int __pyx_pw_8hittable_3Ray_6origin_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value) {
   int __pyx_r;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__set__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3ray_3Ray_6origin_2__set__(((struct __pyx_obj_3ray_Ray *)__pyx_v_self), ((PyObject *)__pyx_v_value));
+  __pyx_r = __pyx_pf_8hittable_3Ray_6origin_2__set__(((struct __pyx_obj_8hittable_Ray *)__pyx_v_self), ((PyObject *)__pyx_v_value));
 
   /* function exit code */
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
   return __pyx_r;
 }
 
-static int __pyx_pf_3ray_3Ray_6origin_2__set__(struct __pyx_obj_3ray_Ray *__pyx_v_self, PyObject *__pyx_v_value) {
+static int __pyx_pf_8hittable_3Ray_6origin_2__set__(struct __pyx_obj_8hittable_Ray *__pyx_v_self, PyObject *__pyx_v_value) {
   int __pyx_r;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__set__", 0);
-  if (!(likely(((__pyx_v_value) == Py_None) || likely(<span class='pyx_c_api'>__Pyx_TypeTest</span>(__pyx_v_value, __pyx_ptype_3ray_Vector))))) <span class='error_goto'>__PYX_ERR(2, 5, __pyx_L1_error)</span>
+  if (!(likely(((__pyx_v_value) == Py_None) || likely(<span class='pyx_c_api'>__Pyx_TypeTest</span>(__pyx_v_value, __pyx_ptype_8hittable_Vector))))) <span class='error_goto'>__PYX_ERR(3, 5, __pyx_L1_error)</span>
   __pyx_t_1 = __pyx_v_value;
   <span class='pyx_macro_api'>__Pyx_INCREF</span>(__pyx_t_1);
   <span class='refnanny'>__Pyx_GIVEREF</span>(__pyx_t_1);
   <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_v_self-&gt;origin);
   <span class='pyx_macro_api'>__Pyx_DECREF</span>(((PyObject *)__pyx_v_self-&gt;origin));
-  __pyx_v_self-&gt;origin = ((struct __pyx_obj_3ray_Vector *)__pyx_t_1);
+  __pyx_v_self-&gt;origin = ((struct __pyx_obj_8hittable_Vector *)__pyx_t_1);
   __pyx_t_1 = 0;
 
   /* function exit code */
@@ -370,7 +366,7 @@ static int __pyx_pf_3ray_3Ray_6origin_2__set__(struct __pyx_obj_3ray_Ray *__pyx_
   goto __pyx_L0;
   __pyx_L1_error:;
   <span class='pyx_macro_api'>__Pyx_XDECREF</span>(__pyx_t_1);
-  <span class='pyx_c_api'>__Pyx_AddTraceback</span>("ray.Ray.origin.__set__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  <span class='pyx_c_api'>__Pyx_AddTraceback</span>("hittable.Ray.origin.__set__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
@@ -378,19 +374,19 @@ static int __pyx_pf_3ray_3Ray_6origin_2__set__(struct __pyx_obj_3ray_Ray *__pyx_
 }
 
 /* Python wrapper */
-static int __pyx_pw_3ray_3Ray_6origin_5__del__(PyObject *__pyx_v_self); /*proto*/
-static int __pyx_pw_3ray_3Ray_6origin_5__del__(PyObject *__pyx_v_self) {
+static int __pyx_pw_8hittable_3Ray_6origin_5__del__(PyObject *__pyx_v_self); /*proto*/
+static int __pyx_pw_8hittable_3Ray_6origin_5__del__(PyObject *__pyx_v_self) {
   int __pyx_r;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__del__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3ray_3Ray_6origin_4__del__(((struct __pyx_obj_3ray_Ray *)__pyx_v_self));
+  __pyx_r = __pyx_pf_8hittable_3Ray_6origin_4__del__(((struct __pyx_obj_8hittable_Ray *)__pyx_v_self));
 
   /* function exit code */
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
   return __pyx_r;
 }
 
-static int __pyx_pf_3ray_3Ray_6origin_4__del__(struct __pyx_obj_3ray_Ray *__pyx_v_self) {
+static int __pyx_pf_8hittable_3Ray_6origin_4__del__(struct __pyx_obj_8hittable_Ray *__pyx_v_self) {
   int __pyx_r;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__del__", 0);
@@ -398,7 +394,7 @@ static int __pyx_pf_3ray_3Ray_6origin_4__del__(struct __pyx_obj_3ray_Ray *__pyx_
   <span class='refnanny'>__Pyx_GIVEREF</span>(Py_None);
   <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_v_self-&gt;origin);
   <span class='pyx_macro_api'>__Pyx_DECREF</span>(((PyObject *)__pyx_v_self-&gt;origin));
-  __pyx_v_self-&gt;origin = ((struct __pyx_obj_3ray_Vector *)Py_None);
+  __pyx_v_self-&gt;origin = ((struct __pyx_obj_8hittable_Vector *)Py_None);
 
   /* function exit code */
   __pyx_r = 0;
@@ -407,19 +403,19 @@ static int __pyx_pf_3ray_3Ray_6origin_4__del__(struct __pyx_obj_3ray_Ray *__pyx_
 }
 </pre><pre class="cython line score-11" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">06</span>:     cdef public Vector direction</pre>
 <pre class='cython code score-11 '>/* Python wrapper */
-static PyObject *__pyx_pw_3ray_3Ray_9direction_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_3ray_3Ray_9direction_1__get__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_8hittable_3Ray_9direction_1__get__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_8hittable_3Ray_9direction_1__get__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3ray_3Ray_9direction___get__(((struct __pyx_obj_3ray_Ray *)__pyx_v_self));
+  __pyx_r = __pyx_pf_8hittable_3Ray_9direction___get__(((struct __pyx_obj_8hittable_Ray *)__pyx_v_self));
 
   /* function exit code */
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3ray_3Ray_9direction___get__(struct __pyx_obj_3ray_Ray *__pyx_v_self) {
+static PyObject *__pyx_pf_8hittable_3Ray_9direction___get__(struct __pyx_obj_8hittable_Ray *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__get__", 0);
@@ -436,29 +432,29 @@ static PyObject *__pyx_pf_3ray_3Ray_9direction___get__(struct __pyx_obj_3ray_Ray
 }
 
 /* Python wrapper */
-static int __pyx_pw_3ray_3Ray_9direction_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value); /*proto*/
-static int __pyx_pw_3ray_3Ray_9direction_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value) {
+static int __pyx_pw_8hittable_3Ray_9direction_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value); /*proto*/
+static int __pyx_pw_8hittable_3Ray_9direction_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value) {
   int __pyx_r;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__set__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3ray_3Ray_9direction_2__set__(((struct __pyx_obj_3ray_Ray *)__pyx_v_self), ((PyObject *)__pyx_v_value));
+  __pyx_r = __pyx_pf_8hittable_3Ray_9direction_2__set__(((struct __pyx_obj_8hittable_Ray *)__pyx_v_self), ((PyObject *)__pyx_v_value));
 
   /* function exit code */
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
   return __pyx_r;
 }
 
-static int __pyx_pf_3ray_3Ray_9direction_2__set__(struct __pyx_obj_3ray_Ray *__pyx_v_self, PyObject *__pyx_v_value) {
+static int __pyx_pf_8hittable_3Ray_9direction_2__set__(struct __pyx_obj_8hittable_Ray *__pyx_v_self, PyObject *__pyx_v_value) {
   int __pyx_r;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__set__", 0);
-  if (!(likely(((__pyx_v_value) == Py_None) || likely(<span class='pyx_c_api'>__Pyx_TypeTest</span>(__pyx_v_value, __pyx_ptype_3ray_Vector))))) <span class='error_goto'>__PYX_ERR(2, 6, __pyx_L1_error)</span>
+  if (!(likely(((__pyx_v_value) == Py_None) || likely(<span class='pyx_c_api'>__Pyx_TypeTest</span>(__pyx_v_value, __pyx_ptype_8hittable_Vector))))) <span class='error_goto'>__PYX_ERR(3, 6, __pyx_L1_error)</span>
   __pyx_t_1 = __pyx_v_value;
   <span class='pyx_macro_api'>__Pyx_INCREF</span>(__pyx_t_1);
   <span class='refnanny'>__Pyx_GIVEREF</span>(__pyx_t_1);
   <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_v_self-&gt;direction);
   <span class='pyx_macro_api'>__Pyx_DECREF</span>(((PyObject *)__pyx_v_self-&gt;direction));
-  __pyx_v_self-&gt;direction = ((struct __pyx_obj_3ray_Vector *)__pyx_t_1);
+  __pyx_v_self-&gt;direction = ((struct __pyx_obj_8hittable_Vector *)__pyx_t_1);
   __pyx_t_1 = 0;
 
   /* function exit code */
@@ -466,7 +462,7 @@ static int __pyx_pf_3ray_3Ray_9direction_2__set__(struct __pyx_obj_3ray_Ray *__p
   goto __pyx_L0;
   __pyx_L1_error:;
   <span class='pyx_macro_api'>__Pyx_XDECREF</span>(__pyx_t_1);
-  <span class='pyx_c_api'>__Pyx_AddTraceback</span>("ray.Ray.direction.__set__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  <span class='pyx_c_api'>__Pyx_AddTraceback</span>("hittable.Ray.direction.__set__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = -1;
   __pyx_L0:;
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
@@ -474,19 +470,19 @@ static int __pyx_pf_3ray_3Ray_9direction_2__set__(struct __pyx_obj_3ray_Ray *__p
 }
 
 /* Python wrapper */
-static int __pyx_pw_3ray_3Ray_9direction_5__del__(PyObject *__pyx_v_self); /*proto*/
-static int __pyx_pw_3ray_3Ray_9direction_5__del__(PyObject *__pyx_v_self) {
+static int __pyx_pw_8hittable_3Ray_9direction_5__del__(PyObject *__pyx_v_self); /*proto*/
+static int __pyx_pw_8hittable_3Ray_9direction_5__del__(PyObject *__pyx_v_self) {
   int __pyx_r;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__del__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_3ray_3Ray_9direction_4__del__(((struct __pyx_obj_3ray_Ray *)__pyx_v_self));
+  __pyx_r = __pyx_pf_8hittable_3Ray_9direction_4__del__(((struct __pyx_obj_8hittable_Ray *)__pyx_v_self));
 
   /* function exit code */
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
   return __pyx_r;
 }
 
-static int __pyx_pf_3ray_3Ray_9direction_4__del__(struct __pyx_obj_3ray_Ray *__pyx_v_self) {
+static int __pyx_pf_8hittable_3Ray_9direction_4__del__(struct __pyx_obj_8hittable_Ray *__pyx_v_self) {
   int __pyx_r;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__del__", 0);
@@ -494,7 +490,7 @@ static int __pyx_pf_3ray_3Ray_9direction_4__del__(struct __pyx_obj_3ray_Ray *__p
   <span class='refnanny'>__Pyx_GIVEREF</span>(Py_None);
   <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_v_self-&gt;direction);
   <span class='pyx_macro_api'>__Pyx_DECREF</span>(((PyObject *)__pyx_v_self-&gt;direction));
-  __pyx_v_self-&gt;direction = ((struct __pyx_obj_3ray_Vector *)Py_None);
+  __pyx_v_self-&gt;direction = ((struct __pyx_obj_8hittable_Vector *)Py_None);
 
   /* function exit code */
   __pyx_r = 0;
@@ -504,10 +500,10 @@ static int __pyx_pf_3ray_3Ray_9direction_4__del__(struct __pyx_obj_3ray_Ray *__p
 </pre><pre class="cython line score-0">&#xA0;<span class="">07</span>: </pre>
 <pre class="cython line score-28" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">08</span>:     def __init__(self, Vector origin, Vector direction):</pre>
 <pre class='cython code score-28 '>/* Python wrapper */
-static int __pyx_pw_3ray_3Ray_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_3ray_3Ray_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  struct __pyx_obj_3ray_Vector *__pyx_v_origin = 0;
-  struct __pyx_obj_3ray_Vector *__pyx_v_direction = 0;
+static int __pyx_pw_8hittable_3Ray_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_pw_8hittable_3Ray_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  struct __pyx_obj_8hittable_Vector *__pyx_v_origin = 0;
+  struct __pyx_obj_8hittable_Vector *__pyx_v_direction = 0;
   int __pyx_r;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__init__ (wrapper)", 0);
@@ -534,11 +530,11 @@ static int __pyx_pw_3ray_3Ray_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_
         case  1:
         if (likely((values[1] = <span class='pyx_c_api'>__Pyx_PyDict_GetItemStr</span>(__pyx_kwds, __pyx_n_s_direction)) != 0)) kw_args--;
         else {
-          <span class='pyx_c_api'>__Pyx_RaiseArgtupleInvalid</span>("__init__", 1, 2, 2, 1); <span class='error_goto'>__PYX_ERR(2, 8, __pyx_L3_error)</span>
+          <span class='pyx_c_api'>__Pyx_RaiseArgtupleInvalid</span>("__init__", 1, 2, 2, 1); <span class='error_goto'>__PYX_ERR(3, 8, __pyx_L3_error)</span>
         }
       }
       if (unlikely(kw_args &gt; 0)) {
-        if (unlikely(<span class='pyx_c_api'>__Pyx_ParseOptionalKeywords</span>(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") &lt; 0)) <span class='error_goto'>__PYX_ERR(2, 8, __pyx_L3_error)</span>
+        if (unlikely(<span class='pyx_c_api'>__Pyx_ParseOptionalKeywords</span>(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") &lt; 0)) <span class='error_goto'>__PYX_ERR(3, 8, __pyx_L3_error)</span>
       }
     } else if (<span class='py_macro_api'>PyTuple_GET_SIZE</span>(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -546,20 +542,20 @@ static int __pyx_pw_3ray_3Ray_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_
       values[0] = <span class='py_macro_api'>PyTuple_GET_ITEM</span>(__pyx_args, 0);
       values[1] = <span class='py_macro_api'>PyTuple_GET_ITEM</span>(__pyx_args, 1);
     }
-    __pyx_v_origin = ((struct __pyx_obj_3ray_Vector *)values[0]);
-    __pyx_v_direction = ((struct __pyx_obj_3ray_Vector *)values[1]);
+    __pyx_v_origin = ((struct __pyx_obj_8hittable_Vector *)values[0]);
+    __pyx_v_direction = ((struct __pyx_obj_8hittable_Vector *)values[1]);
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  <span class='pyx_c_api'>__Pyx_RaiseArgtupleInvalid</span>("__init__", 1, 2, 2, <span class='py_macro_api'>PyTuple_GET_SIZE</span>(__pyx_args)); <span class='error_goto'>__PYX_ERR(2, 8, __pyx_L3_error)</span>
+  <span class='pyx_c_api'>__Pyx_RaiseArgtupleInvalid</span>("__init__", 1, 2, 2, <span class='py_macro_api'>PyTuple_GET_SIZE</span>(__pyx_args)); <span class='error_goto'>__PYX_ERR(3, 8, __pyx_L3_error)</span>
   __pyx_L3_error:;
-  <span class='pyx_c_api'>__Pyx_AddTraceback</span>("ray.Ray.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  <span class='pyx_c_api'>__Pyx_AddTraceback</span>("hittable.Ray.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!<span class='pyx_c_api'>__Pyx_ArgTypeTest</span>(((PyObject *)__pyx_v_origin), __pyx_ptype_3ray_Vector, 1, "origin", 0))) <span class='error_goto'>__PYX_ERR(2, 8, __pyx_L1_error)</span>
-  if (unlikely(!<span class='pyx_c_api'>__Pyx_ArgTypeTest</span>(((PyObject *)__pyx_v_direction), __pyx_ptype_3ray_Vector, 1, "direction", 0))) <span class='error_goto'>__PYX_ERR(2, 8, __pyx_L1_error)</span>
-  __pyx_r = __pyx_pf_3ray_3Ray___init__(((struct __pyx_obj_3ray_Ray *)__pyx_v_self), __pyx_v_origin, __pyx_v_direction);
+  if (unlikely(!<span class='pyx_c_api'>__Pyx_ArgTypeTest</span>(((PyObject *)__pyx_v_origin), __pyx_ptype_8hittable_Vector, 1, "origin", 0))) <span class='error_goto'>__PYX_ERR(3, 8, __pyx_L1_error)</span>
+  if (unlikely(!<span class='pyx_c_api'>__Pyx_ArgTypeTest</span>(((PyObject *)__pyx_v_direction), __pyx_ptype_8hittable_Vector, 1, "direction", 0))) <span class='error_goto'>__PYX_ERR(3, 8, __pyx_L1_error)</span>
+  __pyx_r = __pyx_pf_8hittable_3Ray___init__(((struct __pyx_obj_8hittable_Ray *)__pyx_v_self), __pyx_v_origin, __pyx_v_direction);
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -573,7 +569,7 @@ static int __pyx_pw_3ray_3Ray_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_
   return __pyx_r;
 }
 
-static int __pyx_pf_3ray_3Ray___init__(struct __pyx_obj_3ray_Ray *__pyx_v_self, struct __pyx_obj_3ray_Vector *__pyx_v_origin, struct __pyx_obj_3ray_Vector *__pyx_v_direction) {
+static int __pyx_pf_8hittable_3Ray___init__(struct __pyx_obj_8hittable_Ray *__pyx_v_self, struct __pyx_obj_8hittable_Vector *__pyx_v_origin, struct __pyx_obj_8hittable_Vector *__pyx_v_direction) {
   int __pyx_r;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__init__", 0);
@@ -598,12 +594,12 @@ static int __pyx_pf_3ray_3Ray___init__(struct __pyx_obj_3ray_Ray *__pyx_v_self, 
 </pre><pre class="cython line score-0">&#xA0;<span class="">11</span>: </pre>
 <pre class="cython line score-32" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">12</span>:     def __call__(self, t: float) -&gt; Vector:</pre>
 <pre class='cython code score-32 '>/* Python wrapper */
-static PyObject *__pyx_pw_3ray_3Ray_3__call__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_3ray_3Ray_2__call__[] = "get position of ray at t";
+static PyObject *__pyx_pw_8hittable_3Ray_3__call__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_8hittable_3Ray_2__call__[] = "get position of ray at t";
 #if CYTHON_UPDATE_DESCRIPTOR_DOC
-struct wrapperbase __pyx_wrapperbase_3ray_3Ray_2__call__;
+struct wrapperbase __pyx_wrapperbase_8hittable_3Ray_2__call__;
 #endif
-static PyObject *__pyx_pw_3ray_3Ray_3__call__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_8hittable_3Ray_3__call__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   double __pyx_v_t;
   PyObject *__pyx_r = 0;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
@@ -627,24 +623,24 @@ static PyObject *__pyx_pw_3ray_3Ray_3__call__(PyObject *__pyx_v_self, PyObject *
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args &gt; 0)) {
-        if (unlikely(<span class='pyx_c_api'>__Pyx_ParseOptionalKeywords</span>(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__call__") &lt; 0)) <span class='error_goto'>__PYX_ERR(2, 12, __pyx_L3_error)</span>
+        if (unlikely(<span class='pyx_c_api'>__Pyx_ParseOptionalKeywords</span>(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__call__") &lt; 0)) <span class='error_goto'>__PYX_ERR(3, 12, __pyx_L3_error)</span>
       }
     } else if (<span class='py_macro_api'>PyTuple_GET_SIZE</span>(__pyx_args) != 1) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = <span class='py_macro_api'>PyTuple_GET_ITEM</span>(__pyx_args, 0);
     }
-    __pyx_v_t = __pyx_<span class='py_c_api'>PyFloat_AsDouble</span>(values[0]); if (unlikely((__pyx_v_t == (double)-1) &amp;&amp; <span class='py_c_api'>PyErr_Occurred</span>())) <span class='error_goto'>__PYX_ERR(2, 12, __pyx_L3_error)</span>
+    __pyx_v_t = __pyx_<span class='py_c_api'>PyFloat_AsDouble</span>(values[0]); if (unlikely((__pyx_v_t == (double)-1) &amp;&amp; <span class='py_c_api'>PyErr_Occurred</span>())) <span class='error_goto'>__PYX_ERR(3, 12, __pyx_L3_error)</span>
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  <span class='pyx_c_api'>__Pyx_RaiseArgtupleInvalid</span>("__call__", 1, 1, 1, <span class='py_macro_api'>PyTuple_GET_SIZE</span>(__pyx_args)); <span class='error_goto'>__PYX_ERR(2, 12, __pyx_L3_error)</span>
+  <span class='pyx_c_api'>__Pyx_RaiseArgtupleInvalid</span>("__call__", 1, 1, 1, <span class='py_macro_api'>PyTuple_GET_SIZE</span>(__pyx_args)); <span class='error_goto'>__PYX_ERR(3, 12, __pyx_L3_error)</span>
   __pyx_L3_error:;
-  <span class='pyx_c_api'>__Pyx_AddTraceback</span>("ray.Ray.__call__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  <span class='pyx_c_api'>__Pyx_AddTraceback</span>("hittable.Ray.__call__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_3ray_3Ray_2__call__(((struct __pyx_obj_3ray_Ray *)__pyx_v_self), __pyx_v_t);
+  __pyx_r = __pyx_pf_8hittable_3Ray_2__call__(((struct __pyx_obj_8hittable_Ray *)__pyx_v_self), __pyx_v_t);
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -654,7 +650,7 @@ static PyObject *__pyx_pw_3ray_3Ray_3__call__(PyObject *__pyx_v_self, PyObject *
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3ray_3Ray_2__call__(struct __pyx_obj_3ray_Ray *__pyx_v_self, double __pyx_v_t) {
+static PyObject *__pyx_pf_8hittable_3Ray_2__call__(struct __pyx_obj_8hittable_Ray *__pyx_v_self, double __pyx_v_t) {
   PyObject *__pyx_r = NULL;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("__call__", 0);
@@ -663,7 +659,7 @@ static PyObject *__pyx_pf_3ray_3Ray_2__call__(struct __pyx_obj_3ray_Ray *__pyx_v
   __pyx_L1_error:;
   <span class='pyx_macro_api'>__Pyx_XDECREF</span>(__pyx_t_1);
   <span class='pyx_macro_api'>__Pyx_XDECREF</span>(__pyx_t_2);
-  <span class='pyx_c_api'>__Pyx_AddTraceback</span>("ray.Ray.__call__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  <span class='pyx_c_api'>__Pyx_AddTraceback</span>("hittable.Ray.__call__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   <span class='refnanny'>__Pyx_XGIVEREF</span>(__pyx_r);
@@ -673,12 +669,12 @@ static PyObject *__pyx_pf_3ray_3Ray_2__call__(struct __pyx_obj_3ray_Ray *__pyx_v
 </pre><pre class="cython line score-0">&#xA0;<span class="">13</span>:         """get position of ray at t"""</pre>
 <pre class="cython line score-18" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">14</span>:         return self.origin + self.direction*t</pre>
 <pre class='cython code score-18 '>  <span class='pyx_macro_api'>__Pyx_XDECREF</span>(__pyx_r);
-  __pyx_t_1 = <span class='py_c_api'>PyFloat_FromDouble</span>(__pyx_v_t);<span class='error_goto'> if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 14, __pyx_L1_error)</span>
+  __pyx_t_1 = <span class='py_c_api'>PyFloat_FromDouble</span>(__pyx_v_t);<span class='error_goto'> if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 14, __pyx_L1_error)</span>
   <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_t_1);
-  __pyx_t_2 = <span class='py_c_api'>PyNumber_Multiply</span>(((PyObject *)__pyx_v_self-&gt;direction), __pyx_t_1);<span class='error_goto'> if (unlikely(!__pyx_t_2)) __PYX_ERR(2, 14, __pyx_L1_error)</span>
+  __pyx_t_2 = <span class='py_c_api'>PyNumber_Multiply</span>(((PyObject *)__pyx_v_self-&gt;direction), __pyx_t_1);<span class='error_goto'> if (unlikely(!__pyx_t_2)) __PYX_ERR(3, 14, __pyx_L1_error)</span>
   <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_t_2);
   <span class='pyx_macro_api'>__Pyx_DECREF</span>(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = <span class='py_c_api'>PyNumber_Add</span>(((PyObject *)__pyx_v_self-&gt;origin), __pyx_t_2);<span class='error_goto'> if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 14, __pyx_L1_error)</span>
+  __pyx_t_1 = <span class='py_c_api'>PyNumber_Add</span>(((PyObject *)__pyx_v_self-&gt;origin), __pyx_t_2);<span class='error_goto'> if (unlikely(!__pyx_t_1)) __PYX_ERR(3, 14, __pyx_L1_error)</span>
   <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_t_1);
   <span class='pyx_macro_api'>__Pyx_DECREF</span>(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_1;
@@ -687,19 +683,19 @@ static PyObject *__pyx_pf_3ray_3Ray_2__call__(struct __pyx_obj_3ray_Ray *__pyx_v
 </pre><pre class="cython line score-0">&#xA0;<span class="">15</span>: </pre>
 <pre class="cython line score-0" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">16</span>:     def get_origin(self):</pre>
 <pre class='cython code score-0 '>/* Python wrapper */
-static PyObject *__pyx_pw_3ray_3Ray_5get_origin(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3ray_3Ray_5get_origin(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_8hittable_3Ray_5get_origin(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_8hittable_3Ray_5get_origin(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("get_origin (wrapper)", 0);
-  __pyx_r = __pyx_pf_3ray_3Ray_4get_origin(((struct __pyx_obj_3ray_Ray *)__pyx_v_self));
+  __pyx_r = __pyx_pf_8hittable_3Ray_4get_origin(((struct __pyx_obj_8hittable_Ray *)__pyx_v_self));
 
   /* function exit code */
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3ray_3Ray_4get_origin(struct __pyx_obj_3ray_Ray *__pyx_v_self) {
+static PyObject *__pyx_pf_8hittable_3Ray_4get_origin(struct __pyx_obj_8hittable_Ray *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("get_origin", 0);
@@ -718,19 +714,19 @@ static PyObject *__pyx_pf_3ray_3Ray_4get_origin(struct __pyx_obj_3ray_Ray *__pyx
 </pre><pre class="cython line score-0">&#xA0;<span class="">18</span>: </pre>
 <pre class="cython line score-0" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">19</span>:     def get_direction(self):</pre>
 <pre class='cython code score-0 '>/* Python wrapper */
-static PyObject *__pyx_pw_3ray_3Ray_7get_direction(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_3ray_3Ray_7get_direction(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_8hittable_3Ray_7get_direction(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_8hittable_3Ray_7get_direction(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("get_direction (wrapper)", 0);
-  __pyx_r = __pyx_pf_3ray_3Ray_6get_direction(((struct __pyx_obj_3ray_Ray *)__pyx_v_self));
+  __pyx_r = __pyx_pf_8hittable_3Ray_6get_direction(((struct __pyx_obj_8hittable_Ray *)__pyx_v_self));
 
   /* function exit code */
   <span class='refnanny'>__Pyx_RefNannyFinishContext</span>();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_3ray_3Ray_6get_direction(struct __pyx_obj_3ray_Ray *__pyx_v_self) {
+static PyObject *__pyx_pf_8hittable_3Ray_6get_direction(struct __pyx_obj_8hittable_Ray *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("get_direction", 0);

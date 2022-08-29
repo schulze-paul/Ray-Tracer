@@ -1,15 +1,30 @@
 include "ray.pyx"
 
+cdef class Material:
+
+    def scatter(ray_in, hit_record):
+        pass
+
+
 cdef class HitRecord:
     cdef public Vector hit_point
     cdef public double t
+    cdef public Material material
     cdef public int hit_from_outside
     cdef public Vector normal
 
+    def __init__(self, Vector hit_point, double t, Material material):
+        self.hit_point = hit_point
+        self.t = t
+        self.material = material
 
     def set_face_normal(self, Ray ray, Vector normal) -> None:
         """set normal and save if hit from inside or outside"""
-        self.hit_from_outside = dot(ray.direction, normal) > 0.0
+        if dot(ray.direction, normal) > 0.0:
+            self.hit_from_outside = 1
+        else:
+            self.hit_from_outside = 0
+            
         if self.hit_from_outside:
             self.normal = normal
         else:
