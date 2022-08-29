@@ -7,12 +7,11 @@ from random import random
 from hittables import HittableList, Sphere
 from ray import Ray
 from camera import Camera
-from vector_cython import Color, random_in_unit_sphere, Vector
+from ray import Color, random_in_unit_sphere, Vector
 
 
-def write_color(out_file, pixel_color: Color, number_samples: int) -> None:
+def write_color(out_file, pixel_color: Color) -> None:
     """append an rbg color to the file"""
-    pixel_color /= number_samples
 
     max_rgb = 255.999
 
@@ -92,7 +91,7 @@ def main():
                     color = color + \
                         ray_color(ray, world, max_depth)/number_samples
 
-                write_color(image_file, color, number_samples)
+                write_color(image_file, color)
 
 
 if __name__ == '__main__':
