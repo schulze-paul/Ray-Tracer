@@ -4,7 +4,7 @@ import math
 
 # local imports
 from ray import Ray
-from vector_cython import Vector, dot
+from ray import Vector, dot
 
 
 @dataclass
@@ -41,7 +41,7 @@ class Sphere(Hittable):
         computes hit event with a ray
 
         """
-        origin_to_center = ray.origin - self.center
+        origin_to_center = ray.get_origin() - self.center
         a = dot(ray.direction, ray.direction)
         half_b = dot(origin_to_center, ray.direction)
         c = dot(origin_to_center, origin_to_center) - self.radius**2
