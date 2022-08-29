@@ -99,9 +99,9 @@ def main():
 
     # Image
     aspect_ratio = 16/9
-    image_width = 200
+    image_width = 400
     image_height = int(image_width/aspect_ratio)
-    number_samples = 10
+    number_samples = 20
     max_depth = 50
 
     world = random_scene()
@@ -119,7 +119,7 @@ def main():
                     aspect_ratio, aperture, distance_to_focus)
 
     # Render
-    with open("image.ppm", "w+") as image_file:
+    with open("image_test.ppm", "w+") as image_file:
         header = f"P3\n{image_width} {image_height}\n255\n"
         image_file.write(header)
 

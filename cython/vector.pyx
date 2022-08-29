@@ -169,7 +169,7 @@ cpdef Vector random_in_unit_disk():
 
 
 cpdef Vector refract(Vector vector_in, Vector normal, double refractive_indeces_fraction):
-    cdef double cos_theta = fmin(dot(vector_in, normal), 1.0)
+    cdef double cos_theta = fmin(dot(vector_in*-1, normal), 1.0)
     cdef Vector out_perpendicular = (vector_in + normal * cos_theta) * refractive_indeces_fraction
     cdef Vector out_parallel = normal * -sqrt(fabs(1.0-out_perpendicular.length_sq()))
     return out_perpendicular + out_parallel

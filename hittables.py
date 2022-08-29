@@ -6,8 +6,8 @@ import random
 # local imports
 from hittable import Ray
 from hittable import Vector, Color, dot, unit_vector, random_unit_vector, reflect, refract, random_in_unit_sphere
-from hittable import HitRecord, Hittable, Material
-
+# , Lambertian, Dielectric, Metal
+from hittable import HitRecord, Hittable, Material, Sphere  # , HittableList
 
 """
 class Material(ABC):
@@ -24,38 +24,34 @@ class HitRecord():
     material: Material
 
     def set_face_normal(self, ray: Ray, normal: Vector) -> None:
-        #set normal and save if hit from inside or outside
-        self.hit_from_outside = dot(ray.direction, normal)
+        # set normal and save if hit from inside or outside
+        self.hit_from_outside = dot(ray.direction, normal) < 0
         if self.hit_from_outside:
             self.normal = normal
         else:
             self.normal = -normal
 
 
-
 class Hittable(ABC):
-    #Base class for all hitables
+    # Base class for all hitables
 
     @abstractmethod
     def hit(self, ray: Ray, t_min: float, t_max: float) -> HitRecord:
         pass
 
-"""
 
 
 @dataclass
 class Sphere(Hittable):
-    """defines a sphere as a hittable"""
+    # defines a sphere as a hittable
 
     center: Vector
     radius: float
     material: Material
 
     def hit(self, ray: Ray, t_min: float, t_max: float) -> HitRecord:
-        """
-        computes hit event with a ray
+        # computes hit event with a ray
 
-        """
         origin_to_center = ray.get_origin() - self.center
         a = dot(ray.direction, ray.direction)
         half_b = dot(origin_to_center, ray.direction)
@@ -86,8 +82,10 @@ class Sphere(Hittable):
         return hit_record
 
     def get_surface_normal(self, surface_point: Vector):
-        """get normal vector of a surface point (pointing outwards)"""
+        get normal vector of a surface point (pointing outwards)
         return (surface_point - self.center) / self.radius
+
+"""
 
 
 class HittableList(Hittable):
@@ -98,7 +96,7 @@ class HittableList(Hittable):
         self.hittable_objects.append(hittable)
 
     def hit(self, *args, **kwargs) -> HitRecord:
-        """compute the closest hit to origin"""
+        # compute the closest hit to origin
         closest_hit = None
 
         for hittable in self.hittable_objects:
@@ -150,7 +148,7 @@ class Dielectric(Material):
 
     def scatter(self, ray_in, hit_record):
         attenuation = Color(1, 1, 1)
-        if hit_record.hit_from_outside==1:
+        if hit_record.hit_from_outside == 1:
             refraction_ratio = 1/self.index_of_refraction
         else:
             refraction_ratio = self.index_of_refraction
@@ -160,7 +158,7 @@ class Dielectric(Material):
         sin_theta = math.sqrt(1.0-cos_theta**2)
         cannot_refract = refraction_ratio*sin_theta > 1
         reflectance = self.__reflectance(cos_theta, refraction_ratio)
-        if cannot_refract or reflectance > random.random():
+        if cannot_refract or (reflectance > random.random()):
             direction = reflect(unit_direction, hit_record.normal)
         else:
             direction = refract(
