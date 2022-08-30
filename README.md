@@ -2,6 +2,8 @@
 
 ![Preview image](https://github.com/schulze-paul/ray-tracer/blob/main/images/image_800_steady.png?raw=true)
 
+Inspired by Peter Shirley's book series about Ray Tracing.
+
 ## Captures a variety of physical optical effects:
 
 - Fresnel reflection
