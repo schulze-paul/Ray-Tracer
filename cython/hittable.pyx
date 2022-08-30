@@ -94,107 +94,64 @@ cdef class Sphere(Hittable):
         return (surface_point - self.center) / self.radius
 
 
-cdef class HittableList(Hittable):
+cdef class MovableSphere(Hittable):
+    # defines a sphere as a hittable
+    cdef public Vector center0 
+    cdef public Vector center1
+    cdef public double time0
+    cdef public double time1
+    cdef public double radius
+    cdef public Material material
 
-    cdef list hittable_objects
+    def __init__(self, Vector center0, Vector center1, double time0, double time1, double radius, Material material):
+        self.center0 = center0
+        self.center1 = center1
+        self.time0 = time0
+        self.time1 = time1
+        self.radius = radius
+        self.material = material
 
-    def __init__(self, Hittable hittable):
-        self.hittable_objects = []
-        self.hittable_objects.apppend(hittable)
+    cpdef Vector center(self, double time):
+        cdef double time_fraction = (time-self.time0)/(self.time1-self.time0)
+        return self.center0 + (self.center1 - self.center0) * time_fraction
 
-    def add(self, Hittable hittable) -> None:
-        self.hittable_objects.append(hittable)
+    @cython.cdivision(True)
+    cpdef int is_hit(self, Ray ray, double t_min, double t_max, double[:] t_hit):
+        # computes hit event with a ray
 
-    def hit(self, Ray ray, double t_min, double t_max) -> HitRecord:
-        """compute the closest hit to origin"""
-        cdef HitRecord closest_hit = None
-        cdef HitRecord hit_record
+        cdef Vector origin_to_center = ray.origin - self.center(ray.time)
+        cdef double a = dot(ray.direction, ray.direction)
+        cdef double half_b = dot(origin_to_center, ray.direction)
+        cdef double c = dot(origin_to_center, origin_to_center) - self.radius**2
+        cdef double discriminant = half_b*half_b - a*c
 
-        for i in range(len(self.hittable_objects)):
-            hittable = self.hittable_objects[i]
-            hit_record = hittable.hit(ray, t_min, t_max)
-            if hit_record is not None:
-                if closest_hit is not None:
-                    closest_hit = hit_record
-                elif closest_hit.t > hit_record.t:
-                    closest_hit = hit_record
-        return closest_hit
+        if discriminant < 0:
+            # no hit
+            return 0
 
+        # hit registered, is hit in range?
+        cdef double sqrt_discriminant = sqrt(discriminant)
+        t_hit[0] = -(half_b + sqrt_discriminant) / a
 
+        if t_hit[0] < t_min or t_hit[0] > t_max:
+            -(half_b - sqrt_discriminant) / a
+            if t_hit[0] < t_min or t_hit[0] > t_max:
+                # outside of range
+                return 0
 
+        
+        return 1
 
+    cpdef HitRecord get_hit_record(self, Ray ray, double t_hit):
+        # collect data about hit:
+        cdef Vector hit_point = ray(t_hit)
+        cdef Vector surface_normal = self.get_surface_normal(hit_point, ray.time)
 
+        cdef HitRecord hit_record = HitRecord(hit_point, t_hit, self.material)
+        hit_record.set_face_normal(ray, surface_normal)
 
-cdef class Lambertian(Material):
+        return hit_record
 
-    cdef Color albedo
-
-    def __init__(self, Color albedo):
-        self.albedo = albedo
-
-    def scatter(self, ray_in, hit_record):
-        scatter_direction = hit_record.normal + random_unit_vector()
-        if scatter_direction.near_zero():
-            scatter_direction = hit_record.normal
-
-        scattered = Ray(hit_record.hit_point, scatter_direction)
-
-        return True, scattered, self.albedo
-
-
-cdef class Metal(Material):
-    
-    cdef Color albedo
-    cdef double fuzz
-
-    def __init__(self, albedo: Color, fuzz: float):
-        self.albedo = albedo
-        if fuzz < 1:
-            self.fuzz = fuzz
-        else:
-            self.fuzz = 1
-
-    def scatter(self, ray_in, hit_record):
-        vector_in = unit_vector(ray_in.direction)
-        reflected = reflect(vector_in, hit_record.normal)
-        scattered = Ray(hit_record.hit_point, reflected +
-                        random_in_unit_sphere()*self.fuzz)
-        is_scattered = dot(scattered.direction, hit_record.normal) > 0
-
-        return is_scattered, scattered, self.albedo
-
-
-cdef class Dielectric(Material):
-
-    cdef double index_of_refraction
-
-    def __init__(self, index_of_refraction):
-        self.index_of_refraction = index_of_refraction
-
-    def scatter(self, ray_in, hit_record):
-        attenuation = Color(1, 1, 1)
-        if hit_record.hit_from_outside == 1:
-            refraction_ratio = 1/self.index_of_refraction
-        else:
-            refraction_ratio = self.index_of_refraction
-
-        unit_direction = unit_vector(ray_in.direction)
-        cos_theta = fmin(dot(unit_direction*-1, hit_record.normal), 1.0)
-        sin_theta = sqrt(1.0-cos_theta**2)
-        cannot_refract = refraction_ratio*sin_theta > 1
-        reflectance = self.__reflectance(cos_theta, refraction_ratio)
-        if cannot_refract or (reflectance > random.random()):
-            direction = reflect(unit_direction, hit_record.normal)
-        else:
-            direction = refract(
-                unit_direction, hit_record.normal, refraction_ratio)
-
-        scattered = Ray(hit_record.hit_point, direction)
-
-        return True, scattered, attenuation
-
-    def __reflectance(self, cos_theta: float, refraction_ratio: float) -> float:
-        # Schlick's approximation
-        r0 = (1-refraction_ratio) / (1+refraction_ratio)
-        r0 = r0**2
-        return r0 * (1-r0)*(1-cos_theta)**5
+    cpdef Vector get_surface_normal(self, surface_point: Vector, double time):
+        # get normal vector of a surface point (pointing outwards)
+        return (surface_point - self.center(time)) / self.radius
