@@ -5,10 +5,10 @@ from tqdm import tqdm
 import random
 
 # local imports
-from hittables import Hittable, HittableList, Sphere, MovableSphere
-from camera import Camera
+from python.hittables import Hittable, HittableList, Sphere, MovableSphere
+from python.camera import Camera
 from hittable import Color, Ray, Vector, random_in_unit_sphere, outer
-from hittables import Lambertian, Dielectric, Metal
+from python.hittables import Lambertian, Dielectric, Metal
 
 
 def write_color(out_file, pixel_color: Color) -> None:
@@ -50,7 +50,7 @@ def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
 
 
 def random_scene() -> HittableList:
-    ground_material = Lambertian(Color(1, 1, 1))
+    ground_material = Lambertian(Color(0.5, 0.5, 0.5))
     world = HittableList(Sphere(Vector(0, -1000, 0), 1000, ground_material))
 
     """
@@ -131,9 +131,9 @@ def main():
 
     # Image
     aspect_ratio = 16/9
-    image_width = 800
+    image_width = 400
     image_height = int(image_width/aspect_ratio)
-    number_samples = 200
+    number_samples = 50
     max_depth = 16
 
     world = random_scene()
@@ -151,7 +151,7 @@ def main():
                     aspect_ratio, aperture, distance_to_focus)
 
     # Render
-    with open("image_800_motion_blur.ppm", "w+") as image_file:
+    with open("image_test_title.ppm", "w+") as image_file:
         header = f"P3\n{image_width} {image_height}\n255\n"
         image_file.write(header)
 

@@ -5,10 +5,10 @@ from tqdm import tqdm
 import random
 
 # local imports
-from hittables import Hittable, HittableList, Material, Sphere
-from camera import Camera
+from python.hittables import Hittable, HittableList, Material, Sphere
+from python.camera import Camera
 from hittable import Color, Ray, Vector, random_in_unit_sphere, outer
-from hittables import Lambertian, Dielectric, Metal
+from python.hittables import Lambertian, Dielectric, Metal
 
 
 def write_color(out_file, pixel_color: Color) -> None:
