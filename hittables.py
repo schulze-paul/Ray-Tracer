@@ -126,7 +126,7 @@ class Lambertian(Material):
         if scatter_direction.near_zero():
             scatter_direction = hit_record.normal
 
-        scattered = Ray(hit_record.hit_point, scatter_direction)
+        scattered = Ray(hit_record.hit_point, scatter_direction, ray_in.time)
 
         return True, scattered, self.albedo
 
@@ -143,7 +143,7 @@ class Metal(Material):
         vector_in = unit_vector(ray_in.direction)
         reflected = reflect(vector_in, hit_record.normal)
         scattered = Ray(hit_record.hit_point, reflected +
-                        random_in_unit_sphere()*self.fuzz)
+                        random_in_unit_sphere()*self.fuzz, ray_in.time)
         is_scattered = dot(scattered.direction, hit_record.normal) > 0
 
         return is_scattered, scattered, self.albedo
@@ -171,7 +171,7 @@ class Dielectric(Material):
             direction = refract(
                 unit_direction, hit_record.normal, refraction_ratio)
 
-        scattered = Ray(hit_record.hit_point, direction)
+        scattered = Ray(hit_record.hit_point, direction, ray_in.time)
 
         return True, scattered, attenuation
 
