@@ -1,14 +1,15 @@
 from cmath import inf
 from math import sqrt
 from tqdm import tqdm
-
+import numpy as np
 import random
+import matplotlib.pyplot as plt
 
 # local imports
 from python.hittables import Hittable, HittableList, Sphere, MovableSphere
 from python.camera import Camera
 from hittable import Color, Ray, Vector, random_in_unit_sphere, outer
-from python.hittables import Lambertian, Dielectric, Metal
+from python.hittables import Lambertian, Dielectric, Metal, ReflectiveOpaque
 
 
 def write_color(out_file, pixel_color: Color) -> None:
@@ -46,7 +47,10 @@ def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
     unit_direction = ray.direction / ray.direction.length()
     t = 0.5*unit_direction.y() + 0.5
 
-    return Color.from_vector(Vector(1, 1, 1) * (1 - t) + Vector(0.5, 0.7, 1.0)*0.5 * t)
+    color = Color.from_vector(
+        Vector(1, 1, 1) * (1 - t) + Vector(0.5, 0.7, 1.0)*0.5 * t)
+
+    return color
 
 
 def random_scene() -> HittableList:
@@ -84,11 +88,11 @@ def random_scene() -> HittableList:
     material1 = Lambertian(Color(1, 1, 1))
     world.add(Sphere(Vector(-3, 1, 0), 1.0, material1))
 
-    material2 = Metal(Color(1, 1, 1), 0.0)
+    material2 = ReflectiveOpaque(Color(1, 1, 1), 1.5)
     world.add(Sphere(Vector(0, 1, 0), 1.0, material2))
 
-    material2 = Metal(Color(1, 1, 1), 0.4)
-    world.add(Sphere(Vector(3, 1, 0), 1.0, material2))
+    material3 = Metal(Color(1, 1, 1), 0.0)
+    world.add(Sphere(Vector(3, 1, 0), 1, material3))
 
     # small  colored spheres
 
@@ -150,21 +154,22 @@ def main():
     camera = Camera(look_from, look_at, view_up, vertical_field_of_view,
                     aspect_ratio, aperture, distance_to_focus)
 
+    image = np.zeros((image_width, image_height, 3))
+
     # Render
-    with open("image_test_title.ppm", "w+") as image_file:
-        header = f"P3\n{image_width} {image_height}\n255\n"
-        image_file.write(header)
 
-        for j in tqdm(reversed(range(image_height)), total=image_height):
+    for sample in tqdm(range(number_samples)):
+        for j in reversed(range(image_height)):
             for i in range(image_width):
-                color = Color(0, 0, 0)
-                for _ in range(number_samples):
-                    u, v = get_x_y(i, j)
-                    ray = camera.get_ray(u, v)
-                    color = color + \
-                        ray_color(ray, world, max_depth)/number_samples
+                u, v = get_x_y(i, j)
+                ray = camera.get_ray(u, v)
+                color = ray_color(ray, world, max_depth)
+                image[i, j] = image[i, j]*sample / \
+                    (sample+1) + np.array([color.x(),
+                                           color.y(), color.z()])/(sample+1)
 
-                write_color(image_file, color)
+        plt.imshow(np.rot90(image))
+        plt.savefig("progress.png")
 
 
 if __name__ == '__main__':
