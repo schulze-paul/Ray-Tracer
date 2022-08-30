@@ -1,9 +1,6 @@
 #!/bin/bash
-# Paul Schulze
 
-# This script installs the required dependencies for growth_model
-# and then builds the energy and gradient computation binary with cython
-
+# This script builds the cython binary and then runs the ray tracer
 
 python3 cython/setup.py build_ext --inplace
 
