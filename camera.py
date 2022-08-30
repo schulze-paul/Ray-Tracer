@@ -1,4 +1,5 @@
 import math
+import random
 
 from hittable import Ray, Vector, unit_vector, random_in_unit_disk, cross
 
@@ -19,7 +20,7 @@ class Camera():
     lower_left_corner = origin - horizontal/2 - \
         vertical/2 - Vector(0, 0, focal_length)
 
-    def __init__(self, look_from: Vector, look_at: Vector, view_up: Vector, vertical_field_of_view: float, aspect_ratio: float, aperture: float, focus_distance):
+    def __init__(self, look_from: Vector, look_at: Vector, view_up: Vector, vertical_field_of_view: float, aspect_ratio: float, aperture: float, focus_distance, time0: float = 0, time1: float = 0):
         self.theta = degrees_to_radians(vertical_field_of_view)
         h = math.tan(self.theta/2)
         self.viewport_height = 2*h
@@ -37,6 +38,8 @@ class Camera():
             2 - self.vertical/2 - self.w * focus_distance
 
         self.lens_radius = aperture/2
+        self.time0 = time0
+        self.time1 = time1
 
     def get_ray(self, x_pixel: float, y_pixel: float) -> Ray:
         random_origin = random_in_unit_disk() * self.lens_radius
@@ -45,4 +48,8 @@ class Camera():
                    self.lower_left_corner +
                    self.horizontal * x_pixel +
                    self.vertical * y_pixel -
-                   self.origin - offset)
+                   self.origin - offset,
+                   self.random_time())
+
+    def random_time(self):
+        return self.time0 + (self.time1 + self.time0)*random.random()
