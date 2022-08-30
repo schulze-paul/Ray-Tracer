@@ -6,7 +6,7 @@ cdef class Ray:
     cdef public Vector direction
     cdef public double time
 
-    def __init__(self, Vector origin, Vector direction double time):
+    def __init__(self, Vector origin, Vector direction, double time):
         self.origin = origin
         self.direction = direction
         self.time = time
