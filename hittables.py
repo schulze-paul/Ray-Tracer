@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from abc import ABC, abstractmethod
 import math
 import random
 import numpy as np
@@ -8,7 +7,7 @@ import numpy as np
 from hittable import Ray
 from hittable import Vector, Color, dot, unit_vector, random_unit_vector, reflect, refract, random_in_unit_sphere
 # , Lambertian, Dielectric, Metal
-from hittable import HitRecord, Hittable, Material, Sphere  # , HittableList
+from hittable import HitRecord, Hittable, Material, Sphere, MovableSphere  # , HittableList
 
 """
 class Material(ABC):
