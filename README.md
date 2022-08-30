@@ -1,4 +1,6 @@
-# Ray Tracing Simulation Model and Renderer
+# Ray Tracing Simulation and Renderer
+
+![Preview image](https://github.com/schulze-paul/ray-tracer/blob/main/images/image_800_steady.png?raw=true)
 
 ## Captures a variety of physical optical effects:
 
