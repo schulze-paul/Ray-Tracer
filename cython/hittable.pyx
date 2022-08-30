@@ -20,7 +20,7 @@ cdef class HitRecord:
         self.t = t
         self.material = material
 
-    def set_face_normal(self, Ray ray, Vector normal) -> None:
+    cpdef void set_face_normal(self, Ray ray, Vector normal):
         """set normal and save if hit from inside or outside"""
         if dot(ray.direction, normal) < 0.0:
             self.hit_from_outside = 1
@@ -89,7 +89,7 @@ cdef class Sphere(Hittable):
 
         return hit_record
 
-    def get_surface_normal(self, surface_point: Vector):
+    cpdef Vector get_surface_normal(self, surface_point: Vector):
         # get normal vector of a surface point (pointing outwards)
         return (surface_point - self.center) / self.radius
 

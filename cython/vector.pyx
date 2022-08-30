@@ -86,7 +86,7 @@ cdef class Vector:
         else:
             return False
             
-    def near_zero(self):
+    cpdef near_zero(self):
         cdef double eps = 1e-8
         
         return fabs(self.x()) < eps and fabs(self.y()) < eps and fabs(self.z()) < eps 
@@ -110,13 +110,13 @@ cdef class Color(Vector):
         self.y_val = g
         self.z_val = b
 
-    def r(self):
+    cpdef r(self):
         return self.__cut(self.x())
 
-    def g(self):
+    cpdef g(self):
         return self.__cut(self.y())
 
-    def b(self):
+    cpdef b(self):
         return self.__cut(self.z())
 
     cdef double __cut(self, double val):
@@ -130,7 +130,7 @@ cdef class Color(Vector):
             return val
 
     @staticmethod
-    def from_vector(vec: Vector):
+    def from_vector(vec: Vector) -> Color:
         return Color(vec.x(), vec.y(), vec.z())
 
 
