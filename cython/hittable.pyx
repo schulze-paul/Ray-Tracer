@@ -1,4 +1,5 @@
 include "ray.pyx"
+include "bounding_box.pyx"
 
 import cython
 
@@ -7,6 +8,8 @@ cdef class Material:
     def scatter(ray_in, hit_record):
         pass
 
+    cpdef Color emitted(self, Vector point):
+        return Color(0,0,0)
 
 cdef class HitRecord:
     cdef public Vector hit_point
@@ -37,7 +40,11 @@ cdef class HitRecord:
 cdef class Hittable:
 
     cpdef int is_hit(self, Ray ray, double t_min, double t_max, double[:] t_hit):
-        pass
+        return False
+
+    cpdef int bounding_box(self, double time0, double time1,
+     AxisAlignedBoundingBox output_box):
+        return False
 
 
 
@@ -92,6 +99,13 @@ cdef class Sphere(Hittable):
     cpdef Vector get_surface_normal(self, surface_point: Vector):
         # get normal vector of a surface point (pointing outwards)
         return (surface_point - self.center) / self.radius
+
+    cpdef int bounding_box(self, double time0, double time1, AxisAlignedBoundingBox output_box):
+        output_box = AxisAlignedBoundingBox(
+            self.center - Vector(self.radius, self.radius, self.radius),
+            self.center + Vector(self.radius, self.radius, self.radius)
+        )
+        return True
 
 
 cdef class MovableSphere(Hittable):
@@ -155,3 +169,16 @@ cdef class MovableSphere(Hittable):
     cpdef Vector get_surface_normal(self, surface_point: Vector, double time):
         # get normal vector of a surface point (pointing outwards)
         return (surface_point - self.center(time)) / self.radius
+
+    cpdef int bounding_box(self, double time0, double time1, AxisAlignedBoundingBox output_box):
+        cdef AxisAlignedBoundingBox box_0 = AxisAlignedBoundingBox(
+            self.center(self.time0) - Vector(self.radius, self.radius, self.radius),
+            self.center(self.time0) + Vector(self.radius, self.radius, self.radius)
+        )
+        cdef AxisAlignedBoundingBox box_1 = AxisAlignedBoundingBox(
+            self.center(self.time1) - Vector(self.radius, self.radius, self.radius),
+            self.center(self.time1) + Vector(self.radius, self.radius, self.radius)
+        )
+        output_box = surrounding_box(box_0, box_1)
+
+        return True

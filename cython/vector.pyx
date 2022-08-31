@@ -85,7 +85,15 @@ cdef class Vector:
             return True
         else:
             return False
-            
+    
+    def __getitem__(self, index: int):
+        if index == 0:
+            return self.x()
+        elif index == 1:
+            return self.y()
+        elif index == 2:
+            return self.z()
+
     cpdef near_zero(self):
         cdef double eps = 1e-8
         
