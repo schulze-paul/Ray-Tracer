@@ -213,3 +213,114 @@ class ReflectiveOpaque(Material):
         r0 = (1-refraction_ratio) / (1+refraction_ratio)
         r0 = r0**2
         return r0 * (1-r0)*(1-cos_theta)**5
+
+
+class DiffuseLight(Material):
+
+    def __init__(self, color: Color = Color(1, 1, 1)) -> None:
+        self.color = color
+
+    def scatter(self, ray_in, hit_record):
+        return False, None, None
+
+    def emitted(self):
+        return self.color
+
+
+@dataclass
+class RectangleXY(Hittable):
+    x0: float
+    x1: float
+    y0: float
+    y1: float
+    k: float
+    material: Material
+
+    def is_hit(self, ray, t_min, t_max, t_hit):
+        t = (self.k - ray.origin.z()) / ray.direction.z()
+        if t < t_min or t > t_max:
+            return False
+
+        x = ray.origin.x() + ray.direction.x() * t
+        y = ray.origin.y() + ray.direction.y() * t
+
+        if (x < self.x0 or x > self.x1 or y < self.y0 or y > self.y1):
+            return False
+
+        t_hit[0] = t
+        return True
+
+    def get_hit_record(self, ray, t_hit):
+        hit_point = ray(t_hit)
+        surface_normal = Vector(0, 0, 1)
+
+        hit_record = HitRecord(hit_point, t_hit, self.material)
+        hit_record.set_face_normal(ray, surface_normal)
+
+        return hit_record
+
+
+@dataclass
+class RectangleYZ(Hittable):
+    y0: float
+    y1: float
+    z0: float
+    z1: float
+    k: float
+    material: Material
+
+    def is_hit(self, ray, t_min, t_max, t_hit):
+        t = (self.k - ray.origin.x()) / ray.direction.x()
+        if t < t_min or t > t_max:
+            return False
+
+        y = ray.origin.y() + ray.direction.y() * t
+        z = ray.origin.z() + ray.direction.z() * t
+
+        if (y < self.y0 or y > self.y1 or z < self.z0 or z > self.z1):
+            return False
+
+        t_hit[0] = t
+        return True
+
+    def get_hit_record(self, ray, t_hit):
+        hit_point = ray(t_hit)
+        surface_normal = Vector(0, 0, 1)
+
+        hit_record = HitRecord(hit_point, t_hit, self.material)
+        hit_record.set_face_normal(ray, surface_normal)
+
+        return hit_record
+
+
+@dataclass
+class RectangleZX(Hittable):
+    z0: float
+    z1: float
+    x0: float
+    x1: float
+    k: float
+    material: Material
+
+    def is_hit(self, ray, t_min, t_max, t_hit):
+        t = (self.k - ray.origin.y()) / ray.direction.y()
+        if t < t_min or t > t_max:
+            return False
+
+        z = ray.origin.z() + ray.direction.z() * t
+        x = ray.origin.x() + ray.direction.x() * t
+
+        if (x < self.x0 or x > self.x1 or z < self.z0 or z > self.z1):
+            return False
+
+        t_hit[0] = t
+        return True
+
+    def get_hit_record(self, ray, t_hit):
+        hit_point = ray(t_hit)
+        surface_normal = Vector(0, 0, 1)
+
+        hit_record = HitRecord(hit_point, t_hit, self.material)
+        hit_record.set_face_normal(ray, surface_normal)
+
+        return hit_record
