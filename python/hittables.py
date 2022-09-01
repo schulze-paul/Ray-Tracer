@@ -153,7 +153,7 @@ class Dielectric(Material):
 
     def scatter(self, ray_in, hit_record):
         attenuation = Color(1, 1, 1)
-        if hit_record.hit_from_outside == 1:
+        if hit_record.hit_from_outside:
             refraction_ratio = 1/self.index_of_refraction
         else:
             refraction_ratio = self.index_of_refraction
@@ -176,8 +176,8 @@ class Dielectric(Material):
     def __reflectance(self, cos_theta: float, refraction_ratio: float) -> float:
         # Schlick's approximation
         r0 = (1-refraction_ratio) / (1+refraction_ratio)
-        r0 = r0**2
-        return r0 * (1-r0)*(1-cos_theta)**5
+        r0 = r0*r0
+        return r0 + (1-r0)*(1-cos_theta)**5
 
 
 @dataclass
@@ -212,7 +212,7 @@ class ReflectiveOpaque(Material):
         # Schlick's approximation
         r0 = (1-refraction_ratio) / (1+refraction_ratio)
         r0 = r0**2
-        return r0 * (1-r0)*(1-cos_theta)**5
+        return r0 + (1-r0)*(1-cos_theta)**5
 
 
 class DiffuseLight(Material):
