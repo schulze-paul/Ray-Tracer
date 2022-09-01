@@ -1,7 +1,7 @@
 import math
 import random
 
-from hittable import Ray, Vector, unit_vector, random_in_unit_disk, cross
+from sphere import Ray, Vector, unit_vector, random_in_unit_disk, cross
 
 
 def degrees_to_radians(degrees: float):

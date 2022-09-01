@@ -4,9 +4,9 @@ import random
 import numpy as np
 
 # local imports
-from hittable import Ray, Vector, Color, dot, unit_vector, random_unit_vector, reflect, refract, random_in_unit_sphere
+from sphere import Ray, Vector, Color, dot, unit_vector, random_unit_vector, reflect, refract, random_in_unit_sphere
 # , Lambertian, Dielectric, Metal
-from hittable import HitRecord, Hittable, Material, Sphere, MovableSphere  # , HittableList
+from sphere import HitRecord, Hittable, Material, Sphere, MovableSphere  # , HittableList
 
 """
 class Material(ABC):
@@ -213,3 +213,15 @@ class ReflectiveOpaque(Material):
         r0 = (1-refraction_ratio) / (1+refraction_ratio)
         r0 = r0**2
         return r0 * (1-r0)*(1-cos_theta)**5
+
+
+class DiffuseLight(Material):
+
+    def __init__(self, color: Color = Color(1, 1, 1)) -> None:
+        self.color = color
+
+    def scatter(self, ray_in, hit_record):
+        return False, None, None
+
+    def emitted(self, point):
+        return self.color

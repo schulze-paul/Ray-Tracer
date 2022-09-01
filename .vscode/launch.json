@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "Main File",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "justMyCode": true
+        },
+        {
+            "name": "Dynamic Python: File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "justMyCode": true
+        }
+    ]
+}

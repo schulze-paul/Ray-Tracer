@@ -8,7 +8,7 @@ import Cython.Compiler.Options
 Cython.Compiler.Options.annotate = True
 
 
-setup(name='Computation', ext_modules=cythonize(["cython/hittable.pyx"],
+setup(name='Computation', ext_modules=cythonize(["cython/sphere.pyx"],
                                                 annotate=True,
                                                 compiler_directives={'language_level': "3"}),
       include_dirs=[np.get_include()],
