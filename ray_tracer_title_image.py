@@ -6,10 +6,10 @@ import random
 import matplotlib.pyplot as plt
 
 # local imports
-from python.hittables import Hittable, HittableList, Sphere, MovableSphere
+from python.hittables import Hittable, HittableList, RectangleXY, RectangleYZ, Sphere, MovableSphere
 from python.camera import Camera
 from hittable import Color, Ray, Vector, random_in_unit_sphere, outer
-from python.hittables import Lambertian, Dielectric, Metal, ReflectiveOpaque
+from python.hittables import Lambertian, Dielectric, Metal, ReflectiveOpaque, DiffuseLight
 
 
 def write_color(out_file, pixel_color: Color) -> None:
@@ -36,25 +36,28 @@ def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
     # check and where world is hit
     hit_tolerance = 1e-3
     hit_record = world.hit(ray, hit_tolerance, inf)
-    if hit_record is not None:
-        is_scattered, scattered, attenuation = hit_record.material.scatter(
-            ray, hit_record)
-        if is_scattered:
-            return outer(ray_color(scattered, world, depth-1), attenuation)
-        else:
-            return Color(0, 0, 0)
 
-    unit_direction = ray.direction / ray.direction.length()
-    t = 0.5*unit_direction.y() + 0.5
+    if hit_record is None:
+        unit_direction = ray.direction / ray.direction.length()
+        t = 0.5*unit_direction.y() + 0.5
 
-    color = Color.from_vector(
-        Vector(1, 1, 1) * (1 - t) + Vector(0.5, 0.7, 1.0)*0.5 * t)
+        background = Color.from_vector(
+            Vector(1, 1, 1) * (1 - t) + Vector(0.5, 0.7, 1.0)*0.5 * t)
 
-    return color
+        return background
+
+    emitted = hit_record.material.emitted()
+
+    is_scattered, scattered, attenuation = hit_record.material.scatter(
+        ray, hit_record)
+    if not is_scattered:
+        return emitted
+    else:
+        return emitted + outer(ray_color(scattered, world, depth-1), attenuation)
 
 
 def random_scene() -> HittableList:
-    ground_material = Lambertian(Color(0.5, 0.5, 0.5))
+    ground_material = Lambertian(Color(0.8, 0.8, 0.8))
     world = HittableList(Sphere(Vector(0, -1000, 0), 1000, ground_material))
 
     """
@@ -95,32 +98,43 @@ def random_scene() -> HittableList:
     world.add(Sphere(Vector(3, 1, 0), 1, material3))
 
     # small  colored spheres
+    small_radius = 0.3
 
     material_red = Lambertian(Color(1, 0, 0))
     world.add(MovableSphere(Vector(-3, 0.5, 2),
                             Vector(-3, 0.6, 2),
                             0, 1,
-                            0.5, material_red))
+                            small_radius, material_red))
 
     material_blue = Lambertian(Color(0, 0, 1))
     world.add(MovableSphere(Vector(3, 0.5, 2),
                             Vector(3, 0.75, 2),
                             0, 1,
-                            0.5, material_blue))
+                            small_radius, material_blue))
 
     material_green = Lambertian(Color(0, 1, 0))
     world.add(MovableSphere(Vector(0, 0.5, 2),
                             Vector(0, 1, 2),
                             0, 1,
-                            0.5, material_green))
+                            small_radius, material_green))
 
     # small glass balls
 
     material_glass = Dielectric(1.5)
-    world.add(Sphere(Vector(-1.5, 0.5, 2), 0.5, material_glass))
+    world.add(Sphere(Vector(-1.5, 0.5, 2), small_radius, material_glass))
 
     material_diamond = Dielectric(2.4)
-    world.add(Sphere(Vector(1.5, 0.5, 2), 0.5, material_diamond))
+    world.add(Sphere(Vector(1.5, 0.5, 2), small_radius, material_diamond))
+
+    material_light = DiffuseLight(Vector(3, 3, 3))
+    world.add(Sphere(Vector(-8, 8, 0), 2, material_light))
+
+    # add walls
+    material_wall = Lambertian(Color(0.8, 0.8, 0.8))
+    world.add(RectangleXY(-10, 10, 0, 6, -10, material_wall))
+
+    material_wall = Lambertian(Color(0.8, 0.8, 0.8))
+    world.add(RectangleYZ(0, 6, -10, 10, 10, material_wall))
 
     return world
 
@@ -137,13 +151,13 @@ def main():
     aspect_ratio = 16/9
     image_width = 400
     image_height = int(image_width/aspect_ratio)
-    number_samples = 50
+    number_samples = 1000
     max_depth = 16
 
     world = random_scene()
 
     # set up camera
-    look_from = Vector(0, 2, 13)
+    look_from = Vector(0, 2, 15)
     look_at = Vector(0, 1, 0)
     view_up = Vector(0, 1, 0)
     aspect_ratio = 16/9
@@ -169,6 +183,8 @@ def main():
                                            color.y(), color.z()])/(sample+1)
 
         plt.imshow(np.rot90(image))
+        plt.xticks([])
+        plt.yticks([])
         plt.savefig("progress.png")
 
 

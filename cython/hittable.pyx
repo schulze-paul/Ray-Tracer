@@ -4,8 +4,11 @@ import cython
 
 cdef class Material:
 
-    def scatter(ray_in, hit_record):
+    def scatter(self, ray_in, hit_record):
         pass
+
+    cpdef emitted(self):
+        return Color(0,0,0) 
 
 
 cdef class HitRecord:
