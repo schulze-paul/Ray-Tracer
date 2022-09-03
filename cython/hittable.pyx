@@ -39,8 +39,8 @@ cdef class HitRecord:
 
 cdef class Hittable:
 
-    cpdef int is_hit(self, Ray ray, double t_min, double t_max, double[:] t_hit):
-        pass
+    cpdef HitRecord hit(self, Ray ray, double t_min, double t_max):
+        return None
 
 
 
@@ -56,7 +56,7 @@ cdef class Sphere(Hittable):
         self.material = material
 
     @cython.cdivision(True)
-    cpdef int is_hit(self, Ray ray, double t_min, double t_max, double[:] t_hit):
+    cpdef HitRecord hit(self, Ray ray, double t_min, double t_max):
         # computes hit event with a ray
 
         cdef Vector origin_to_center = ray.origin - self.center
@@ -67,22 +67,18 @@ cdef class Sphere(Hittable):
 
         if discriminant < 0:
             # no hit
-            return 0
+            return None
 
         # hit registered, is hit in range?
         cdef double sqrt_discriminant = sqrt(discriminant)
-        t_hit[0] = -(half_b + sqrt_discriminant) / a
+        cdef double t_hit = -(half_b + sqrt_discriminant) / a
 
-        if t_hit[0] < t_min or t_hit[0] > t_max:
+        if t_hit < t_min or t_hit > t_max:
             -(half_b - sqrt_discriminant) / a
-            if t_hit[0] < t_min or t_hit[0] > t_max:
+            if t_hit < t_min or t_hit > t_max:
                 # outside of range
-                return 0
+                return None
 
-        
-        return 1
-
-    cpdef HitRecord get_hit_record(self, Ray ray, double t_hit):
         # collect data about hit:
         cdef Vector hit_point = ray(t_hit)
         cdef Vector surface_normal = self.get_surface_normal(hit_point)
@@ -119,7 +115,7 @@ cdef class MovableSphere(Hittable):
         return self.center0 + (self.center1 - self.center0) * time_fraction
 
     @cython.cdivision(True)
-    cpdef int is_hit(self, Ray ray, double t_min, double t_max, double[:] t_hit):
+    cpdef HitRecord hit(self, Ray ray, double t_min, double t_max):
         # computes hit event with a ray
 
         cdef Vector origin_to_center = ray.origin - self.center(ray.time)
@@ -130,22 +126,18 @@ cdef class MovableSphere(Hittable):
 
         if discriminant < 0:
             # no hit
-            return 0
+            return None
 
         # hit registered, is hit in range?
         cdef double sqrt_discriminant = sqrt(discriminant)
-        t_hit[0] = -(half_b + sqrt_discriminant) / a
+        cdef double t_hit = -(half_b + sqrt_discriminant) / a
 
-        if t_hit[0] < t_min or t_hit[0] > t_max:
+        if t_hit < t_min or t_hit > t_max:
             -(half_b - sqrt_discriminant) / a
-            if t_hit[0] < t_min or t_hit[0] > t_max:
+            if t_hit < t_min or t_hit > t_max:
                 # outside of range
-                return 0
+                return None
 
-        
-        return 1
-
-    cpdef HitRecord get_hit_record(self, Ray ray, double t_hit):
         # collect data about hit:
         cdef Vector hit_point = ray(t_hit)
         cdef Vector surface_normal = self.get_surface_normal(hit_point, ray.time)

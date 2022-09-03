@@ -96,22 +96,18 @@ class HittableList(Hittable):
 
     def hit(self, ray, t_min, t_max) -> HitRecord:
         # compute the closest hit to origin
-        closest_t_hit = None
-        closest_index = None
-        t_hit = np.empty(1)
-
-        for hittable_index, hittable in enumerate(self.hittable_objects):
-            if hittable.is_hit(ray, t_min, t_max, t_hit):
-                if closest_t_hit is None:
-                    closest_t_hit = t_hit[0]
-                    closest_index = hittable_index
-                elif closest_t_hit > t_hit[0]:
-                    closest_t_hit = t_hit[0]
-                    closest_index = hittable_index
-        if closest_index is None:
-            return None
-        else:
-            return self.hittable_objects[closest_index].get_hit_record(ray, closest_t_hit)
+        closest_hit_record = None
+        
+        for hittable in self.hittable_objects:
+            hit_record = hittable.hit(ray, t_min, t_max)
+            if hit_record is not None:
+                
+                if closest_hit_record is None:
+                    closest_hit_record = hit_record
+                elif closest_hit_record.t > hit_record.t:
+                    closest_hit_record = hit_record
+        
+        return closest_hit_record
 
 
 @dataclass
@@ -236,21 +232,18 @@ class RectangleXY(Hittable):
     k: float
     material: Material
 
-    def is_hit(self, ray, t_min, t_max, t_hit):
-        t = (self.k - ray.origin.z()) / ray.direction.z()
-        if t < t_min or t > t_max:
-            return False
+    def hit(self, ray, t_min, t_max) -> HitRecord:
+        t_hit = (self.k - ray.origin.z()) / ray.direction.z()
+        if t_hit < t_min or t_hit > t_max:
+            return None
 
-        x = ray.origin.x() + ray.direction.x() * t
-        y = ray.origin.y() + ray.direction.y() * t
+        x = ray.origin.x() + ray.direction.x() * t_hit
+        y = ray.origin.y() + ray.direction.y() * t_hit
 
         if (x < self.x0 or x > self.x1 or y < self.y0 or y > self.y1):
-            return False
+            return None
 
-        t_hit[0] = t
-        return True
-
-    def get_hit_record(self, ray, t_hit):
+        # collect hit data
         hit_point = ray(t_hit)
         surface_normal = Vector(0, 0, 1)
 
@@ -269,21 +262,18 @@ class RectangleYZ(Hittable):
     k: float
     material: Material
 
-    def is_hit(self, ray, t_min, t_max, t_hit):
-        t = (self.k - ray.origin.x()) / ray.direction.x()
-        if t < t_min or t > t_max:
-            return False
+    def hit(self, ray, t_min, t_max) -> HitRecord:
+        t_hit = (self.k - ray.origin.x()) / ray.direction.x()
+        if t_hit < t_min or t_hit > t_max:
+            return None
 
-        y = ray.origin.y() + ray.direction.y() * t
-        z = ray.origin.z() + ray.direction.z() * t
+        y = ray.origin.y() + ray.direction.y() * t_hit
+        z = ray.origin.z() + ray.direction.z() * t_hit
 
         if (y < self.y0 or y > self.y1 or z < self.z0 or z > self.z1):
-            return False
+            return None
 
-        t_hit[0] = t
-        return True
-
-    def get_hit_record(self, ray, t_hit):
+        # collect hit data
         hit_point = ray(t_hit)
         surface_normal = Vector(1, 0, 0)
 
@@ -302,21 +292,18 @@ class RectangleZX(Hittable):
     k: float
     material: Material
 
-    def is_hit(self, ray, t_min, t_max, t_hit):
-        t = (self.k - ray.origin.y()) / ray.direction.y()
-        if t < t_min or t > t_max:
-            return False
+    def hit(self, ray, t_min, t_max) -> HitRecord:
+        t_hit = (self.k - ray.origin.y()) / ray.direction.y()
+        if t_hit < t_min or t_hit > t_max:
+            return None
 
-        z = ray.origin.z() + ray.direction.z() * t
-        x = ray.origin.x() + ray.direction.x() * t
+        z = ray.origin.z() + ray.direction.z() * t_hit
+        x = ray.origin.x() + ray.direction.x() * t_hit
 
-        if (x < self.x0 or x > self.x1 or z < self.z0 or z > self.z1):
-            return False
+        if (z < self.z0 or z > self.z1 or x < self.x0 or x > self.x1):
+            return None
 
-        t_hit[0] = t
-        return True
-
-    def get_hit_record(self, ray, t_hit):
+        # collect hit data
         hit_point = ray(t_hit)
         surface_normal = Vector(0, 1, 0)
 
@@ -350,13 +337,6 @@ class Box(Hittable):
         self.sides.add(RectangleZX(
             min_z, max_z, min_x, max_x, min_y, material))
 
-    def is_hit(self, ray, t_min, t_max, t_hit):
-        hit_record = self.sides.hit(ray, t_min, t_max)
-        if hit_record is not None:
-            t_hit[0] = hit_record.t
-            return True
-        else:
-            return False
-
-    def get_hit_record(self, ray, t_hit):
-        return self.sides.hit(ray, 0, math.inf)
+    def hit(self, ray, t_min, t_max) -> HitRecord:
+        return self.sides.hit(ray, t_min, t_max)
+        
