@@ -9,22 +9,13 @@ def degrees_to_radians(degrees: float):
 
 
 class Camera():
-    aspect_ratio = 16/9
-    viewport_height = 2.0
-    viewport_width = viewport_height * aspect_ratio
-    focal_length = 1.0
-
-    origin = Vector(0, 0, 0)
-    horizontal = Vector(viewport_width, 0, 0)
-    vertical = Vector(0, viewport_height, 0)
-    lower_left_corner = origin - horizontal/2 - \
-        vertical/2 - Vector(0, 0, focal_length)
 
     def __init__(self, look_from: Vector, look_at: Vector, view_up: Vector, vertical_field_of_view: float, aspect_ratio: float, aperture: float, focus_distance, time0: float = 0, time1: float = 0):
         self.theta = degrees_to_radians(vertical_field_of_view)
         h = math.tan(self.theta/2)
+        self.aspect_ratio = aspect_ratio
         self.viewport_height = 2*h
-        self.viewport_width = aspect_ratio*self.viewport_height
+        self.viewport_width = self.aspect_ratio*self.viewport_height
 
         # orthonormal basis
         self.w = unit_vector(look_from-look_at)
