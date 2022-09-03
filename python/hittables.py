@@ -285,7 +285,7 @@ class RectangleYZ(Hittable):
 
     def get_hit_record(self, ray, t_hit):
         hit_point = ray(t_hit)
-        surface_normal = Vector(0, 0, 1)
+        surface_normal = Vector(1, 0, 0)
 
         hit_record = HitRecord(hit_point, t_hit, self.material)
         hit_record.set_face_normal(ray, surface_normal)
@@ -318,9 +318,45 @@ class RectangleZX(Hittable):
 
     def get_hit_record(self, ray, t_hit):
         hit_point = ray(t_hit)
-        surface_normal = Vector(0, 0, 1)
+        surface_normal = Vector(0, 1, 0)
 
         hit_record = HitRecord(hit_point, t_hit, self.material)
         hit_record.set_face_normal(ray, surface_normal)
 
         return hit_record
+
+
+class Box(Hittable):
+    def __init__(self, point0: Vector, point1: Vector, material: Material) -> None:
+        min_x, max_x = sorted((point0.x(), point1.x()))
+        min_y, max_y = sorted((point0.y(), point1.y()))
+        min_z, max_z = sorted((point0.z(), point1.z()))
+
+        self.minimum_point = Vector(min_x, min_y, min_z)
+        self.maximum_point = Vector(max_x, max_y, max_z)
+
+        self.sides = HittableList(RectangleXY(
+            min_x, max_x, min_y, max_y, max_z, material))
+        self.sides.add(RectangleXY(
+            min_x, max_x, min_y, max_y, min_z, material))
+
+        self.sides.add(RectangleYZ(
+            min_y, max_y, min_z, max_z, max_x, material))
+        self.sides.add(RectangleYZ(
+            min_y, max_y, min_z, max_z, min_x, material))
+
+        self.sides.add(RectangleZX(
+            min_z, max_z, min_x, max_x, max_y, material))
+        self.sides.add(RectangleZX(
+            min_z, max_z, min_x, max_x, min_y, material))
+
+    def is_hit(self, ray, t_min, t_max, t_hit):
+        hit_record = self.sides.hit(ray, t_min, t_max)
+        if hit_record is not None:
+            t_hit[0] = hit_record.t
+            return True
+        else:
+            return False
+
+    def get_hit_record(self, ray, t_hit):
+        return self.sides.hit(ray, 0, math.inf)

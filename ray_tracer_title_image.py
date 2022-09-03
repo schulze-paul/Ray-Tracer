@@ -1,15 +1,17 @@
+import sys
 from cmath import inf
 from math import sqrt
 from tqdm import tqdm
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+import pickle
 
 # local imports
-from python.hittables import Hittable, HittableList, RectangleXY, RectangleYZ, Sphere, MovableSphere
+from python.hittables import Hittable, HittableList, RectangleXY, RectangleYZ, RectangleZX, Sphere, MovableSphere, Box
 from python.camera import Camera
 from hittable import Color, Ray, Vector, random_in_unit_sphere, outer
-from python.hittables import Lambertian, Dielectric, Metal, ReflectiveOpaque, DiffuseLight
+from python.hittables import Lambertian, Dielectric, Metal, ReflectiveOpaque, DiffuseLight, Material
 
 
 def write_color(out_file, pixel_color: Color) -> None:
@@ -42,7 +44,7 @@ def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
         t = 0.5*unit_direction.y() + 0.5
 
         background = Color.from_vector(
-            Vector(1, 1, 1) * (1 - t) + Vector(0.5, 0.7, 1.0)*0.5 * t)
+            Vector(0.2, 0.2, 0.2) * (1 - t) + Vector(0.3, 0.3, 0.3)*0.5 * t)
 
         return background
 
@@ -57,7 +59,9 @@ def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
 
 
 def random_scene() -> HittableList:
-    ground_material = Lambertian(Color(0.8, 0.8, 0.8))
+    walls_color = Color(1, 1, 1)
+
+    ground_material = Lambertian(walls_color)
     world = HittableList(Sphere(Vector(0, -1000, 0), 1000, ground_material))
 
     """
@@ -87,54 +91,182 @@ def random_scene() -> HittableList:
     """
 
     # big spheres
+    large_radius = 1.2
 
     material1 = Lambertian(Color(1, 1, 1))
-    world.add(Sphere(Vector(-3, 1, 0), 1.0, material1))
+    world.add(Sphere(Vector(-3, large_radius, 0), large_radius, material1))
 
     material2 = ReflectiveOpaque(Color(1, 1, 1), 1.5)
-    world.add(Sphere(Vector(0, 1, 0), 1.0, material2))
+    world.add(Sphere(Vector(0, large_radius, 0), large_radius, material2))
 
     material3 = Metal(Color(1, 1, 1), 0.0)
-    world.add(Sphere(Vector(3, 1, 0), 1, material3))
+    world.add(Sphere(Vector(3, large_radius, 0), large_radius, material3))
 
     # small  colored spheres
-    small_radius = 0.3
+    small_radius = 0.5
 
     material_red = Lambertian(Color(1, 0, 0))
-    world.add(MovableSphere(Vector(-3, 0.5, 2),
-                            Vector(-3, 0.6, 2),
-                            0, 1,
-                            small_radius, material_red))
+    world.add(Sphere(Vector(-3, small_radius, 2),
+                     small_radius, material_red))
 
     material_blue = Lambertian(Color(0, 0, 1))
-    world.add(MovableSphere(Vector(3, 0.5, 2),
-                            Vector(3, 0.75, 2),
-                            0, 1,
-                            small_radius, material_blue))
+    world.add(Sphere(Vector(3, small_radius, 2),
+                     small_radius, material_blue))
 
     material_green = Lambertian(Color(0, 1, 0))
-    world.add(MovableSphere(Vector(0, 0.5, 2),
-                            Vector(0, 1, 2),
-                            0, 1,
-                            small_radius, material_green))
+    world.add(Sphere(Vector(0, small_radius, 2),
+                     small_radius, material_green))
 
     # small glass balls
 
     material_glass = Dielectric(1.5)
-    world.add(Sphere(Vector(-1.5, 0.5, 2), small_radius, material_glass))
+    world.add(Sphere(Vector(-1.5, small_radius, 2),
+              small_radius, material_glass))
 
     material_diamond = Dielectric(2.4)
-    world.add(Sphere(Vector(1.5, 0.5, 2), small_radius, material_diamond))
+    world.add(Sphere(Vector(1.5, small_radius, 2),
+              small_radius, material_diamond))
+
+    # add light
 
     material_light = DiffuseLight(Vector(3, 3, 3))
     world.add(Sphere(Vector(-8, 8, 0), 2, material_light))
 
     # add walls
-    material_wall = Lambertian(Color(0.8, 0.8, 0.8))
+    material_wall = Lambertian(walls_color)
     world.add(RectangleXY(-10, 10, 0, 6, -10, material_wall))
 
-    material_wall = Lambertian(Color(0.8, 0.8, 0.8))
     world.add(RectangleYZ(0, 6, -10, 10, 10, material_wall))
+
+    # add box
+    world.add(Box(Vector(2, 0, 5), Vector(3, 1, 6), material_wall))
+
+    return world
+
+
+def world_on_cube():
+
+    def get_cube_filled_spheres(num_spheres: int, point0: Vector, point1: Vector, sphere_radius: float, material: Material):
+        spheres = []
+
+        for _ in range(num_spheres):
+            x = random.uniform(point0.x(), point1.x())
+            y = random.uniform(point0.y(), point1.y())
+            z = random.uniform(point0.z(), point1.z())
+
+            sphere = Sphere(Vector(x, y, z), sphere_radius, material)
+
+            spheres.append(sphere)
+
+        return spheres
+
+    def get_cube(centerpoint: Vector, width: float, material: Material):
+        return Box(Vector(centerpoint.x() - width/2, centerpoint.y() - width/2, centerpoint.z() - width/2),
+                   Vector(centerpoint.x() + width/2, centerpoint.y() +
+                          width/2, centerpoint.z() + width/2),
+                   material)
+
+    # colors
+    walls_color = Color(1, 1, 1)
+    light_color = Color(1, 1, 0.8)
+    # materials
+
+    material_wall = Lambertian(walls_color)
+    material_light = DiffuseLight(light_color*8)
+    material_lightbox = DiffuseLight(Color(1, 1, 0.8)*2)
+    material_mirror = Metal(Color(1, 1, 1), 0)
+
+    material_brushed_metal = Metal(Color(1, 1, 1), 1)
+
+    material_glass = Dielectric(1.5)
+    material_diamond = Dielectric(2.4)
+
+    material_smooth = ReflectiveOpaque(Color(1, 1, 1), 1.5)
+
+    material_red = Lambertian(Color(1, 0, 0))
+    material_blue = Lambertian(Color(0, 0, 1))
+    material_green = Lambertian(Color(0, 1, 0))
+
+    # measurements
+    base_cube_width = 20
+
+    small_cube_width = 2
+    small_radius = small_cube_width/2
+    large_radius = small_cube_width
+
+    # objects
+
+    # base cube
+
+    world = HittableList(
+        Box(Vector(-base_cube_width/2, -base_cube_width, -base_cube_width/2), Vector(base_cube_width/2-small_cube_width*2, 0, base_cube_width/2), material_wall))
+    world.add(
+        Box(Vector(-base_cube_width/2, -base_cube_width, -base_cube_width/2), Vector(base_cube_width/2, 0, base_cube_width/2-small_cube_width*2), material_wall))
+
+    world.add(
+        Box(Vector(-base_cube_width/2, -base_cube_width, -base_cube_width/2), Vector(base_cube_width/2, 0-small_cube_width*2, base_cube_width/2), material_wall))
+
+    # boxes
+    world.add(get_cube(Vector(0, 0, 0),
+              small_cube_width*2, material_wall))
+    world.add(get_cube(Vector(-small_cube_width*2, 0, small_cube_width*2),
+              small_cube_width*2, material_wall))
+    world.add(get_cube(Vector(small_cube_width*2, 0, -small_cube_width*2),
+              small_cube_width*2, material_wall))
+
+    # side boxes
+    world.add(Box(Vector(base_cube_width/2, 0, 0),
+              Vector(base_cube_width/2+small_cube_width, small_cube_width, -small_cube_width), material_wall))
+    world.add(Box(Vector(base_cube_width/2, -small_cube_width, 0),
+              Vector(base_cube_width/2+small_cube_width, 0, small_cube_width), material_wall))
+    world.add(Box(Vector(base_cube_width/2, -2*small_cube_width, small_cube_width),
+              Vector(base_cube_width/2+small_cube_width, -1*small_cube_width, 2*small_cube_width), material_wall))
+
+    # colored spheres
+    world.add(Sphere(Vector(base_cube_width/2 + small_radius, -small_radius+2*small_cube_width, small_radius-small_cube_width),
+                     small_radius, material_red))
+    world.add(Sphere(Vector(base_cube_width/2 + small_radius, -small_radius+small_cube_width, small_radius),
+                     small_radius, material_blue))
+    world.add(Sphere(Vector(base_cube_width/2 + small_radius, -small_radius, small_radius+small_cube_width),
+                     small_radius, material_green))
+
+    # light sphere
+    world.add(Sphere(Vector(base_cube_width/2 + -2*small_radius, -small_radius-small_cube_width, base_cube_width/2-2*small_radius),
+                     small_radius, material_light))
+
+    # large spheres
+    world.add(Sphere(Vector(-small_cube_width*2, large_radius+small_cube_width, small_cube_width*2),
+              large_radius, material_wall))
+    world.add(Sphere(Vector(0, large_radius+small_cube_width, 0),
+              large_radius, material_smooth))
+    world.add(Sphere(Vector(small_cube_width*2, large_radius+small_cube_width, -small_cube_width*2),
+              large_radius, material_mirror))
+
+    # glass spheres
+    world.add(Sphere(Vector(base_cube_width/2-3*small_cube_width, 2*small_radius, base_cube_width/2-small_cube_width),
+              small_radius, material_glass))
+    world.add(Sphere(Vector(base_cube_width/2-small_cube_width, 2*small_radius, base_cube_width/2-3*small_cube_width),
+              small_radius, material_diamond))
+
+    # light
+    # world.add(Box(Vector(-base_cube_width/2, 0, base_cube_width/2),
+    #          Vector(-base_cube_width/2+small_cube_width, base_cube_width/2, base_cube_width/2 - small_cube_width), material_glass))
+    world.add(get_cube(Vector(small_cube_width*2, -small_cube_width+0.01, 0),
+              small_cube_width*2, material_lightbox))
+    world.add(get_cube(Vector(0, -small_cube_width+0.01, small_cube_width*2),
+              small_cube_width*2, material_lightbox))
+
+    world.add(Box(Vector(5*small_cube_width, 12*small_cube_width, 5*small_cube_width),
+              Vector(-5*small_cube_width, 12*small_cube_width, -5*small_cube_width), material_light))
+
+    # spheres in a cube
+    spheres_radius = 0.5
+    spheres = get_cube_filled_spheres(200,
+                                      Vector(-base_cube_width/2+small_cube_width*2,
+                                             2*small_cube_width, -base_cube_width/2+small_cube_width*2),
+                                      Vector(-base_cube_width/2, 4*small_cube_width, -base_cube_width/2), spheres_radius, material_wall)
+    for sphere in spheres:
+        world.add(sphere)
 
     return world
 
@@ -148,21 +280,20 @@ def main():
         return x, y
 
     # Image
-    aspect_ratio = 16/9
+    aspect_ratio = 2/3
     image_width = 400
     image_height = int(image_width/aspect_ratio)
-    number_samples = 1000
+    number_samples = 100
     max_depth = 16
 
-    world = random_scene()
+    world = world_on_cube()
 
     # set up camera
-    look_from = Vector(0, 2, 15)
-    look_at = Vector(0, 1, 0)
+    look_from = Vector(50, 40, 30)
+    look_at = Vector(0, 0, 0)
     view_up = Vector(0, 1, 0)
-    aspect_ratio = 16/9
     vertical_field_of_view = 20
-    distance_to_focus = 10
+    distance_to_focus = look_from.length()
     aperture = 0.1
 
     camera = Camera(look_from, look_at, view_up, vertical_field_of_view,
@@ -185,7 +316,9 @@ def main():
         plt.imshow(np.rot90(image))
         plt.xticks([])
         plt.yticks([])
-        plt.savefig("progress.png")
+        plt.savefig(f"progress{sys.argv[1]}.png")
+
+    pickle.dump(image, f"image{sys.argv[1]}.p")
 
 
 if __name__ == '__main__':
