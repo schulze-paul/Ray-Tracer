@@ -9,8 +9,24 @@ def degrees_to_radians(degrees: float):
 
 
 class Camera():
+    """
+    Class to store data about the camera that captures a scene.
 
-    def __init__(self, look_from: Vector, look_at: Vector, view_up: Vector, vertical_field_of_view: float, aspect_ratio: float, aperture: float, focus_distance, time0: float = 0, time1: float = 0):
+    Use get_ray(x, y) to get a random ray for the pixel of the 
+    image at position x, y in the image. 
+    """
+
+    def __init__(self,
+                 look_from: Vector,
+                 look_at: Vector,
+                 view_up: Vector,
+                 vertical_field_of_view: float,
+                 aspect_ratio: float,
+                 aperture: float,
+                 focus_distance: float,
+                 time0: float = 0,
+                 time1: float = 0):
+
         self.theta = degrees_to_radians(vertical_field_of_view)
         h = math.tan(self.theta/2)
         self.aspect_ratio = aspect_ratio
@@ -33,6 +49,7 @@ class Camera():
         self.time1 = time1
 
     def get_ray(self, x_pixel: float, y_pixel: float) -> Ray:
+        """Get a random ray for the pixel x, y in the image."""
         random_origin = random_in_unit_disk() * self.lens_radius
         offset = self.u * random_origin.x() + self.v * random_origin.y()
         return Ray(self.origin + offset,
@@ -43,4 +60,5 @@ class Camera():
                    self.random_time())
 
     def random_time(self):
+        """Get a random time in the exposure time interval."""
         return self.time0 + (self.time1 + self.time0)*random.random()

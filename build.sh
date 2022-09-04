@@ -4,4 +4,4 @@
 
 python3 cython/setup.py build_ext --inplace
 
-python3 ray_tracer.py
+python3 main.py
