@@ -166,12 +166,12 @@ class RectangleXY(Hittable):
     material: Material
 
     def hit(self, ray, t_min, t_max) -> HitRecord:
-        t_hit = (self.k - ray.origin.z()) / ray.direction.z()
+        t_hit = (self.k - ray.origin.z) / ray.direction.z
         if t_hit < t_min or t_hit > t_max:
             return None
 
-        x = ray.origin.x() + ray.direction.x() * t_hit
-        y = ray.origin.y() + ray.direction.y() * t_hit
+        x = ray.origin.x + ray.direction.x * t_hit
+        y = ray.origin.y + ray.direction.y * t_hit
 
         if (x < self.x0 or x > self.x1 or y < self.y0 or y > self.y1):
             return None
@@ -197,12 +197,12 @@ class RectangleYZ(Hittable):
     material: Material
 
     def hit(self, ray, t_min, t_max) -> HitRecord:
-        t_hit = (self.k - ray.origin.x()) / ray.direction.x()
+        t_hit = (self.k - ray.origin.x) / ray.direction.x
         if t_hit < t_min or t_hit > t_max:
             return None
 
-        y = ray.origin.y() + ray.direction.y() * t_hit
-        z = ray.origin.z() + ray.direction.z() * t_hit
+        y = ray.origin.y + ray.direction.y * t_hit
+        z = ray.origin.z + ray.direction.z * t_hit
 
         if (y < self.y0 or y > self.y1 or z < self.z0 or z > self.z1):
             return None
@@ -228,12 +228,12 @@ class RectangleZX(Hittable):
     material: Material
 
     def hit(self, ray, t_min, t_max) -> HitRecord:
-        t_hit = (self.k - ray.origin.y()) / ray.direction.y()
+        t_hit = (self.k - ray.origin.y) / ray.direction.y
         if t_hit < t_min or t_hit > t_max:
             return None
 
-        z = ray.origin.z() + ray.direction.z() * t_hit
-        x = ray.origin.x() + ray.direction.x() * t_hit
+        z = ray.origin.z + ray.direction.z * t_hit
+        x = ray.origin.x + ray.direction.x * t_hit
 
         if (z < self.z0 or z > self.z1 or x < self.x0 or x > self.x1):
             return None
@@ -250,9 +250,9 @@ class RectangleZX(Hittable):
 class Box(Hittable):
     """Rectangular cuboid."""
     def __init__(self, point0: Vector, point1: Vector, material: Material) -> None:
-        min_x, max_x = sorted((point0.x(), point1.x()))
-        min_y, max_y = sorted((point0.y(), point1.y()))
-        min_z, max_z = sorted((point0.z(), point1.z()))
+        min_x, max_x = sorted((point0.x, point1.x))
+        min_y, max_y = sorted((point0.y, point1.y))
+        min_z, max_z = sorted((point0.z, point1.z))
 
         self.minimum_point = Vector(min_x, min_y, min_z)
         self.maximum_point = Vector(max_x, max_y, max_z)
