@@ -317,12 +317,17 @@ def main():
 
     # Render
     cpu_count = mp.cpu_count()
+    inputs = (camera, world, max_depth, image_width, image_height)
 
-    with mp.Pool(cpu_count) as pool:
-        results = [pool.apply(one_ray_per_pixel, args=(
-            camera, world, max_depth, image_width, image_height)) for _ in range(cpu_count)]
+    with mp.Pool() as pool:
+        results = []
+        for _ in range(cpu_count):
+            results.append(pool.apply_async(one_ray_per_pixel, inputs))
 
-    image = np.sum(results, axis=0)
+        for result in tqdm(results):
+            image += result.get()
+
+    image /= cpu_count
 
     plt.imshow(np.rot90(image))
     plt.xticks([])
