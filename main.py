@@ -6,6 +6,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 import pickle
+import multiprocessing as mp
 
 # local imports
 from python.hittables import Hittable, HittableList, RectangleXY, RectangleYZ, RectangleZX, Sphere, MovableSphere, Box
@@ -271,13 +272,26 @@ def world_on_cube():
     return world
 
 
-def main():
-    """main function of the ray tracer"""
-
+def one_ray_per_pixel(camera, world, max_depth, image_width, image_height):
     def get_x_y(i: int, j: int) -> tuple:
         x = (i + random.random()) / (image_width - 1)
         y = (j + random.random()) / (image_height - 1)
         return x, y
+
+    image = np.zeros((image_width, image_height, 3))
+    for j in reversed(range(image_height)):
+        for i in range(image_width):
+            u, v = get_x_y(i, j)
+            ray = camera.get_ray(u, v)
+            color = ray_color(ray, world, max_depth)
+            image[i, j] = np.array([color.x, color.y, color.z])
+
+    print("finished!")
+    return image
+
+
+def main():
+    """main function of the ray tracer"""
 
     # Image
     aspect_ratio = 2/3
@@ -302,24 +316,18 @@ def main():
     image = np.zeros((image_width, image_height, 3))
 
     # Render
+    cpu_count = mp.cpu_count()
 
-    for sample in tqdm(range(number_samples)):
-        for j in reversed(range(image_height)):
-            for i in range(image_width):
-                u, v = get_x_y(i, j)
-                ray = camera.get_ray(u, v)
-                color = ray_color(ray, world, max_depth)
-                image[i, j] = image[i, j]*sample / \
-                    (sample+1) + np.array([color.x,
-                                           color.y, color.z])/(sample+1)
+    with mp.Pool(cpu_count) as pool:
+        results = [pool.apply(one_ray_per_pixel, args=(
+            camera, world, max_depth, image_width, image_height)) for _ in range(cpu_count)]
 
-        plt.imshow(np.rot90(image))
-        plt.xticks([])
-        plt.yticks([])
-        plt.show()
+    image = np.sum(results, axis=0)
 
-    with open(f"image_data.p", 'w+') as pickle_file:
-        pickle.dump(image, pickle_file)
+    plt.imshow(np.rot90(image))
+    plt.xticks([])
+    plt.yticks([])
+
     plt.savefig("image_low_iterations.png")
 
 
