@@ -24,5 +24,9 @@ I had the opportunity to work with state of the art optical equipment in the lab
 I created a custom Python extension in C using [Cython](https://cython.org/) to handle the bulk of the computational expenses.
 
 ### Parallelization
-Parallelization is relatively easily accomplished. 
+Ray tracing is well suited for parallelization. The 
 
+<div>
+  <img width=350 src=https://github.com/schulze-paul/ray-tracer/blob/feature/speedup/images/parallel_time.png>
+  <img width=350 src=https://github.com/schulze-paul/ray-tracer/blob/feature/speedup/images/parallel_speedup.png>
+</div>
