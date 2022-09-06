@@ -20,13 +20,20 @@ I had the opportunity to work with state of the art optical equipment in the lab
 
 ## Optimizations
 
-### Custom Extension
+### Custom C Extension
 I created a custom Python extension in C using [Cython](https://cython.org/) to handle the bulk of the computational expenses.
 
 ### Parallelization
-Ray tracing is well suited for parallelization. The 
 
 <div>
   <img width=350 src=https://github.com/schulze-paul/ray-tracer/blob/feature/speedup/images/parallel_time.png>
   <img width=350 src=https://github.com/schulze-paul/ray-tracer/blob/feature/speedup/images/parallel_speedup.png>
 </div>
+
+**Figure 1: Execution time and speedup using parallelization.**
+
+Ray tracing is well suited for parallelization. I used the multiprocessing library to distribute the number of rays per pixel among the available cores. The speedup is significant with each additional core until 9 cores where we hit a platau of about 3.5x.
+
+### Bounding Volume Hierarchy
+
+### Scattering PDF
