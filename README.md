@@ -23,6 +23,6 @@ I had the opportunity to work with state of the art optical equipment in the lab
 ### Custom Extension
 I created a custom Python extension in C using [Cython](https://cython.org/) to handle the bulk of the computational expenses.
 
-### Paralellization
-Parallelization is relatively easyly accomplished. 
+### Parallelization
+Parallelization is relatively easily accomplished. 
 
