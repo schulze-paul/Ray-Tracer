@@ -310,3 +310,72 @@ class Box(Hittable):
 
     def bounding_box(self, time0: float, time1: float):
         return AxisAlignedBoundingBox(self.minimum_point, self.maximum_point)
+
+
+class BoundingVolumeHierarchyNode():
+
+    def __init__(self, hittable_list: HittableList, time0, time1, start=0, end=None, ) -> None:
+
+        if end == None:
+            end = len(hittable_list.hittable_objects)
+
+        hittable_objects = hittable_list.hittable_objects
+
+        self.axis = random.randint(0, 2)
+
+        object_span = end - start
+
+        if object_span == 1:
+            self.left = hittable_objects[start]
+            self.right = self.left
+        elif object_span == 2:
+            if self.__box_min(hittable_objects[start]) < self.__box_min(hittable_objects[end]):
+                self.left = hittable_objects[start]
+                self.right = hittable_objects[start+1]
+            else:
+                self.left = hittable_objects[start+1]
+                self.right = hittable_objects[start]
+        else:
+            hittable_objects = sorted(
+                hittable_objects, key=self.__box_min)
+
+            mid = start + object_span/2
+            self.left = BoundingVolumeHierarchyNode(
+                hittable_objects, time0, time1, start, mid)
+            self.left = BoundingVolumeHierarchyNode(
+                hittable_objects, time0, time1, mid, end)
+
+        box_left = self.left.bounding_box(time0, time1)
+        box_right = self.right.bounding_box(time0, time1)
+
+        if box_left is None or box_right is None:
+            raise ValueError(
+                "No bounding box in Bounding Volume Hierarchy None constructor.")
+
+        self.box = surrounding_box(box_left, box_right)
+
+    def hit(self, ray, t_min, t_max):
+        if self.box.hit(ray, t_min, t_max) is None:
+            return False
+
+        hit_left = self.left.hit(ray, t_min, t_max)
+        if hit_left is None:
+            hit_right = self.right.hit(ray, t_min, t_max)
+        else:
+            hit_right = self.right.hit(ray, t_min, t_max)
+
+        if hit_left.t < hit_right.t:
+            return hit_left
+        else:
+            return hit_right
+
+    def bounding_box(self, time0, time1):
+        return self.box
+
+    def __box_min(self, hittable):
+        box = hittable.bounding_box(0, 0)
+
+        if box is None:
+            raise ValueError(
+                "No bounding box in Bounding Volume Hierarchy None constructor.")
+        return box.minimum[self.axis]
