@@ -41,6 +41,14 @@ cdef class Vector:
         return sqrt(self.length_sq())
 
 
+    def __getitem__(self, index: int) -> float:
+        if index==0:
+            return self.x
+        if index==1:
+            return self.y
+        if index==2:
+            return self.z
+
     def __add__(self, Vector other):
         """Add two vectors."""
         cdef double x = self.x + other.x
