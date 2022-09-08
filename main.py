@@ -6,6 +6,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 import pickle
+import multiprocessing as mp
 
 # local imports
 from python.hittables import Hittable, HittableList, RectangleXY, RectangleYZ, RectangleZX, Sphere, MovableSphere, Box
@@ -41,7 +42,7 @@ def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
 
     if hit_record is None:
         unit_direction = ray.direction / ray.direction.length()
-        t = 0.5*unit_direction.y() + 0.5
+        t = 0.5*unit_direction.y + 0.5
 
         background = Color.from_vector(
             Vector(0.2, 0.2, 0.2) * (1 - t) + Vector(0.3, 0.3, 0.3)*0.5 * t)
@@ -150,9 +151,9 @@ def world_on_cube():
         spheres = []
 
         for _ in range(num_spheres):
-            x = random.uniform(point0.x(), point1.x())
-            y = random.uniform(point0.y(), point1.y())
-            z = random.uniform(point0.z(), point1.z())
+            x = random.uniform(point0.x, point1.x)
+            y = random.uniform(point0.y, point1.y)
+            z = random.uniform(point0.z, point1.z)
 
             sphere = Sphere(Vector(x, y, z), sphere_radius, material)
 
@@ -161,9 +162,9 @@ def world_on_cube():
         return spheres
 
     def get_cube(centerpoint: Vector, width: float, material: Material):
-        return Box(Vector(centerpoint.x() - width/2, centerpoint.y() - width/2, centerpoint.z() - width/2),
-                   Vector(centerpoint.x() + width/2, centerpoint.y() +
-                          width/2, centerpoint.z() + width/2),
+        return Box(Vector(centerpoint.x - width/2, centerpoint.y - width/2, centerpoint.z - width/2),
+                   Vector(centerpoint.x + width/2, centerpoint.y +
+                          width/2, centerpoint.z + width/2),
                    material)
 
     # colors
@@ -271,13 +272,26 @@ def world_on_cube():
     return world
 
 
-def main():
-    """main function of the ray tracer"""
-
+def one_ray_per_pixel(camera, world, max_depth, image_width, image_height):
     def get_x_y(i: int, j: int) -> tuple:
         x = (i + random.random()) / (image_width - 1)
         y = (j + random.random()) / (image_height - 1)
         return x, y
+
+    image = np.zeros((image_width, image_height, 3))
+    for j in reversed(range(image_height)):
+        for i in range(image_width):
+            u, v = get_x_y(i, j)
+            ray = camera.get_ray(u, v)
+            color = ray_color(ray, world, max_depth)
+            image[i, j] = np.array([color.x, color.y, color.z])
+
+    print("finished!")
+    return image
+
+
+def main():
+    """main function of the ray tracer"""
 
     # Image
     aspect_ratio = 2/3
@@ -302,23 +316,24 @@ def main():
     image = np.zeros((image_width, image_height, 3))
 
     # Render
+    cpu_count = mp.cpu_count()
+    inputs = (camera, world, max_depth, image_width, image_height)
 
-    for sample in tqdm(range(number_samples)):
-        for j in reversed(range(image_height)):
-            for i in range(image_width):
-                u, v = get_x_y(i, j)
-                ray = camera.get_ray(u, v)
-                color = ray_color(ray, world, max_depth)
-                image[i, j] = image[i, j]*sample / \
-                    (sample+1) + np.array([color.x(),
-                                           color.y(), color.z()])/(sample+1)
+    with mp.Pool() as pool:
+        results = []
+        for _ in range(cpu_count):
+            results.append(pool.apply_async(one_ray_per_pixel, inputs))
 
-        plt.imshow(np.rot90(image))
-        plt.xticks([])
-        plt.yticks([])
-        plt.savefig(f"progress.png")
+        for result in tqdm(results):
+            image += result.get()
 
-    pickle.dump(image, f"image.p")
+    image /= cpu_count
+
+    plt.imshow(np.rot90(image))
+    plt.xticks([])
+    plt.yticks([])
+
+    plt.savefig("image_low_iterations.png")
 
 
 if __name__ == '__main__':
