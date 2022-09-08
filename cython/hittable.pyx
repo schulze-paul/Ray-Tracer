@@ -99,7 +99,7 @@ cdef class Sphere(Hittable):
                 return None # outside of range
 
         # collect data about hit:
-        cdef Vector hit_point = ray(t_hit)
+        cdef Vector hit_point = ray.at(t_hit)
         cdef Vector surface_normal = self.get_surface_normal(hit_point)
 
         cdef HitRecord hit_record = HitRecord(hit_point, t_hit, self.material)
@@ -164,7 +164,7 @@ cdef class MovableSphere(Hittable):
                 return None # outside of range
 
         # collect data about hit:
-        cdef Vector hit_point = ray(t_hit)
+        cdef Vector hit_point = ray.at(t_hit)
         cdef Vector surface_normal = self.get_surface_normal(hit_point, ray.time)
 
         cdef HitRecord hit_record = HitRecord(hit_point, t_hit, self.material)
@@ -213,7 +213,7 @@ cdef class RectangleXY(Hittable):
             return None
 
         # collect hit data
-        cdef Vector hit_point = ray(t_hit)
+        cdef Vector hit_point = ray.at(t_hit)
         cdef Vector surface_normal = Vector(0, 0, 1)
 
         cdef HitRecord hit_record = HitRecord(hit_point, t_hit, self.material)
@@ -246,7 +246,7 @@ cdef class RectangleYZ(Hittable):
             return None
 
         # collect hit data
-        cdef Vector hit_point = ray(t_hit)
+        cdef Vector hit_point = ray.at(t_hit)
         cdef Vector surface_normal = Vector(1, 0, 0)
 
         cdef HitRecord hit_record = HitRecord(hit_point, t_hit, self.material)
@@ -279,7 +279,7 @@ cdef class RectangleZX(Hittable):
             return None
 
         # collect hit data
-        cdef Vector hit_point = ray(t_hit)
+        cdef Vector hit_point = ray.at(t_hit)
         cdef Vector surface_normal = Vector(0, 1, 0)
 
         cdef HitRecord hit_record = HitRecord(hit_point, t_hit, self.material)

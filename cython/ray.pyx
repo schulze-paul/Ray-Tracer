@@ -12,14 +12,6 @@ cdef class Ray:
         self.direction = direction
         self.time = time
         
-    def __call__(self, t: float) -> Vector:
+    cpdef Vector at(self, t: float):
         """Get position of ray at t."""
         return self.origin + self.direction*t
-
-    def get_origin(self):
-        """Get origin point of ray."""
-        return self.origin
-
-    def get_direction(self):
-        """Get direction of ray."""
-        return self.direction
