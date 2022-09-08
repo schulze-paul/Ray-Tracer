@@ -1,3 +1,4 @@
+from copy import copy
 from dataclasses import dataclass
 import math
 import random
@@ -6,7 +7,7 @@ import numpy as np
 # local imports
 from hittable import Ray, Vector, Color, dot, unit_vector, random_unit_vector, reflect, refract, random_in_unit_sphere
 # , Lambertian, Dielectric, Metal
-from hittable import HitRecord, Hittable, Material, Sphere, MovableSphere, AxisAlignedBoundingBox, surrounding_box
+from hittable import HitRecord, Hittable, Material, Sphere, MovableSphere, AxisAlignedBoundingBox, surrounding_box, RectangleXY, RectangleYZ, RectangleZX
 
 
 class HittableList(Hittable):
@@ -188,18 +189,18 @@ class RectangleXY(Hittable):
     material: Material
 
     def hit(self, ray, t_min, t_max) -> HitRecord:
-        t_hit = (self.k - ray.origin.z) / ray.direction.z
+        t_hit = (self.k - ray.origin.data[2]) / ray.direction.data[2]
         if t_hit < t_min or t_hit > t_max:
             return None
 
-        x = ray.origin.x + ray.direction.x * t_hit
-        y = ray.origin.y + ray.direction.y * t_hit
+        x = ray.origin.data[0] + ray.direction.data[0] * t_hit
+        y = ray.origin.data[1] + ray.direction.data[1] * t_hit
 
         if (x < self.x0 or x > self.x1 or y < self.y0 or y > self.y1):
             return None
 
         # collect hit data
-        hit_point = ray(t_hit)
+        hit_point = ray.at(t_hit)
         surface_normal = Vector(0, 0, 1)
 
         hit_record = HitRecord(hit_point, t_hit, self.material)
@@ -222,18 +223,18 @@ class RectangleYZ(Hittable):
     material: Material
 
     def hit(self, ray, t_min, t_max) -> HitRecord:
-        t_hit = (self.k - ray.origin.x) / ray.direction.x
+        t_hit = (self.k - ray.origin.data[0]) / ray.direction.data[0]
         if t_hit < t_min or t_hit > t_max:
             return None
 
-        y = ray.origin.y + ray.direction.y * t_hit
-        z = ray.origin.z + ray.direction.z * t_hit
+        y = ray.origin.data[1] + ray.direction.data[1] * t_hit
+        z = ray.origin.data[2] + ray.direction.data[2] * t_hit
 
         if (y < self.y0 or y > self.y1 or z < self.z0 or z > self.z1):
             return None
 
         # collect hit data
-        hit_point = ray(t_hit)
+        hit_point = ray.at(t_hit)
         surface_normal = Vector(1, 0, 0)
 
         hit_record = HitRecord(hit_point, t_hit, self.material)
@@ -256,17 +257,17 @@ class RectangleZX(Hittable):
     material: Material
 
     def hit(self, ray, t_min, t_max) -> HitRecord:
-        t_hit = (self.k - ray.origin.y) / ray.direction.y
+        t_hit = (self.k - ray.origin.data[1]) / ray.direction.data[1]
         if t_hit < t_min or t_hit > t_max:
             return None
 
-        z = ray.origin.z + ray.direction.z * t_hit
-        x = ray.origin.x + ray.direction.x * t_hit
+        z = ray.origin.data[2] + ray.direction.data[2] * t_hit
+        x = ray.origin.data[0] + ray.direction.data[0] * t_hit
 
         if (z < self.z0 or z > self.z1 or x < self.x0 or x > self.x1):
             return None
 
-        hit_point = ray(t_hit)
+        hit_point = ray.at(t_hit)
         surface_normal = Vector(0, 1, 0)
 
         hit_record = HitRecord(hit_point, t_hit, self.material)
@@ -282,9 +283,9 @@ class Box(Hittable):
     """Rectangular cuboid."""
 
     def __init__(self, point0: Vector, point1: Vector, material: Material) -> None:
-        min_x, max_x = sorted((point0.x, point1.x))
-        min_y, max_y = sorted((point0.y, point1.y))
-        min_z, max_z = sorted((point0.z, point1.z))
+        min_x, max_x = sorted((point0.data[0], point1.data[0]))
+        min_y, max_y = sorted((point0.data[1], point1.data[1]))
+        min_z, max_z = sorted((point0.data[2], point1.data[2]))
 
         self.minimum_point = Vector(min_x, min_y, min_z)
         self.maximum_point = Vector(max_x, max_y, max_z)
@@ -314,16 +315,16 @@ class Box(Hittable):
 
 class BoundingVolumeHierarchyNode():
 
-    def __init__(self, hittable_list: HittableList, time0, time1, start=0, end=None, ) -> None:
+    def __init__(self, hittable_objects: HittableList, time0, time1, start=0, end=None, ) -> None:
 
         if end == None:
-            end = len(hittable_list.hittable_objects)
+            end = len(hittable_objects)-1
 
-        hittable_objects = hittable_list.hittable_objects
+        hittable_objects = copy(hittable_objects)
 
-        self.axis = random.randint(0, 2)
+        self.axis = 2  # random.randint(0, 2)
 
-        object_span = end - start
+        object_span = end+1 - start
 
         if object_span == 1:
             self.left = hittable_objects[start]
@@ -339,10 +340,10 @@ class BoundingVolumeHierarchyNode():
             hittable_objects = sorted(
                 hittable_objects, key=self.__box_min)
 
-            mid = start + object_span/2
+            mid = start + object_span//2
             self.left = BoundingVolumeHierarchyNode(
                 hittable_objects, time0, time1, start, mid)
-            self.left = BoundingVolumeHierarchyNode(
+            self.right = BoundingVolumeHierarchyNode(
                 hittable_objects, time0, time1, mid, end)
 
         box_left = self.left.bounding_box(time0, time1)
@@ -356,7 +357,7 @@ class BoundingVolumeHierarchyNode():
 
     def hit(self, ray, t_min, t_max):
         if self.box.hit(ray, t_min, t_max) is None:
-            return False
+            return None
 
         hit_left = self.left.hit(ray, t_min, t_max)
         if hit_left is None:
@@ -364,10 +365,17 @@ class BoundingVolumeHierarchyNode():
         else:
             hit_right = self.right.hit(ray, t_min, t_max)
 
-        if hit_left.t < hit_right.t:
+        if hit_left is not None and hit_right is not None:
+            if hit_left.t < hit_right.t:
+                return hit_left
+            else:
+                return hit_right
+        elif hit_left is not None:
             return hit_left
-        else:
+        elif hit_right is not None:
             return hit_right
+        else:
+            return None
 
     def bounding_box(self, time0, time1):
         return self.box
@@ -378,4 +386,4 @@ class BoundingVolumeHierarchyNode():
         if box is None:
             raise ValueError(
                 "No bounding box in Bounding Volume Hierarchy None constructor.")
-        return box.minimum[self.axis]
+        return box.minimum.data[self.axis]
