@@ -2,6 +2,7 @@
 
 include "ray.pyx"
 
+from numpy.math cimport INFINITY
 
 cdef class AxisAlignedBoundingBox:
     cdef public Vector maximum
@@ -25,11 +26,16 @@ cdef class AxisAlignedBoundingBox:
         cdef double t0
         cdef double t1
 
+        cdef double direcion
         for a in range(3):
-            divisior = 1.0/ray.direction.data[a]
+            direction = ray.direction.data[a]
+            if not direcion == 0.0:
+                dev_factor = 1.0/direction
+            else:
+                dev_factor == INFINITY
 
-            t0 = (self.minimum.data[a] - ray.origin.data[a])*divisior
-            t1 = (self.maximum.data[a] - ray.origin.data[a])*divisior
+            t0 = (self.minimum.data[a] - ray.origin.data[a])*dev_factor
+            t1 = (self.maximum.data[a] - ray.origin.data[a])*dev_factor
 
             if divisior < 0:
                 temp = t0
