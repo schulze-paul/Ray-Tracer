@@ -2,6 +2,8 @@
 
 ![Preview image](https://github.com/schulze-paul/ray-tracer/blob/main/images/image_800_steady.png?raw=true)
 
+**Figure 1: Ray tracing image with reflection, refraction, soft shadows, depth of field, caustics and motion blur.**
+
 Inspired by Peter Shirley's [book series](https://raytracing.github.io) about ray tracing.
 
 ## Motivation
@@ -26,6 +28,8 @@ I had the opportunity to work with state of the art optical equipment in the lab
 ### Custom C Extension
 
 <img width=500 src=https://raw.githubusercontent.com/schulze-paul/ray-tracer/main/images/cython_speedup.png>
+
+**Figure 2: 4.4x Speedup using the custom C extension over an equivalent pure Python implementation.**
 
 I created a custom Python extension in C using [Cython](https://cython.org/) to handle the bulk of the computational expenses. This includes a 3D vector extension class with corresponding operators as well as dot and cross product. It also includes a base class for rays and the hit detection.
 
