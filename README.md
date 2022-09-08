@@ -24,14 +24,19 @@ I had the opportunity to work with state of the art optical equipment in the lab
 ## Optimizations
 
 ### Custom C Extension
-I created a custom Python extension in C using [Cython](https://cython.org/) to handle the bulk of the computational expenses.
 
-This includes a 3D vector extension class with corresponding operators as well as dot and cross product. It also includes a base class for rays and the hit detection.  
+<img width=500 src=https://raw.githubusercontent.com/schulze-paul/ray-tracer/main/images/cython_speedup.png>
+
+I created a custom Python extension in C using [Cython](https://cython.org/) to handle the bulk of the computational expenses. This includes a 3D vector extension class with corresponding operators as well as dot and cross product. It also includes a base class for rays and the hit detection.
+
+The pure Python version uses Numpy and is already quite fast. With the extension I was able to get 4.4x faster execution times. 
+
+
 ### Parallelization
 
 <div>
-  <img width=350 src=https://github.com/schulze-paul/ray-tracer/blob/feature/speedup/images/parallel_time.png>
-  <img width=350 src=https://github.com/schulze-paul/ray-tracer/blob/feature/speedup/images/parallel_speedup.png>
+  <img width=350 src=https://github.com/schulze-paul/ray-tracer/blob/main/images/parallel_time.png>
+  <img width=350 src=https://github.com/schulze-paul/ray-tracer/blob/main/images/parallel_speedup.png>
 </div>
 
 **Figure 1: Execution time and speedup using parallelization.**
