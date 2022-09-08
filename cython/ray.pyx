@@ -1,5 +1,6 @@
-include "vector.pyx"
+# cython: profile=True
 
+include "vector.pyx"
 cdef class Ray:
     """Class to store info about origin, direction and time of a light ray."""
     cdef public Vector origin
