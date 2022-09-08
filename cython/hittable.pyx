@@ -1,4 +1,4 @@
-include "ray.pyx"
+include "bounding_volume.pyx"
 
 import cython
 
@@ -58,6 +58,9 @@ cdef class Hittable:
         """Computes hit event with a ray (if ray intersects with the hittable)"""
         return None
 
+    cpdef AxisAlignedBoundingBox bounding_box(self, double time0, double time1):
+        return None
+
 
 
 cdef class Sphere(Hittable):
@@ -106,6 +109,12 @@ cdef class Sphere(Hittable):
         """get normal vector of a surface point (pointing outwards)"""
         return (surface_point - self.center) / self.radius
 
+    cpdef AxisAlignedBoundingBox bounding_box(self, double time0, double time1):
+        cdef AxisAlignedBoundingBox output_box = AxisAlignedBoundingBox(
+            self.center - Vector(self.radius, self.radius, self.radius),
+            self.center + Vector(self.radius, self.radius, self.radius)
+        )
+        return output_box
 
 cdef class MovableSphere(Hittable):    
     """Defines a moving as a hittable geometry."""
@@ -160,6 +169,19 @@ cdef class MovableSphere(Hittable):
         hit_record.set_face_normal(ray, surface_normal)
 
         return hit_record
+
+    cpdef AxisAlignedBoundingBox bounding_box(self, double time0, double time1):
+        cdef AxisAlignedBoundingBox box0 = AxisAlignedBoundingBox(
+            self.center(time0) - Vector(self.radius, self.radius, self.radius),
+            self.center(time0) + Vector(self.radius, self.radius, self.radius)
+        )
+        cdef AxisAlignedBoundingBox box1 = AxisAlignedBoundingBox(
+            self.center(time1) - Vector(self.radius, self.radius, self.radius),
+            self.center(time1) + Vector(self.radius, self.radius, self.radius)
+        )
+        cdef AxisAlignedBoundingBox output_box = surrounding_box(box0, box1)
+        return output_box
+
 
     cpdef Vector get_surface_normal(self, surface_point: Vector, double time):
         """get normal vector of a surface point (pointing outwards)"""

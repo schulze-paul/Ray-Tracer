@@ -6,7 +6,8 @@ import numpy as np
 # local imports
 from hittable import Ray, Vector, Color, dot, unit_vector, random_unit_vector, reflect, refract, random_in_unit_sphere
 # , Lambertian, Dielectric, Metal
-from hittable import HitRecord, Hittable, Material, Sphere, MovableSphere  # , HittableList
+from hittable import HitRecord, Hittable, Material, Sphere, MovableSphere, AxisAlignedBoundingBox, surrounding_box
+
 
 class HittableList(Hittable):
     """Implementing hit function for a collection of objects."""
@@ -20,17 +21,35 @@ class HittableList(Hittable):
     def hit(self, ray, t_min, t_max) -> HitRecord:
         """Compute closest hit of ray to any object."""
         closest_hit_record = None
-        
+
         for hittable in self.hittable_objects:
             hit_record = hittable.hit(ray, t_min, t_max)
             if hit_record is not None:
-                
+
                 if closest_hit_record is None:
                     closest_hit_record = hit_record
                 elif closest_hit_record.t > hit_record.t:
                     closest_hit_record = hit_record
-        
+
         return closest_hit_record
+
+    def bounding_box(self, time0: float, time1: float) -> AxisAlignedBoundingBox:
+        if len(self.hittable_objects):
+            return None
+
+        first_box = True
+        for hittable_object in self.hittable_objects:
+            temp_box = hittable_object.bounding_box(time0, time1)
+            if temp_box is None:
+                return None
+            else:
+                if first_box:
+                    output_box = temp_box
+                else:
+                    output_box = surrounding_box(output_box, temp_box)
+                first_box = False
+
+        return output_box
 
 
 @dataclass
@@ -39,7 +58,7 @@ class Lambertian(Material):
     albedo: Color
 
     def scatter(self, ray_in, hit_record):
-        # scatter in random direction 
+        # scatter in random direction
         scatter_direction = hit_record.normal + random_unit_vector()
         if scatter_direction.near_zero():
             scatter_direction = hit_record.normal
@@ -51,6 +70,7 @@ class Lambertian(Material):
 
 class Metal(Material):
     """Perfectly reflective material"""
+
     def __init__(self, albedo: Color, fuzz: float):
         self.albedo = albedo
         if fuzz < 1:
@@ -60,7 +80,8 @@ class Metal(Material):
 
     def scatter(self, ray_in, hit_record):
         vector_in = unit_vector(ray_in.direction)
-        reflected = reflect(vector_in, hit_record.normal) # every ray is reflected
+        # every ray is reflected
+        reflected = reflect(vector_in, hit_record.normal)
         scattered = Ray(hit_record.hit_point, reflected +
                         random_in_unit_sphere()*self.fuzz, ray_in.time)
         is_scattered = dot(scattered.direction, hit_record.normal) > 0
@@ -85,7 +106,7 @@ class Dielectric(Material):
         sin_theta = math.sqrt(1.0-cos_theta**2)
         cannot_refract = refraction_ratio*sin_theta > 1
         reflectance = self.__reflectance(cos_theta, refraction_ratio)
-        
+
         # decide if ray is reflected or refracted
         if cannot_refract or (reflectance > random.random()):
             direction = reflect(unit_direction, hit_record.normal)
@@ -142,6 +163,7 @@ class ReflectiveOpaque(Material):
 
 class DiffuseLight(Material):
     """Diffusely emmissive material"""
+
     def __init__(self, color: Color = Color(1, 1, 1)) -> None:
         self.color = color
 
@@ -185,6 +207,9 @@ class RectangleXY(Hittable):
 
         return hit_record
 
+    def bounding_box(self, time0: float, time1: float):
+        return AxisAlignedBoundingBox(Vector(self.x0, self.y0, self.k-0.0001), Vector(self.x1, self.y1, self.k+0.0001))
+
 
 @dataclass
 class RectangleYZ(Hittable):
@@ -216,6 +241,9 @@ class RectangleYZ(Hittable):
 
         return hit_record
 
+    def bounding_box(self, time0: float, time1: float):
+        return AxisAlignedBoundingBox(Vector(self.k-0.0001, self.y0, self.z0), Vector(self.k+0.0001, self.y1, self.z1))
+
 
 @dataclass
 class RectangleZX(Hittable):
@@ -246,9 +274,13 @@ class RectangleZX(Hittable):
 
         return hit_record
 
+    def bounding_box(self, time0: float, time1: float):
+        return AxisAlignedBoundingBox(Vector(self.x0, self.k-0.0001, self.z0), Vector(self.x1, self.k+0.0001, self.z1))
+
 
 class Box(Hittable):
     """Rectangular cuboid."""
+
     def __init__(self, point0: Vector, point1: Vector, material: Material) -> None:
         min_x, max_x = sorted((point0.x, point1.x))
         min_y, max_y = sorted((point0.y, point1.y))
@@ -275,4 +307,6 @@ class Box(Hittable):
 
     def hit(self, ray, t_min, t_max) -> HitRecord:
         return self.sides.hit(ray, t_min, t_max)
-        
+
+    def bounding_box(self, time0: float, time1: float):
+        return AxisAlignedBoundingBox(self.minimum_point, self.maximum_point)
