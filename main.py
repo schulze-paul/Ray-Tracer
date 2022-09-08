@@ -1,6 +1,7 @@
 import sys
 from cmath import inf
 from math import sqrt
+from time import time
 from tqdm import tqdm
 import numpy as np
 import random
@@ -9,9 +10,9 @@ import pickle
 import multiprocessing as mp
 
 # local imports
-from python.hittables import Hittable, HittableList, RectangleXY, RectangleYZ, RectangleZX, Sphere, MovableSphere, Box
+from python.hittables import Hittable, HittableList, Sphere, MovableSphere, Box
 from python.camera import Camera
-from hittable import Color, Ray, Vector, random_in_unit_sphere, outer
+from hittable import Color, Ray, Vector, random_in_unit_sphere, outer, RectangleXY, RectangleYZ, RectangleZX
 from python.hittables import Lambertian, Dielectric, Metal, ReflectiveOpaque, DiffuseLight, Material, BoundingVolumeHierarchyNode
 
 
@@ -42,7 +43,7 @@ def ray_color(ray: Ray, world: HittableList, depth: int) -> Color:
 
     if hit_record is None:
         unit_direction = ray.direction / ray.direction.length()
-        t = 0.5*unit_direction.y + 0.5
+        t = 0.5*unit_direction.data[1] + 0.5
 
         background = Color.from_vector(
             Vector(0.2, 0.2, 0.2) * (1 - t) + Vector(0.3, 0.3, 0.3)*0.5 * t)
@@ -64,8 +65,6 @@ def random_scene() -> HittableList:
 
     ground_material = Lambertian(walls_color)
     world = HittableList(Sphere(Vector(0, -1000, 0), 1000, ground_material))
-
-    return BoundingVolumeHierarchyNode(world, 0, 1)
 
     """
     for a in range(-11, 11):
@@ -91,8 +90,6 @@ def random_scene() -> HittableList:
                     # glass
                     sphere_material = Dielectric(1.5)
                     world.add(Sphere(center, 0.2, sphere_material))
-    """
-
     """
 
     # big spheres
@@ -145,7 +142,9 @@ def random_scene() -> HittableList:
 
     # add box
     world.add(Box(Vector(2, 0, 5), Vector(3, 1, 6), material_wall))
-    """
+
+    return BoundingVolumeHierarchyNode(world.hittable_objects, 0, 1)
+    # return world
 
 
 def world_on_cube():
@@ -154,9 +153,9 @@ def world_on_cube():
         spheres = []
 
         for _ in range(num_spheres):
-            x = random.uniform(point0.x, point1.x)
-            y = random.uniform(point0.y, point1.y)
-            z = random.uniform(point0.z, point1.z)
+            x = random.uniform(point0.data[0], point1.data[0])
+            y = random.uniform(point0.data[1], point1.data[1])
+            z = random.uniform(point0.data[2], point1.data[2])
 
             sphere = Sphere(Vector(x, y, z), sphere_radius, material)
 
@@ -165,9 +164,9 @@ def world_on_cube():
         return spheres
 
     def get_cube(centerpoint: Vector, width: float, material: Material):
-        return Box(Vector(centerpoint.x - width/2, centerpoint.y - width/2, centerpoint.z - width/2),
-                   Vector(centerpoint.x + width/2, centerpoint.y +
-                          width/2, centerpoint.z + width/2),
+        return Box(Vector(centerpoint.data[0] - width/2, centerpoint.data[1] - width/2, centerpoint.data[2] - width/2),
+                   Vector(centerpoint.data[0] + width/2, centerpoint.data[1] +
+                          width/2, centerpoint.data[2] + width/2),
                    material)
 
     # colors
@@ -272,7 +271,8 @@ def world_on_cube():
     for sphere in spheres:
         world.add(sphere)
 
-    return world
+    return BoundingVolumeHierarchyNode(world.hittable_objects, 0, 1)
+    # return world
 
 
 def one_ray_per_pixel(camera, world, max_depth, image_width, image_height):
@@ -287,9 +287,9 @@ def one_ray_per_pixel(camera, world, max_depth, image_width, image_height):
             u, v = get_x_y(i, j)
             ray = camera.get_ray(u, v)
             color = ray_color(ray, world, max_depth)
-            image[i, j] = np.array([color.x, color.y, color.z])
+            image[i, j] = np.array(
+                [color.data[0], color.data[1], color.data[2]])
 
-    print("finished!")
     return image
 
 
@@ -303,7 +303,7 @@ def main(debug=False):
     number_samples = 5
     max_depth = 16
 
-    world = random_scene()
+    world = world_on_cube()
 
     # set up camera
     look_from = Vector(50, 40, 30)
@@ -333,8 +333,10 @@ def main(debug=False):
 
         image /= cpu_count
     else:
+        time_a = time()
         image = one_ray_per_pixel(
             camera, world, max_depth, image_width, image_height)
+        print(time() - time_a)
 
     plt.imshow(np.rot90(image))
     plt.xticks([])
