@@ -2,7 +2,7 @@
 
 ![Preview image](https://github.com/schulze-paul/ray-tracer/blob/main/images/image_800_steady.png?raw=true)
 
-**Figure 1: Ray tracing image with reflection, refraction, soft shadows, depth of field, caustics and motion blur.**
+**Ray tracing image with reflection, refraction, soft shadows, depth of field, caustics and motion blur.**
 
 Inspired by Peter Shirley's [book series](https://raytracing.github.io) about ray tracing.
 
@@ -29,7 +29,6 @@ I had the opportunity to work with state of the art optical equipment in the lab
 
 <img width=500 src=https://raw.githubusercontent.com/schulze-paul/ray-tracer/main/images/cython_speedup.png>
 
-**Figure 2: 4.4x Speedup using the custom C extension over an equivalent pure Python implementation.**
 
 I created a custom Python extension in C using [Cython](https://cython.org/) to handle the bulk of the computational expenses. This includes a 3D vector extension class with corresponding operators as well as dot and cross product. It also includes a base class for rays and the hit detection.
 
@@ -43,7 +42,7 @@ The pure Python version uses Numpy and is already quite fast. With the extension
   <img width=350 src=https://github.com/schulze-paul/ray-tracer/blob/main/images/parallel_speedup.png>
 </div>
 
-**Figure 1: Execution time and speedup using parallelization.**
+**Execution time and speedup using parallelization.**
 
 Ray tracing is well suited for parallelization. I used the multiprocessing library to distribute the number of rays per pixel among the available cpu cores. The speedup is significant with each additional process until 9 cores where a platau of about 3.5x is hit.
 
