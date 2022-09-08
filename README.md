@@ -47,5 +47,7 @@ The pure Python version uses Numpy and is already quite fast. With the extension
 Ray tracing is well suited for parallelization. I used the multiprocessing library to distribute the number of rays per pixel among the available cpu cores. The speedup is significant with each additional process until 9 cores where a platau of about 3.5x is hit.
 
 ### Bounding Volume Hierarchy
+I used axis-aligned rectangular bounding boxes in my implementation. The hierarchy tree is constructed at initialization.
+
 
 ### Planned: Scattering PDF
