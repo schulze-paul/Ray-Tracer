@@ -12,7 +12,7 @@ import multiprocessing as mp
 from python.hittables import Hittable, HittableList, RectangleXY, RectangleYZ, RectangleZX, Sphere, MovableSphere, Box
 from python.camera import Camera
 from hittable import Color, Ray, Vector, random_in_unit_sphere, outer
-from python.hittables import Lambertian, Dielectric, Metal, ReflectiveOpaque, DiffuseLight, Material
+from python.hittables import Lambertian, Dielectric, Metal, ReflectiveOpaque, DiffuseLight, Material, BoundingVolumeHierarchyNode
 
 
 def write_color(out_file, pixel_color: Color) -> None:
@@ -65,6 +65,8 @@ def random_scene() -> HittableList:
     ground_material = Lambertian(walls_color)
     world = HittableList(Sphere(Vector(0, -1000, 0), 1000, ground_material))
 
+    return BoundingVolumeHierarchyNode(world, 0, 1)
+
     """
     for a in range(-11, 11):
         for b in range(-11, 11):
@@ -89,6 +91,8 @@ def random_scene() -> HittableList:
                     # glass
                     sphere_material = Dielectric(1.5)
                     world.add(Sphere(center, 0.2, sphere_material))
+    """
+
     """
 
     # big spheres
@@ -141,8 +145,7 @@ def random_scene() -> HittableList:
 
     # add box
     world.add(Box(Vector(2, 0, 5), Vector(3, 1, 6), material_wall))
-
-    return world
+    """
 
 
 def world_on_cube():
@@ -290,7 +293,7 @@ def one_ray_per_pixel(camera, world, max_depth, image_width, image_height):
     return image
 
 
-def main():
+def main(debug=False):
     """main function of the ray tracer"""
 
     # Image
@@ -300,7 +303,7 @@ def main():
     number_samples = 5
     max_depth = 16
 
-    world = world_on_cube()
+    world = random_scene()
 
     # set up camera
     look_from = Vector(50, 40, 30)
@@ -319,15 +322,19 @@ def main():
     cpu_count = mp.cpu_count()
     inputs = (camera, world, max_depth, image_width, image_height)
 
-    with mp.Pool() as pool:
-        results = []
-        for _ in range(cpu_count):
-            results.append(pool.apply_async(one_ray_per_pixel, inputs))
+    if not debug:
+        with mp.Pool() as pool:
+            results = []
+            for _ in range(cpu_count):
+                results.append(pool.apply_async(one_ray_per_pixel, inputs))
 
-        for result in tqdm(results):
-            image += result.get()
+            for result in tqdm(results):
+                image += result.get()
 
-    image /= cpu_count
+        image /= cpu_count
+    else:
+        image = one_ray_per_pixel(
+            camera, world, max_depth, image_width, image_height)
 
     plt.imshow(np.rot90(image))
     plt.xticks([])
@@ -337,4 +344,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(True)
