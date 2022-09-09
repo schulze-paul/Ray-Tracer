@@ -51,7 +51,8 @@ class Camera():
     def get_ray(self, x_pixel: float, y_pixel: float) -> Ray:
         """Get a random ray for the pixel x, y in the image."""
         random_origin = random_in_unit_disk() * self.lens_radius
-        offset = self.u * random_origin.x + self.v * random_origin.y
+        offset = self.u * \
+            random_origin.data[0] + self.v * random_origin.data[1]
         return Ray(self.origin + offset,
                    self.lower_left_corner +
                    self.horizontal * x_pixel +

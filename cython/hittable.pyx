@@ -1,4 +1,6 @@
-include "ray.pyx"
+# cython: profile=True
+
+include "bounding_volume.pyx"
 
 import cython
 
@@ -58,6 +60,9 @@ cdef class Hittable:
         """Computes hit event with a ray (if ray intersects with the hittable)"""
         return None
 
+    cpdef AxisAlignedBoundingBox bounding_box(self, double time0, double time1):
+        return None
+
 
 
 cdef class Sphere(Hittable):
@@ -94,7 +99,7 @@ cdef class Sphere(Hittable):
                 return None # outside of range
 
         # collect data about hit:
-        cdef Vector hit_point = ray(t_hit)
+        cdef Vector hit_point = ray.at(t_hit)
         cdef Vector surface_normal = self.get_surface_normal(hit_point)
 
         cdef HitRecord hit_record = HitRecord(hit_point, t_hit, self.material)
@@ -106,6 +111,12 @@ cdef class Sphere(Hittable):
         """get normal vector of a surface point (pointing outwards)"""
         return (surface_point - self.center) / self.radius
 
+    cpdef AxisAlignedBoundingBox bounding_box(self, double time0, double time1):
+        cdef AxisAlignedBoundingBox output_box = AxisAlignedBoundingBox(
+            self.center - Vector(self.radius, self.radius, self.radius),
+            self.center + Vector(self.radius, self.radius, self.radius)
+        )
+        return output_box
 
 cdef class MovableSphere(Hittable):    
     """Defines a moving as a hittable geometry."""
@@ -153,7 +164,7 @@ cdef class MovableSphere(Hittable):
                 return None # outside of range
 
         # collect data about hit:
-        cdef Vector hit_point = ray(t_hit)
+        cdef Vector hit_point = ray.at(t_hit)
         cdef Vector surface_normal = self.get_surface_normal(hit_point, ray.time)
 
         cdef HitRecord hit_record = HitRecord(hit_point, t_hit, self.material)
@@ -161,6 +172,120 @@ cdef class MovableSphere(Hittable):
 
         return hit_record
 
+    cpdef AxisAlignedBoundingBox bounding_box(self, double time0, double time1):
+        cdef AxisAlignedBoundingBox box0 = AxisAlignedBoundingBox(
+            self.center(time0) - Vector(self.radius, self.radius, self.radius),
+            self.center(time0) + Vector(self.radius, self.radius, self.radius)
+        )
+        cdef AxisAlignedBoundingBox box1 = AxisAlignedBoundingBox(
+            self.center(time1) - Vector(self.radius, self.radius, self.radius),
+            self.center(time1) + Vector(self.radius, self.radius, self.radius)
+        )
+        cdef AxisAlignedBoundingBox output_box = surrounding_box(box0, box1)
+        return output_box
+
+
     cpdef Vector get_surface_normal(self, surface_point: Vector, double time):
         """get normal vector of a surface point (pointing outwards)"""
         return (surface_point - self.center(time)) / self.radius
+
+
+
+
+cdef class RectangleXY(Hittable):
+    """Rectangle in the XY plane."""
+    cdef public double x0
+    cdef public double x1
+    cdef public double y0
+    cdef public double y1
+    cdef public double k
+    cdef public Material material
+
+    cpdef HitRecord hit(self, Ray ray, double t_min, double t_max):
+        cdef double t_hit = (self.k - ray.origin.data[2]) / ray.direction.data[2]
+        if t_hit < t_min or t_hit > t_max:
+            return None
+
+        cdef double x = ray.origin.data[0] + ray.direction.data[0] * t_hit
+        cdef double y = ray.origin.data[1] + ray.direction.data[1] * t_hit
+
+        if (x < self.x0 or x > self.x1 or y < self.y0 or y > self.y1):
+            return None
+
+        # collect hit data
+        cdef Vector hit_point = ray.at(t_hit)
+        cdef Vector surface_normal = Vector(0, 0, 1)
+
+        cdef HitRecord hit_record = HitRecord(hit_point, t_hit, self.material)
+        hit_record.set_face_normal(ray, surface_normal)
+
+        return hit_record
+
+    def bounding_box(self, time0: float, time1: float):
+        return AxisAlignedBoundingBox(Vector(self.x0, self.y0, self.k-0.0001), Vector(self.x1, self.y1, self.k+0.0001))
+
+
+cdef class RectangleYZ(Hittable):
+    """Rectangle in the XY plane."""
+    cdef public double y0
+    cdef public double y1
+    cdef public double z0
+    cdef public double z1
+    cdef public double k
+    cdef public Material material
+
+    cpdef HitRecord hit(self, Ray ray, double t_min, double t_max):
+        cdef double t_hit = (self.k - ray.origin.data[0]) / ray.direction.data[0]
+        if t_hit < t_min or t_hit > t_max:
+            return None
+
+        cdef double y = ray.origin.data[1] + ray.direction.data[1] * t_hit
+        cdef double z = ray.origin.data[2] + ray.direction.data[2] * t_hit
+
+        if (y < self.y0 or y > self.y1 or z < self.z0 or z > self.z1):
+            return None
+
+        # collect hit data
+        cdef Vector hit_point = ray.at(t_hit)
+        cdef Vector surface_normal = Vector(1, 0, 0)
+
+        cdef HitRecord hit_record = HitRecord(hit_point, t_hit, self.material)
+        hit_record.set_face_normal(ray, surface_normal)
+
+        return hit_record
+
+    def bounding_box(self, time0: float, time1: float):
+        return AxisAlignedBoundingBox(Vector(self.k-0.0001, self.y0, self.z0), Vector(self.k+0.0001, self.y1, self.z1))
+
+
+cdef class RectangleZX(Hittable):
+    """Rectangle in the XY plane."""
+    cdef public double z0
+    cdef public double z1
+    cdef public double x0
+    cdef public double x1
+    cdef public double k
+    cdef public Material material
+
+    cpdef HitRecord hit(self, Ray ray, double t_min, double t_max):
+        cdef double t_hit = (self.k - ray.origin.data[1]) / ray.direction.data[1]
+        if t_hit < t_min or t_hit > t_max:
+            return None
+
+        cdef double z = ray.origin.data[2] + ray.direction.data[2] * t_hit
+        cdef double x = ray.origin.data[0] + ray.direction.data[0] * t_hit
+
+        if (z < self.z0 or z > self.z1 or x < self.x0 or x > self.x1):
+            return None
+
+        # collect hit data
+        cdef Vector hit_point = ray.at(t_hit)
+        cdef Vector surface_normal = Vector(0, 1, 0)
+
+        cdef HitRecord hit_record = HitRecord(hit_point, t_hit, self.material)
+        hit_record.set_face_normal(ray, surface_normal)
+
+        return hit_record
+
+    def bounding_box(self, time0: float, time1: float):
+        return AxisAlignedBoundingBox(Vector(self.x0, self.k-0.0001, self.z0), Vector(self.x1, self.k+0.0001, self.z1))

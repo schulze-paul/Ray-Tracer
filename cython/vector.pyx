@@ -1,4 +1,4 @@
-
+# cython: profile=True
 
 from libc.math cimport sqrt, fabs, fmin
 
@@ -9,20 +9,18 @@ cimport numpy as np
 
 cpdef double dot(Vector a, Vector b):
     """Dot product of two vectors a and b: a_x*b_x + a_y*b_y + a_z*b_z."""
-    return a.x * b.x + a.y * b.y + a.z * b.z
+    return a.data[0] * b.data[0] + a.data[1] * b.data[1] + a.data[2] * b.data[2]
 
 
 cdef class Vector:
     """Class to store coordinates for 3d vectors."""
 
-    cdef public double x
-    cdef public double y
-    cdef public double z
-
+    cdef public double[3] data
+    
     def __init__(self, double x, double y, double z):
-        self.x = x
-        self.y = y
-        self.z = z
+        self.data[0] = x
+        self.data[1] = y
+        self.data[2] = z
 
 
     @staticmethod
@@ -34,52 +32,51 @@ cdef class Vector:
 
     cpdef double length_sq(self):
         """Get squared length of vector."""
-        return self.x*self.x + self.y*self.y + self.z*self.z
+        return self.data[0]*self.data[0] + self.data[1]*self.data[1] + self.data[2]*self.data[2]
 
     cpdef double length(self):
         """Get length of vector."""
         return sqrt(self.length_sq())
-
-
+    
     def __add__(self, Vector other):
         """Add two vectors."""
-        cdef double x = self.x + other.x
-        cdef double y = self.y + other.y
-        cdef double z = self.z + other.z
+        cdef double x = self.data[0] + other.data[0]
+        cdef double y = self.data[1] + other.data[1]
+        cdef double z = self.data[2] + other.data[2]
 
         return self.__class__(x, y, z)
 
     def __sub__(self, Vector other):
         """Subtract two vectors."""
-        cdef double x = self.x - other.x
-        cdef double y = self.y - other.y
-        cdef double z = self.z - other.z
+        cdef double x = self.data[0] - other.data[0]
+        cdef double y = self.data[1] - other.data[1]
+        cdef double z = self.data[2] - other.data[2]
 
         return self.__class__(x, y, z)
 
     def __mul__(self, double other):
         """Multiply all vector elements with a double value."""
-        cdef double x = self.x * other
-        cdef double y = self.y * other
-        cdef double z = self.z * other
+        cdef double x = self.data[0] * other
+        cdef double y = self.data[1] * other
+        cdef double z = self.data[2] * other
 
         return self.__class__(x, y, z)
 
     def __truediv__(self, double other):
         """Divide all vector elements by a double value."""
-        cdef double x = self.x / other
-        cdef double y = self.y / other
-        cdef double z = self.z / other
+        cdef double x = self.data[0] / other
+        cdef double y = self.data[1] / other
+        cdef double z = self.data[2] / other
 
         return self.__class__(x, y, z)
 
     def __str__(self):
         """Print out the coordinates of the vector."""
-        return "["+ str(self.x) +", "+ str(self.y) +", "+ str(self.z) +"]"
+        return "["+ str(self.data[0]) +", "+ str(self.data[1]) +", "+ str(self.data[2]) +"]"
 
     def __eq__(self, other):
         """Check if two vectors have the same coordinates."""
-        if self.x == other.x and self.y == other.y and self.z == other.z:
+        if self.data[0] == other.data[0] and self.data[1] == other.data[1] and self.data[2] == other.data[2]:
             return True
         else:
             return False
@@ -88,14 +85,14 @@ cdef class Vector:
         """Check if all vector elements are close to zero."""
         cdef double eps = 1e-8
         
-        return fabs(self.x) < eps and fabs(self.y) < eps and fabs(self.z) < eps 
+        return fabs(self.data[0]) < eps and fabs(self.data[1]) < eps and fabs(self.data[2]) < eps 
 
 
 cpdef Vector outer(Vector vector_a, Vector vector_b):
     """Get the outer product c of two vectors a and b: c_i = a_i * b_i"""
-    cdef double x = vector_a.x * vector_b.x
-    cdef double y = vector_a.y * vector_b.y
-    cdef double z = vector_a.z * vector_b.z
+    cdef double x = vector_a.data[0] * vector_b.data[0]
+    cdef double y = vector_a.data[1] * vector_b.data[1]
+    cdef double z = vector_a.data[2] * vector_b.data[2]
     return Vector(x, y, z)
 
 cpdef Vector reflect(Vector vector_in, Vector normal):
@@ -116,21 +113,21 @@ cdef class Color(Vector):
     """Class to store rgb color Information"""
 
     def __init__(self, double r, double g, double b):
-        self.x = r
-        self.y = g
-        self.z = b
+        self.data[0] = r
+        self.data[1] = g
+        self.data[2] = b
 
     cpdef r(self):
         """Get red value of color."""
-        return self.__cut(self.x)
+        return self.__cut(self.data[0])
 
     cpdef g(self):
         """Get green value of color."""
-        return self.__cut(self.y)
+        return self.__cut(self.data[1])
 
     cpdef b(self):
         """Get blue value of color."""
-        return self.__cut(self.z)
+        return self.__cut(self.data[2])
 
     cdef double __cut(self, double val):
         """TODO: remove"""
@@ -146,7 +143,7 @@ cdef class Color(Vector):
     @staticmethod
     def from_vector(vec: Vector) -> Color:
         """Convert a vector to an rgb color: x -> red, y -> green, z -> blue."""
-        return Color(vec.x, vec.y, vec.z)
+        return Color(vec.data[0], vec.data[1], vec.data[2])
 
 
 cpdef Vector random_in_unit_sphere():
@@ -190,7 +187,7 @@ cpdef Vector random_in_unit_disk():
     """Get a random point inside a circulat disk of radius 1."""
     while(True):
         point = Vector.random(-1, 1)
-        point = Vector(point.x, point.y, 0)
+        point = Vector(point.data[0], point.data[1], 0)
         if point.length_sq() > 1:
             pass
         else:
@@ -235,7 +232,7 @@ cpdef Vector cross(Vector vector_a, Vector vector_b):
     c_z = a_x * b_y - a_y * b_x
     """
     
-    cdef x = vector_a.y * vector_b.z - vector_a.z * vector_b.y
-    cdef y = vector_a.z * vector_b.x - vector_a.x * vector_b.z
-    cdef z = vector_a.x * vector_b.y - vector_a.y * vector_b.x
+    cdef x = vector_a.data[1] * vector_b.data[2] - vector_a.data[2] * vector_b.data[1]
+    cdef y = vector_a.data[2] * vector_b.data[0] - vector_a.data[0] * vector_b.data[2]
+    cdef z = vector_a.data[0] * vector_b.data[1] - vector_a.data[1] * vector_b.data[0]
     return Vector(x, y, z)
