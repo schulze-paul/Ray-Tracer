@@ -1,4 +1,4 @@
-# cython: profile=True
+# cython: profile=False
 
 from libc.math cimport sqrt, fabs, fmin
 

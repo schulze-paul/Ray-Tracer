@@ -1,4 +1,4 @@
-# cython: profile=True
+# cython: profile=False
 
 include "vector.pyx"
 cdef class Ray:

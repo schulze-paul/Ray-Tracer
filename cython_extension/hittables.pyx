@@ -1,4 +1,4 @@
-# cython: profile=True
+# cython: profile=False
 
 include "bounding_volume.pyx"
 
