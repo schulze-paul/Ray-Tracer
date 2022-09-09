@@ -2,6 +2,8 @@
 
 include "ray.pyx"
 
+import cython
+
 from numpy.math cimport INFINITY
 
 cdef class AxisAlignedBoundingBox:
@@ -20,24 +22,26 @@ cdef class AxisAlignedBoundingBox:
         self.minimum = Vector(min_x, min_y, min_z)
         self.maximum = Vector(max_x, max_y, max_z)
 
+    @cython.cdivision(True)
     cpdef HitRecord hit(self, Ray ray, double t_min, double t_max):
         cdef Py_ssize_t a
         cdef double divisior
         cdef double t0
         cdef double t1
-
-        cdef double direcion
+        cdef double direction
+        cdef double div_factor
+        
         for a in range(3):
             direction = ray.direction.data[a]
-            if not direcion == 0.0:
-                dev_factor = 1.0/direction
+            if not direction == 0.0:
+                div_factor = 1.0/direction
             else:
-                dev_factor == INFINITY
+                div_factor == INFINITY
 
-            t0 = (self.minimum.data[a] - ray.origin.data[a])*dev_factor
-            t1 = (self.maximum.data[a] - ray.origin.data[a])*dev_factor
+            t0 = (self.minimum.data[a] - ray.origin.data[a])*div_factor
+            t1 = (self.maximum.data[a] - ray.origin.data[a])*div_factor
 
-            if divisior < 0:
+            if div_factor < 0:
                 temp = t0
                 t0 = t1
                 t1 = temp
