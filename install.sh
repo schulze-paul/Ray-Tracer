@@ -5,4 +5,4 @@
 
 pip install -r requirements.txt
 
-python3 cython/setup.py build_ext --inplace
+python3 cython_extension/setup.py build_ext --inplace

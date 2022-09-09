@@ -10,12 +10,12 @@ import pickle
 import multiprocessing as mp
 
 # local imports
-from python.hittables import HittableList, Box
-from python.camera import Camera
+from python_code.hittables import HittableList, Box
+from python_code.camera import Camera
 from cython_extension import Color, Ray, Vector, outer
 from cython_extension import Hittable, Sphere, RectangleXY, RectangleYZ, RectangleZX
-from python.materials import Lambertian, Dielectric, Metal, ReflectiveOpaque, DiffuseLight, Material
-from python.bvh_node import BoundingVolumeHierarchyNode
+from python_code.materials import Lambertian, Dielectric, Metal, ReflectiveOpaque, DiffuseLight, Material
+from python_code.bvh_node import BoundingVolumeHierarchyNode
 
 
 def write_color(out_file, pixel_color: Color) -> None:
