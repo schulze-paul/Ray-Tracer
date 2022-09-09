@@ -1,21 +1,19 @@
-import sys
 from cmath import inf
-from math import remainder, sqrt
+from math import sqrt
 from time import time
 from tqdm import tqdm
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-import pickle
 import multiprocessing as mp
 
 # local imports
-from python_code.hittables import HittableList, Box
-from python_code.camera import Camera
 from cython_extension import Color, Ray, Vector, outer
 from cython_extension import Hittable, Sphere, RectangleXY, RectangleYZ, RectangleZX
+from python_code.hittables import HittableList, Box
 from python_code.materials import Lambertian, Dielectric, Metal, ReflectiveOpaque, DiffuseLight, Material
 from python_code.bvh_node import BoundingVolumeHierarchyNode
+from python_code.camera import Camera
 
 
 def write_color(out_file, pixel_color: Color) -> None:
