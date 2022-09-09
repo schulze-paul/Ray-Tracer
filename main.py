@@ -1,6 +1,6 @@
 import sys
 from cmath import inf
-from math import sqrt
+from math import remainder, sqrt
 from time import time
 from tqdm import tqdm
 import numpy as np
@@ -10,10 +10,12 @@ import pickle
 import multiprocessing as mp
 
 # local imports
-from python.hittables import Hittable, HittableList, Sphere, MovableSphere, Box
+from python.hittables import HittableList, Box
 from python.camera import Camera
-from hittable import Color, Ray, Vector, random_in_unit_sphere, outer, RectangleXY, RectangleYZ, RectangleZX
-from python.hittables import Lambertian, Dielectric, Metal, ReflectiveOpaque, DiffuseLight, Material, BoundingVolumeHierarchyNode
+from cython_extension import Color, Ray, Vector, outer
+from cython_extension import Hittable, Sphere, RectangleXY, RectangleYZ, RectangleZX
+from python.materials import Lambertian, Dielectric, Metal, ReflectiveOpaque, DiffuseLight, Material
+from python.bvh_node import BoundingVolumeHierarchyNode
 
 
 def write_color(out_file, pixel_color: Color) -> None:
@@ -275,32 +277,34 @@ def world_on_cube():
     # return world
 
 
-def one_ray_per_pixel(camera, world, max_depth, image_width, image_height):
+def render(number_of_rays: int, camera: Camera, world: Hittable, max_depth: int, image_width: int, image_height: int):
     def get_x_y(i: int, j: int) -> tuple:
         x = (i + random.random()) / (image_width - 1)
         y = (j + random.random()) / (image_height - 1)
         return x, y
 
     image = np.zeros((image_width, image_height, 3))
-    for j in reversed(range(image_height)):
-        for i in range(image_width):
-            u, v = get_x_y(i, j)
-            ray = camera.get_ray(u, v)
-            color = ray_color(ray, world, max_depth)
-            image[i, j] = np.array(
-                [color.data[0], color.data[1], color.data[2]])
 
-    return image
+    for _ in range(number_of_rays):
+        for j in reversed(range(image_height)):
+            for i in range(image_width):
+                u, v = get_x_y(i, j)
+                ray = camera.get_ray(u, v)
+                color = ray_color(ray, world, max_depth)
+                image[i, j] += np.array(
+                    [color.data[0], color.data[1], color.data[2]])
+
+    return image/number_of_rays
 
 
-def main(debug=False):
+def main(parallel=True):
     """main function of the ray tracer"""
 
     # Image
     aspect_ratio = 2/3
     image_width = 400
     image_height = int(image_width/aspect_ratio)
-    number_samples = 5
+    number_samples = 12
     max_depth = 16
 
     world = world_on_cube()
@@ -320,13 +324,23 @@ def main(debug=False):
 
     # Render
     cpu_count = mp.cpu_count()
-    inputs = (camera, world, max_depth, image_width, image_height)
+    # samples per cpu core
+    samples_per_core = round(number_samples/cpu_count)
+    samples_remainder = number_samples - samples_per_core*cpu_count
 
-    if not debug:
+    mp_inputs = (samples_per_core, camera, world,
+                 max_depth, image_width, image_height)
+
+    if parallel:
         with mp.Pool() as pool:
             results = []
-            for _ in range(cpu_count):
-                results.append(pool.apply_async(one_ray_per_pixel, inputs))
+            for core_index in range(cpu_count):
+                if core_index == cpu_count-1:
+                    mp_inputs = (samples_per_core + samples_remainder, camera, world,
+                                 max_depth, image_width, image_height)
+                    results.append(pool.apply_async(render, mp_inputs))
+                else:
+                    results.append(pool.apply_async(render, mp_inputs))
 
             for result in tqdm(results):
                 image += result.get()
@@ -334,8 +348,8 @@ def main(debug=False):
         image /= cpu_count
     else:
         time_a = time()
-        image = one_ray_per_pixel(
-            camera, world, max_depth, image_width, image_height)
+        image = render(
+            number_samples, camera, world, max_depth, image_width, image_height)
         print(time() - time_a)
 
     plt.imshow(np.rot90(image))
