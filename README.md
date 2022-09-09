@@ -1,4 +1,4 @@
-# Ray Tracer
+# Building a Fast Ray Tracer in Python. 
 
 ![Preview image](https://github.com/schulze-paul/ray-tracer/blob/main/images/image_800_steady.png?raw=true)
 
@@ -45,4 +45,4 @@ The Ray Tracer uses a custom C extension which is built with [`Cython`](https://
 Ray tracing is well suited for parallelization. The multiprocessing library distributes the number of rays per pixel among the available cpu cores. The speedup is significant with each additional process until 9 cores where a platau of about 3.5x is hit.
 
 ### Bounding Volume Hierarchy
-The Ray Tracer uses axis aligned bounding boxes and generates a bounding volume hierarchy at intialization. This increases performancec significantly for a scene with many objects.
+The Ray Tracer uses axis aligned bounding boxes and generates a bounding volume hierarchy at intialization. This improves performance significantly for a scene with many objects.
