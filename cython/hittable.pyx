@@ -191,7 +191,6 @@ cdef class MovableSphere(Hittable):
 
 
 
-
 cdef class RectangleXY(Hittable):
     """Rectangle in the XY plane."""
     cdef public double x0
@@ -200,6 +199,14 @@ cdef class RectangleXY(Hittable):
     cdef public double y1
     cdef public double k
     cdef public Material material
+    
+    def __init__(self, double x0, double x1, double y0, double y1, double k, Material material):
+        self.x0 = x0
+        self.x1 = x1
+        self.y0 = y0
+        self.y1 = y1
+        self.k = k
+        self.material = material
 
     cpdef HitRecord hit(self, Ray ray, double t_min, double t_max):
         cdef double t_hit = (self.k - ray.origin.data[2]) / ray.direction.data[2]
@@ -221,8 +228,9 @@ cdef class RectangleXY(Hittable):
 
         return hit_record
 
-    def bounding_box(self, time0: float, time1: float):
+    cpdef AxisAlignedBoundingBox bounding_box(self, double time0, double time1):
         return AxisAlignedBoundingBox(Vector(self.x0, self.y0, self.k-0.0001), Vector(self.x1, self.y1, self.k+0.0001))
+
 
 
 cdef class RectangleYZ(Hittable):
@@ -233,6 +241,14 @@ cdef class RectangleYZ(Hittable):
     cdef public double z1
     cdef public double k
     cdef public Material material
+    
+    def __init__(self, double y0, double y1, double z0, double z1, double k, Material material):
+        self.y0 = y0
+        self.y1 = y1
+        self.z0 = z0
+        self.z1 = z1
+        self.k = k
+        self.material = material
 
     cpdef HitRecord hit(self, Ray ray, double t_min, double t_max):
         cdef double t_hit = (self.k - ray.origin.data[0]) / ray.direction.data[0]
@@ -254,8 +270,8 @@ cdef class RectangleYZ(Hittable):
 
         return hit_record
 
-    def bounding_box(self, time0: float, time1: float):
-        return AxisAlignedBoundingBox(Vector(self.k-0.0001, self.y0, self.z0), Vector(self.k+0.0001, self.y1, self.z1))
+    cpdef AxisAlignedBoundingBox bounding_box(self, double time0, double time1):
+        return AxisAlignedBoundingBox(Vector(self.k-0.0001, self.y0, self.z0, ), Vector(self.k+0.0001, self.y1, self.z1))
 
 
 cdef class RectangleZX(Hittable):
@@ -266,6 +282,14 @@ cdef class RectangleZX(Hittable):
     cdef public double x1
     cdef public double k
     cdef public Material material
+    
+    def __init__(self, double z0, double z1, double x0, double x1, double k, Material material):
+        self.z0 = z0
+        self.z1 = z1
+        self.x0 = x0
+        self.x1 = x1
+        self.k = k
+        self.material = material
 
     cpdef HitRecord hit(self, Ray ray, double t_min, double t_max):
         cdef double t_hit = (self.k - ray.origin.data[1]) / ray.direction.data[1]
@@ -287,5 +311,5 @@ cdef class RectangleZX(Hittable):
 
         return hit_record
 
-    def bounding_box(self, time0: float, time1: float):
-        return AxisAlignedBoundingBox(Vector(self.x0, self.k-0.0001, self.z0), Vector(self.x1, self.k+0.0001, self.z1))
+    cpdef AxisAlignedBoundingBox bounding_box(self, double time0, double time1):
+        return AxisAlignedBoundingBox(Vector(self.x0, self.k-0.0001, self.z0, ), Vector(self.x1, self.k+0.0001, self.z1))
