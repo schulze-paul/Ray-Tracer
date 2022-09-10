@@ -1,4 +1,4 @@
-# Building a Fast Ray Tracer in Python. 
+# Fast Ray Tracer in Python. 
 
 ![Preview image](https://github.com/schulze-paul/ray-tracer/blob/main/images/image_800_steady.png?raw=true)
 
