@@ -1,10 +1,14 @@
 #include <iostream>
+
 #include "ray_tracer.h"
-#include "scenes.h"
-#include "image_data.h"
-#include "camera.h"
+#include "vec3.h"
+#include "color.h"
+#include "ray.h"
+#include "hit_record.h"
 #include "hittable_list.h"
-#include "sphere.h"
+#include "camera.h"
+#include "image_data.h"
+#include "scenes.h"
 
 Color background_color(const Ray &r)
 {
@@ -44,7 +48,7 @@ int main()
 {
     // world
     Camera camera;
-    HittableList world = get_random_scene(camera);
+    HittableList world = get_random_scene_checker(camera);
 
     ImageData image = ImageData(
         400,        // width

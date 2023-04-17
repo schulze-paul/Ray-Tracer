@@ -1,8 +1,6 @@
 #ifndef AABB_H
 #define AABB_H
 
-#include "ray.h"
-#include "vec3.h"
 
 class AABB
 {
