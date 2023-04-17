@@ -26,6 +26,10 @@ public:
     }
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const;
     virtual bool bounding_box(double t0, double t1, AABB &box) const;
+    std::vector<std::shared_ptr<Hittable>> getObjects() const
+    {
+        return objects;
+    }
 
 private:
     std::vector<std::shared_ptr<Hittable>> objects;
@@ -71,5 +75,6 @@ bool HittableList::bounding_box(double t0, double t1, AABB &box) const
 
     return true;
 }
+
 
 #endif // HITTABLE_LIST_H

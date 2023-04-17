@@ -19,6 +19,8 @@
 #include "checker_texture.h"
 #include "noise_texture.h"
 
+#include "bvh.h"
+
 HittableList get_world()
 {
     HittableList world = HittableList();
@@ -178,7 +180,7 @@ HittableList get_random_scene_moving(Camera &camera)
     return world;
 }
 
-HittableList get_random_scene_checker(Camera &camera)
+BVHNode get_random_scene_checker(Camera &camera)
 {
 
     camera.setUp(
@@ -214,7 +216,6 @@ HittableList get_random_scene_checker(Camera &camera)
             if ((center - Vec3(4, 0.2, 0)).length() > 0.9)
             {
                 Material *sphere_material;
-
                 if (choose_material < 0.8)
                 {
                     // diffuse
@@ -222,6 +223,7 @@ HittableList get_random_scene_checker(Camera &camera)
                     sphere_material = new Lambertian(albedo);
                     center = center + Vec3(0, random_double(0, 0.5), 0);
                     auto sphere = std::make_shared<MovingSphere>(center, center + Vec3(0, 0.5, 0), 0.0, 1.0, 0.2, sphere_material);
+                    world.add(sphere);
                 }
                 else if (choose_material < 0.95)
                 {
@@ -230,14 +232,15 @@ HittableList get_random_scene_checker(Camera &camera)
                     auto fuzz = random_double(0, 0.5);
                     sphere_material = new Metal(albedo, fuzz);
                     auto sphere = std::make_shared<Sphere>(center, 0.2, sphere_material);
+                    world.add(sphere);
                 }
                 else
                 {
                     // glass
                     sphere_material = new Dielectric(1.5);
                     auto sphere = std::make_shared<Sphere>(center, 0.2, sphere_material);
+                    world.add(sphere);
                 }
-                // world.add(sphere);
             }
         }
     }
@@ -254,7 +257,9 @@ HittableList get_random_scene_checker(Camera &camera)
     auto sphere3 = std::make_shared<Sphere>(Vec3(4, 1, 0), 1.0, material3);
     world.add(sphere3);
 
-    return world;
+    auto objects = world.getObjects();
+
+    return BVHNode(objects, 0, objects.size(), 0, 1);
 }
 
 #endif // WORLD_H
