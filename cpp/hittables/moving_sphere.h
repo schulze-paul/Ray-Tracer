@@ -7,14 +7,14 @@ class MovingSphere : public Hittable
 {
 public:
     MovingSphere() {}
-    MovingSphere(Vec3 center0, Vec3 center1, double time0, double time1, double radius, Material *material)
+    MovingSphere(Vec3 center0, Vec3 center1, double time0, double time1, double radius, std::shared_ptr<Material> material)
     {
         this->center0 = center0;
         this->center1 = center1;
         this->time0 = time0;
         this->time1 = time1;
         this->radius = radius;
-        setMaterial(material);
+        this->material = material;
     }
 
     Vec3 getCenter(double time) const
@@ -48,13 +48,11 @@ public:
             }
 
             // sphere in range, compute hit
-            rec.setT(hit_at_t);
-            rec.setHit(true);
-            rec.setMaterial(getMaterial());
             Vec3 normal = (r.point_at_parameter(hit_at_t) - center) / radius;
-            rec.setNormal(normal);
-            rec.setHitPoint(r.point_at_parameter(hit_at_t));
-            get_sphere_uv(normal, rec.u, rec.v);
+            double u, v;
+            get_sphere_uv(normal, u, v);
+        rec.    set(hit_at_t, normal, r.point_at_parameter(hit_at_t), material, u, v);
+            
             return true;
         }
         return false;
@@ -72,14 +70,7 @@ private:
     Vec3 center0, center1;
     double time0, time1;
     double radius;
-
-    static void get_sphere_uv(const Vec3 &p, double &u, double &v)
-    {
-        double phi = atan2(p.z(), p.x());
-        double theta = asin(p.y());
-        u = 1 - (phi + pi) / (2 * pi);
-        v = (theta + pi / 2) / pi;
-    }
+    std::shared_ptr<Material> material;
 };
 
 #endif // MOVING_SPHERE_H
