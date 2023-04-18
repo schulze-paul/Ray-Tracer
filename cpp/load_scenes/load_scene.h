@@ -15,6 +15,7 @@
 #include "rectangle.h"
 #include "texture.h"
 #include "sphere.h"
+#include "dielectric.h"
 
 inline Vec3 loadVec3(YAML::Node &vector)    
 {
@@ -51,11 +52,29 @@ inline void load_material(std::shared_ptr<Material> material, YAML::Node &materi
 {
     std::cerr << "loading material" << std::endl;
     std::string type = material_data["type"].as<std::string>();
-    std::string diffuse = "diffuse";
-    if (type.compare("diffuse")) {
+    if (type.compare("diffuse") == 0) {
+        std::cerr << "loading diffuse material" << std::endl;
         auto color_data = material_data["color"];
         Color color = loadVec3(color_data);
         material = std::make_shared<Lambertian>(color);
+    }
+    if (type.compare("metal") == 0) {
+        std::cerr << "loading metal material" << std::endl;
+        auto color_data = material_data["albedo"];
+        Color color = loadVec3(color_data);
+        double fuzz = material_data["fuzz"].as<double>();
+        material = std::make_shared<Metal>(color, fuzz);
+    }
+    if (type.compare("diffuse_light") == 0) {
+        std::cerr << "loading diffuse light material" << std::endl;
+        auto color_data = material_data["color"];
+        Color color = loadVec3(color_data);
+        material = std::make_shared<DiffuseLight>(color);
+    }
+    if (type.compare("dielectric") == 0) {
+        std::cerr << "loading dielectric material" << std::endl;
+        double refraction_index = material_data["refraction_index"].as<double>();
+        material = std::make_shared<Dielectric>(refraction_index);
     }
 }
 
@@ -72,6 +91,52 @@ inline void load_sphere(std::shared_ptr<HittableList> objects, YAML::Node &spher
     objects->add(sphere);
 }
 
+inline void load_xy_rectangle(std::shared_ptr<HittableList> objects, YAML::Node &rectangle_data)
+{
+    std::cerr << "loading xy rectangle" << std::endl;
+    double x0 = rectangle_data["x0"].as<double>();
+    double x1 = rectangle_data["x1"].as<double>();
+    double y0 = rectangle_data["y0"].as<double>();
+    double y1 = rectangle_data["y1"].as<double>();
+    double k = rectangle_data["k"].as<double>();
+    auto material_data = rectangle_data["material"];
+    std::shared_ptr<Material> material;
+    load_material(material, material_data);
+    auto rectangle = std::make_shared<XY_Rectangle>(x0, x1, y0, y1, k, material);
+    objects->add(rectangle);
+}
+
+inline void load_xz_rectangle(std::shared_ptr<HittableList> objects, YAML::Node &rectangle_data)
+{
+    std::cerr << "loading xz rectangle" << std::endl;
+    double x0 = rectangle_data["x0"].as<double>();
+    double x1 = rectangle_data["x1"].as<double>();
+    double z0 = rectangle_data["z0"].as<double>();
+    double z1 = rectangle_data["z1"].as<double>();
+    double k = rectangle_data["k"].as<double>();
+    auto material_data = rectangle_data["material"];
+    std::shared_ptr<Material> material;
+    load_material(material, material_data);
+    auto rectangle = std::make_shared<XZ_Rectangle>(x0, x1, z0, z1, k, material);
+    objects->add(rectangle);
+}
+
+inline void load_yz_rectangle(std::shared_ptr<HittableList> objects, YAML::Node &rectangle_data)
+{
+    std::cerr << "loading yz rectangle" << std::endl;
+    double y0 = rectangle_data["y0"].as<double>();
+    double y1 = rectangle_data["y1"].as<double>();
+    double z0 = rectangle_data["z0"].as<double>();
+    double z1 = rectangle_data["z1"].as<double>();
+    double k = rectangle_data["k"].as<double>();
+    auto material_data = rectangle_data["material"];
+    std::shared_ptr<Material> material;
+    load_material(material, material_data);
+    auto rectangle = std::make_shared<YZ_Rectangle>(y0, y1, z0, z1, k, material);
+    objects->add(rectangle);
+}
+	
+
 inline void load_objects(std::shared_ptr<HittableList> objects, YAML::Node &objects_data)
 {
     int numberOfObjects = objects_data.size();
@@ -84,7 +149,22 @@ inline void load_objects(std::shared_ptr<HittableList> objects, YAML::Node &obje
         {
             auto sphere_data = objects_data[i];
             load_sphere(objects, sphere_data);
-        } 
+        }
+        if (type.compare("xy_rectangle") == 0)
+        {
+            auto rectangle_data = objects_data[i];
+            load_xy_rectangle(objects, rectangle_data);
+        }
+        if (type.compare("xz_rectangle") == 0)
+        {
+            auto rectangle_data = objects_data[i];
+            load_xz_rectangle(objects, rectangle_data);
+        }
+        if (type.compare("yz_rectangle") == 0)
+        {
+            auto rectangle_data = objects_data[i];
+            load_yz_rectangle(objects, rectangle_data);
+        }
     }
 }
 
