@@ -18,6 +18,13 @@ public:
     {
         return albedo;
     }
+    void setAlbedo(std::shared_ptr<Texture> a)
+    {
+        albedo = a;
+    }
+    virtual std::string toString() {
+        return "Material";
+    };
     
 private:
     std::shared_ptr<Texture> albedo;
@@ -36,5 +43,6 @@ inline Vec3 refract(const Vec3 &uv, const Vec3 &n, double etai_over_etat)
     Vec3 r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * n;
     return r_out_perp + r_out_parallel;
 }
+
 
 #endif

@@ -25,6 +25,9 @@ public:
     {
         return Color(0, 0, 0);
     }
+    std::string toString() {
+        return "Metal";
+    }
 };
 
 #endif // METAL_H

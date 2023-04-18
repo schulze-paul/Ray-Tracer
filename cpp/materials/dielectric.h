@@ -36,6 +36,9 @@ public:
     {
         return Color(0, 0, 0);
     }
+    std::string toString() {
+        return "Dielectric";
+    }
 
 private:
     static double reflectance(double cosine, double ref_idx)

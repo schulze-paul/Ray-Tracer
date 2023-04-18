@@ -29,6 +29,9 @@ public:
     {
         return albedo->value(u, v, p);
     }
+    std::string toString() {
+        return "DiffuseLight";
+    }
 };
 
 
