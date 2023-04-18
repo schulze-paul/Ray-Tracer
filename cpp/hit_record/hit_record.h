@@ -1,6 +1,8 @@
 #ifndef HIT_RECORD_H
 #define HIT_RECORD_H
 
+#include <memory>
+
 #include "ray.h"
 #include "materials.h"
 
@@ -15,7 +17,26 @@ public:
         hit = false;
         t = 0;
     }
-
+    HitRecord(double t, const Vec3 &normal, const Vec3 &hitPoint, std::shared_ptr<Material> material, double u, double v)
+    {
+        this->hit = true;
+        this->t = t;
+        this->normal = normal;
+        this->hitPoint = hitPoint;
+        this->material = material;
+        this->u = u;
+        this->v = v;
+    }
+    void set(double t, const Vec3 &normal, const Vec3 &hitPoint, std::shared_ptr<Material> material, double u, double v)
+    {
+        this->hit = true;
+        this->t = t;
+        this->normal = normal;
+        this->hitPoint = hitPoint;
+        this->material = material;
+        this->u = u;
+        this->v = v;
+    }
     void setHit(bool hit) { this->hit = hit; }
     bool getHit() const { return hit; }
 
@@ -28,8 +49,8 @@ public:
     void setHitPoint(const Vec3 &hitPoint) { this->hitPoint = hitPoint; }
     Vec3 getHitPoint() const { return hitPoint; }
 
-    void setMaterial(Material *material) { this->material = material; }
-    Material *getMaterial() const { return material; }
+    void setMaterial(std::shared_ptr<Material> material) { this->material = material; }
+    std::shared_ptr<Material> getMaterial() const { return material; }
 
     double getU() const { return u; }
     double getV() const { return v; }
@@ -75,7 +96,7 @@ private:
     Vec3 normal;
     Vec3 hitPoint;
     Ray ray;
-    Material *material;
+    std::shared_ptr<Material> material;
 };
 
 #endif // HIT_RECORD_H
