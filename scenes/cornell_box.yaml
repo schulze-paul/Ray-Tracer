@@ -1,0 +1,99 @@
+scene:
+  camera:
+    look_from: [-800, 278, 278]
+    look_at: [0, 278, 278]
+    vup: [0, 1, 0]
+    vfov: 40
+    aperture: 0.0
+    aspect_ratio: 1.0
+    focus_dist: 800.0
+    time0: 0.0
+    time1: 1.0
+
+  objects:
+    - type: xy_rectangle
+      x0: 0
+      x1: 555
+      y0: 0
+      y1: 555
+      k: 555 
+      material:
+        type: diffuse
+        color: [0.12, 0.45, 0.15]
+    - type: xy_rectangle
+      x0: 0
+      x1: 555
+      y0: 0
+      y1: 555
+      k: 0
+      material:
+        type: diffuse
+        color: [0.65, 0.05, 0.05]
+    - type: xz_rectangle
+      x0: 213
+      x1: 343
+      z0: 227
+      z1: 332
+      k: 554
+      material:
+        type: diffuse
+        color: [0.73, 0.73, 0.73]
+    - type: xz_rectangle
+      x0: 0
+      x1: 555
+      z0: 0
+      z1: 555
+      k: 0
+      material:
+        type: diffuse
+        color: [0.73, 0.73, 0.73]
+    - type: xz_rectangle
+      x0: 0
+      x1: 555
+      z0: 0
+      z1: 555
+      k: 555
+      material:
+        type: diffuse
+        color: [0.73, 0.73, 0.73]
+    - type: yz_rectangle
+      y0: 0
+      y1: 555
+      z0: 0
+      z1: 555
+      k: 555
+      material:
+        type: diffuse
+        color: [0.73, 0.73, 0.73]
+    - type: sphere
+      center: [190, 90, 190]
+      radius: 90
+      material:
+        type: dielectric
+        refraction_index: 1.5
+    - type: sphere
+      center: [400, 100, 400]
+      radius: 100
+      material:
+        type: dielectric
+        refraction_index: 1.5
+    - type: sphere
+      center: [250, 150, 450]
+      radius: 150
+      material:
+        type: metal
+        albedo: [0.8, 0.85, 0.88]
+        fuzz: 0.0
+    - type: sphere
+      center: [400, 200, 300]
+      radius: 200
+      material:
+        type: diffuse
+        color: [0.7, 0.3, 0.1]
+    - type: sphere
+      center: [120, 150, 145]
+      radius: 150
+      material:
+        type: metal
+        albedo: [0.9, 0.76, 0.46]
+        fuzz: 0.0
