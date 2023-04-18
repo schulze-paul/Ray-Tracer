@@ -48,6 +48,10 @@ public:
     {
         return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
     }
+    std::string toString() const
+    {
+        return std::to_string(e[0]) + " " + std::to_string(e[1]) + " " + std::to_string(e[2]);
+    }
 };
 
 // for printing
