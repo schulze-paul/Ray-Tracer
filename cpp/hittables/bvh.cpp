@@ -54,7 +54,7 @@ bool BVHNode::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) cons
     }
 
     bool hit_left = left->hit(r, t_min, t_max, rec);
-    bool hit_right = right->hit(r, hit_left ? rec.getT() + 0.0001 : t_min, t_max, rec);
+    bool hit_right = right->hit(r, t_min, hit_left ? rec.getT() : t_max, rec);
 
     return hit_left || hit_right;
 }
