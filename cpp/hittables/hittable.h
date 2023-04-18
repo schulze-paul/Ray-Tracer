@@ -16,7 +16,8 @@ public:
     void setMaterial(std::shared_ptr<Material> m);
     std::shared_ptr<Material> getMaterial() const { return material; }
     virtual bool bounding_box(double t0, double t1, AABB &box) const = 0;
-
+    
+    virtual std::string toString() const = 0;
 private:
     std::shared_ptr<Material> material;
 };

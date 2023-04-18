@@ -17,6 +17,7 @@ public:
     XY_Rectangle(double _x0, double _x1, double _y0, double _y1, double _k, std::shared_ptr<Material> m) : x0(_x0), x1(_x1), y0(_y0), y1(_y1), k(_k), material(m) {}
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
+    std::string toString() const override { return "XY_Rectangle"; }
 
 public:
     double x0, x1, y0, y1, k;
@@ -30,6 +31,7 @@ public:
     XZ_Rectangle(double _x0, double _x1, double _z0, double _z1, double _k, std::shared_ptr<Material> m) : x0(_x0), x1(_x1), z0(_z0), z1(_z1), k(_k), material(m) {}
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
+    std::string toString() const override { return "XZ_Rectangle"; }
 
 public:
     double x0, x1, z0, z1, k;
@@ -43,6 +45,7 @@ public:
     YZ_Rectangle(double _y0, double _y1, double _z0, double _z1, double _k, std::shared_ptr<Material> m) : y0(_y0), y1(_y1), z0(_z0), z1(_z1), k(_k), material(m) {}
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
+    std::string toString() const override { return "YZ_Rectangle"; }
 
 public:
     double y0, y1, z0, z1, k;
@@ -126,6 +129,7 @@ public:
         output_box = AABB(box_min, box_max);
         return true;
     }
+    std::string toString() const override { return "Box"; }
 
 public:
     Vec3 box_min, box_max;

@@ -30,6 +30,14 @@ public:
     {
         return objects;
     }
+    std::shared_ptr<Hittable> getObject(int i) const
+    {
+        return objects[i];
+    }
+    std::string toString() const
+    {
+        return "HittableList";
+    }
 
 private:
     std::vector<std::shared_ptr<Hittable>> objects;

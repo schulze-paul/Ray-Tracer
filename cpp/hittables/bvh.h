@@ -16,7 +16,7 @@ public:
 
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
-
+    std::string toString() const override { return "BVHNode"; }
 public:
     std::shared_ptr<Hittable> left;
     std::shared_ptr<Hittable> right;

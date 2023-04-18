@@ -24,6 +24,14 @@ public:
         box = AABB(center - Vec3(radius, radius, radius), center + Vec3(radius, radius, radius));
         return true;
     }
+    std::string toString() const override
+    {
+        std::string ss = "";
+        ss +="Sphere: \n";
+        ss += "center: " + center.toString() + "\n";
+        ss += "radius: " + std::to_string(radius) + "\n";
+        return ss;
+    }
     
 private:
     Vec3 center;
