@@ -1,8 +1,11 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 
+#include <memory>
+
 #include "color.h"
 #include "ray.h"
+#include "texture.h"
 
 class HitRecord;
 
@@ -10,7 +13,16 @@ class Material
 {
 public:
     virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const = 0;
+    virtual Color emitted(double u, double v, const Vec3 &p) const = 0;
+    std::shared_ptr<Texture> getAlbedo() const
+    {
+        return albedo;
+    }
+    
+private:
+    std::shared_ptr<Texture> albedo;
 };
+
 
 inline Vec3 reflect(const Vec3 &v, const Vec3 &n)
 {

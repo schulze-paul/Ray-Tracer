@@ -32,6 +32,10 @@ public:
         scattered = Ray(rec.getHitPoint(), unit_vector(direction), r_in.time);
         return true;
     }
+    Color emitted(double u, double v, const Vec3 &p) const override
+    {
+        return Color(0, 0, 0);
+    }
 
 private:
     static double reflectance(double cosine, double ref_idx)

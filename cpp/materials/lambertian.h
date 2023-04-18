@@ -21,11 +21,17 @@ public:
     Lambertian(Texture *a) : albedo(a) {}
     virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
     {
-        Vec3 scatter_direction = rec.getNormal() + random_unit_vector();
-        scattered = Ray(rec.getHitPoint(), scatter_direction, r_in.time);
-        attenuation = albedo->value(rec.getU(), rec.getV(), rec.getHitPoint());
+        Vec3 normal = rec.isFrontFace(r_in) ? rec.getNormal() : -rec.getNormal();
+        Vec3 scatter_direction = normal + random_unit_vector();
+        scattered = Ray(rec.getHitPoint(), scatter_direction, r_in.get_time());
+        attenuation = albedo->value(rec.u, rec.v, rec.getHitPoint());
         return true;
     }
+    Color emitted(double u, double v, const Vec3 &p) const override
+    {
+        return Color(0, 0, 0);
+    }
 };
+
 
 #endif // LAMBERTIAN_H
