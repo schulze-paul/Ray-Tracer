@@ -1,0 +1,32 @@
+scene:
+  camera:
+    look_from: [0.0, 0.0, 5.0]
+    look_at: [0.0, 0.0, 0.0]
+    vup: [0.0, 1.0, 0.0]
+    vfov: 45.0 # degrees
+    aperture: 0.1
+    aspect_ratio: 1.33
+    focus_dist: 5.0
+    time0: 0.0
+    time1: 1.0
+
+  
+  objects:
+    - type: sphere
+      center: [-2.0, 0.0, 0.0]
+      radius: 1.0
+      material:
+        type: diffuse
+        color: [1.0, 0.0, 0.0]        
+    - type: sphere
+      center: [2.0, 0.0, 0.0]
+      radius: 1.0
+      material:
+        type: diffuse
+        color: [0.0, 1.0, 0.0]
+    - type: sphere
+      center: [0.0, 0.0, 0.0]
+      radius: 1.0
+      material:
+        type: diffuse
+        color: [0.0, 0.0, 1.0]
