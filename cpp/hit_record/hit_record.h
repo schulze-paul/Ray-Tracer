@@ -17,7 +17,7 @@ public:
         hit = false;
         t = 0;
     }
-    HitRecord(double t, const Vec3 &normal, const Vec3 &hitPoint, std::shared_ptr<Material> material, double u, double v)
+    HitRecord(double t, const Vec3 &normal, const Vec3 &hitPoint, Material *material, double u, double v)
     {
         this->hit = true;
         this->t = t;
@@ -27,7 +27,7 @@ public:
         this->u = u;
         this->v = v;
     }
-    void set(double t, const Vec3 &normal, const Vec3 &hitPoint, std::shared_ptr<Material> material, double u, double v)
+    void set(double t, const Vec3 &normal, const Vec3 &hitPoint, Material *material, double u, double v)
     {
         this->hit = true;
         this->t = t;
@@ -49,8 +49,8 @@ public:
     void setHitPoint(const Vec3 &hitPoint) { this->hitPoint = hitPoint; }
     Vec3 getHitPoint() const { return hitPoint; }
 
-    void setMaterial(std::shared_ptr<Material> material) { this->material = material; }
-    std::shared_ptr<Material> getMaterial() const { return material; }
+    void setMaterial(Material *material) { this->material = material; }
+    Material *getMaterial() const { return material; }
 
     double getU() const { return u; }
     double getV() const { return v; }
@@ -96,7 +96,7 @@ private:
     Vec3 normal;
     Vec3 hitPoint;
     Ray ray;
-    std::shared_ptr<Material> material;
+    Material *material;
 };
 
 #endif // HIT_RECORD_H

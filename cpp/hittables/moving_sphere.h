@@ -7,7 +7,7 @@ class MovingSphere : public Hittable
 {
 public:
     MovingSphere() {}
-    MovingSphere(Vec3 center0, Vec3 center1, double time0, double time1, double radius, std::shared_ptr<Material> material)
+    MovingSphere(Vec3 center0, Vec3 center1, double time0, double time1, double radius, Material *material)
     {
         this->center0 = center0;
         this->center1 = center1;
@@ -70,7 +70,7 @@ private:
     Vec3 center0, center1;
     double time0, time1;
     double radius;
-    std::shared_ptr<Material> material;
+    Material *material;
 };
 
 #endif // MOVING_SPHERE_H

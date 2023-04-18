@@ -7,7 +7,7 @@ class Sphere : public Hittable
 {
 public:
     Sphere() {}
-    Sphere(Vec3 center, double radius, std::shared_ptr<Material> material)
+    Sphere(Vec3 center, double radius, Material *material)
     {
         this->center = center;
         this->radius = radius;
@@ -24,7 +24,7 @@ public:
         box = AABB(center - Vec3(radius, radius, radius), center + Vec3(radius, radius, radius));
         return true;
     }
-    std::string toString() const override
+    std::string toString() const
     {
         std::string ss = "";
         ss +="Sphere: \n";
@@ -32,15 +32,16 @@ public:
         ss += "radius: " + std::to_string(radius) + "\n";
         return ss;
     }
+    void setMaterial(Material *m) { material = m; }
     
 private:
     Vec3 center;
     double radius;
-    std::shared_ptr<Material> material;
+    Material *material;
 };
 
 bool Sphere::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
-{
+{   
     Vec3 oc = r.origin - center;              // origin to center
     double a = dot(r.direction, r.direction); // direction squared
     double b = 2.0 * dot(oc, r.direction);    // 2 * alignment of center direction and ray direction
@@ -60,12 +61,16 @@ bool Sphere::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
                 return false;
             }
         }
-
+        if (material == nullptr) {
+            std::cerr << "material is null" << std::endl;
+        }
 
         // sphere in range, compute hit
         double u, v;
         get_sphere_uv((rec.getHitPoint() - center) / radius, u, v);
         rec.set(hit_at_t, get_normal(r.point_at_parameter(hit_at_t)), r.point_at_parameter(hit_at_t), material, u, v);
+        
+
         return true;
     }
     return false;

@@ -14,42 +14,42 @@ class XY_Rectangle : public Hittable
 {
 public:
     XY_Rectangle() {}
-    XY_Rectangle(double _x0, double _x1, double _y0, double _y1, double _k, std::shared_ptr<Material> m) : x0(_x0), x1(_x1), y0(_y0), y1(_y1), k(_k), material(m) {}
+    XY_Rectangle(double _x0, double _x1, double _y0, double _y1, double _k, Material *m) : x0(_x0), x1(_x1), y0(_y0), y1(_y1), k(_k), material(m) {}
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
-    std::string toString() const override { return "XY_Rectangle"; }
+    std::string toString() const { return "XY_Rectangle"; }
 
 public:
     double x0, x1, y0, y1, k;
-    std::shared_ptr<Material> material;
+    Material *material;
 };
 
 class XZ_Rectangle : public Hittable
 {
 public:
     XZ_Rectangle() {}
-    XZ_Rectangle(double _x0, double _x1, double _z0, double _z1, double _k, std::shared_ptr<Material> m) : x0(_x0), x1(_x1), z0(_z0), z1(_z1), k(_k), material(m) {}
+    XZ_Rectangle(double _x0, double _x1, double _z0, double _z1, double _k, Material *m) : x0(_x0), x1(_x1), z0(_z0), z1(_z1), k(_k), material(m) {}
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
-    std::string toString() const override { return "XZ_Rectangle"; }
+    std::string toString() const { return "XZ_Rectangle"; }
 
 public:
     double x0, x1, z0, z1, k;
-    std::shared_ptr<Material> material;
+    Material *material;
 };
 
 class YZ_Rectangle : public Hittable
 {
 public:
     YZ_Rectangle() {}
-    YZ_Rectangle(double _y0, double _y1, double _z0, double _z1, double _k, std::shared_ptr<Material> m) : y0(_y0), y1(_y1), z0(_z0), z1(_z1), k(_k), material(m) {}
+    YZ_Rectangle(double _y0, double _y1, double _z0, double _z1, double _k, Material *m) : y0(_y0), y1(_y1), z0(_z0), z1(_z1), k(_k), material(m) {}
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
-    std::string toString() const override { return "YZ_Rectangle"; }
+    std::string toString() const { return "YZ_Rectangle"; }
 
 public:
     double y0, y1, z0, z1, k;
-    std::shared_ptr<Material> material;
+    Material *material;
 };
 
 bool XY_Rectangle::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
@@ -122,30 +122,30 @@ class Box : public Hittable
 {
 public:
     Box() {}
-    Box(const Vec3 &p0, const Vec3 &p1, std::shared_ptr<Material> ptr);
+    Box(const Vec3 &p0, const Vec3 &p1, Material *material);
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override
     {
         output_box = AABB(box_min, box_max);
         return true;
     }
-    std::string toString() const override { return "Box"; }
+    std::string toString() const { return "Box"; }
 
 public:
     Vec3 box_min, box_max;
     HittableList sides;
 };
 
-Box::Box(const Vec3 &p0, const Vec3 &p1, std::shared_ptr<Material> ptr)
+Box::Box(const Vec3 &p0, const Vec3 &p1, Material *material)
 {
     box_min = p0;
     box_max = p1;
-    sides.add(std::make_shared<XY_Rectangle>(p0.x(), p1.x(), p0.y(), p1.y(), p1.z(), ptr));
-    sides.add(std::make_shared<XY_Rectangle>(p0.x(), p1.x(), p0.y(), p1.y(), p0.z(), ptr));
-    sides.add(std::make_shared<XZ_Rectangle>(p0.x(), p1.x(), p0.z(), p1.z(), p1.y(), ptr));
-    sides.add(std::make_shared<XZ_Rectangle>(p0.x(), p1.x(), p0.z(), p1.z(), p0.y(), ptr));
-    sides.add(std::make_shared<YZ_Rectangle>(p0.y(), p1.y(), p0.z(), p1.z(), p1.x(), ptr));
-    sides.add(std::make_shared<YZ_Rectangle>(p0.y(), p1.y(), p0.z(), p1.z(), p0.x(), ptr));
+    sides.add(std::make_shared<XY_Rectangle>(p0.x(), p1.x(), p0.y(), p1.y(), p1.z(), material));
+    sides.add(std::make_shared<XY_Rectangle>(p0.x(), p1.x(), p0.y(), p1.y(), p0.z(), material));
+    sides.add(std::make_shared<XZ_Rectangle>(p0.x(), p1.x(), p0.z(), p1.z(), p1.y(), material));
+    sides.add(std::make_shared<XZ_Rectangle>(p0.x(), p1.x(), p0.z(), p1.z(), p0.y(), material));
+    sides.add(std::make_shared<YZ_Rectangle>(p0.y(), p1.y(), p0.z(), p1.z(), p1.x(), material));
+    sides.add(std::make_shared<YZ_Rectangle>(p0.y(), p1.y(), p0.z(), p1.z(), p0.x(), material));
 }
 
 bool Box::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const

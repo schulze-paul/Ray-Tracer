@@ -13,16 +13,19 @@ class Hittable
 {
 public:
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const = 0;
-    void setMaterial(std::shared_ptr<Material> m);
-    std::shared_ptr<Material> getMaterial() const { return material; }
+    void setMaterial(Material *m);
+    Material* getMaterial() const { return material; }
     virtual bool bounding_box(double t0, double t1, AABB &box) const = 0;
     
-    virtual std::string toString() const = 0;
+    virtual std::string toString()
+    {
+        return "Hittable";
+    };
 private:
-    std::shared_ptr<Material> material;
+    Material *material;
 };
 
-void Hittable::setMaterial(std::shared_ptr<Material> m)
+void Hittable::setMaterial(Material *m)
 {
     material = m;
 }
