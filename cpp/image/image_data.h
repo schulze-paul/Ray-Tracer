@@ -3,8 +3,14 @@
 
 #include <vector>
 #include <iostream>
+#include <fstream>
 #include "color.h"
 #include "ray_tracer.h"
+
+double gamma_correction(double x)
+{
+    return std::pow(x, 1 / 2.2);
+}
 
 class ImageData
 {
@@ -24,6 +30,7 @@ public:
     int get_samples_per_pixel() const;
     int get_max_depth() const;
     int write_ppm(std::ostream &out);
+    void write_to_file(std::string filename);
     int add_color(int i, int j, Color color);
     double get_aspect_ratio() const;
     double get_u(int i) const;
@@ -90,9 +97,9 @@ int ImageData::write_ppm(std::ostream &out)
         {
             // normalize color and convert to int
             number_of_samples = this->number_of_samples[j][i];
-            r = this->pixels[j][i][0] / number_of_samples * 255.999;
-            g = this->pixels[j][i][1] / number_of_samples * 255.999;
-            b = this->pixels[j][i][2] / number_of_samples * 255.999;
+            r = int(255.999 * gamma_correction(this->pixels[j][i][0] / number_of_samples));
+            g = int(255.999 * gamma_correction(this->pixels[j][i][1] / number_of_samples));
+            b = int(255.999 * gamma_correction(this->pixels[j][i][2] / number_of_samples));
             r = clamp(r, 0, 255);
             g = clamp(g, 0, 255);
             b = clamp(b, 0, 255);
@@ -102,6 +109,15 @@ int ImageData::write_ppm(std::ostream &out)
     }
     return 0;
 }
+
+void ImageData::write_to_file(std::string filename)
+{
+    std::cout << "Writing to file " << filename << std::endl;
+    std::ofstream out(filename); // opens the file
+    this->write_ppm(out);       // write to the file
+    out.close();            // close the file
+
+}   
 
 double ImageData::get_u(int i) const
 {
