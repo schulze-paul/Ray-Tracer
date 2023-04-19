@@ -36,7 +36,7 @@ scene:
       z1: 332
       k: 554
       material:
-        type: diffuse
+        type: diffuse_light
         color: [0.73, 0.73, 0.73]
     - type: xz_rectangle
       x0: 0
