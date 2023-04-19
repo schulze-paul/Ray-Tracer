@@ -132,7 +132,7 @@ HittableList load_scene(std::string filename, Camera &camera)
             Color color = loadVec3(color_data);
             material = new Lambertian(color);
         }
-        if (materialType.compare("metal") == 0)
+        else if (materialType.compare("metal") == 0)
         {
             auto metalData = objects_data[i]["material"];
             auto color_data = material_data["albedo"];
@@ -140,18 +140,22 @@ HittableList load_scene(std::string filename, Camera &camera)
             double fuzz = material_data["fuzz"].as<double>();
             material = new Metal(color, fuzz);
         }
-        if (materialType.compare("dielectric") == 0)
+        else if (materialType.compare("dielectric") == 0)
         {
             auto dielectricData = objects_data[i]["material"];        
             double refraction_index = material_data["refraction_index"].as<double>();
             material = new Dielectric(refraction_index);
         }
-        if (materialType.compare("diffuse_light") == 0)
+        else if (materialType.compare("diffuse_light") == 0)
         {
             auto diffuseLightData = objects_data[i]["material"];
             auto color_data = material_data["color"];
             Color color = loadVec3(color_data);
             material = new DiffuseLight(color);
+        }
+        else {
+            std::cerr << "Unknown material type: " << materialType << std::endl;
+            exit(1);
         }
         materials.push_back(material);
 
@@ -160,20 +164,24 @@ HittableList load_scene(std::string filename, Camera &camera)
             auto sphere_data = objects_data[i];
             load_sphere(hittable_list, sphere_data, material);
         }
-        if (shapeType.compare("xy_rectangle") == 0)
+        else if (shapeType.compare("xy_rectangle") == 0)
         {
             auto rectangle_data = objects_data[i];
             load_xy_rectangle(hittable_list, rectangle_data, material);
         }
-        if (shapeType.compare("xz_rectangle") == 0)
+        else if (shapeType.compare("xz_rectangle") == 0)
         {
             auto rectangle_data = objects_data[i];
             load_xz_rectangle(hittable_list, rectangle_data, material);
         }
-        if (shapeType.compare("yz_rectangle") == 0)
+        else if (shapeType.compare("yz_rectangle") == 0)
         {
             auto rectangle_data = objects_data[i];
             load_yz_rectangle(hittable_list, rectangle_data, material);
+        }
+        else {
+            std::cerr << "Unknown shape type: " << shapeType << std::endl;
+            exit(1);
         }
     }
 
