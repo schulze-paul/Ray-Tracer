@@ -4,17 +4,18 @@
 #include "vec3.h"
 #include "ray.h"
 #include "color.h"
+#include "image_data.h"
 
 class Camera
 {
 public:
     Camera(){};
-    Camera(double vfov, double aspect_ratio, double aperture, double focus_dist, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
+    Camera(double vfov, double aspect_ratio, double aperture, double focus_dist, int samples_per_pixel, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
     {
-        setUp(vfov, aspect_ratio, aperture, focus_dist, look_from, look_at, time0, time1);
-    }
+        setUp(vfov, aspect_ratio, aperture, focus_dist, samples_per_pixel, look_from, look_at, time0, time1);
+    };
 
-    void setUp(double vfov, double aspect_ratio, double aperture, double focus_dist, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
+    void setUp(double vfov, double aspect_ratio, double aperture, double focus_dist, int samples_per_pixel, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
     {
         double theta = degrees_to_radians(vfov);
         double h = tan(theta / 2);
@@ -32,10 +33,16 @@ public:
         this->vertical = focus_dist * viewport_height * v;
         this->lower_left_corner = look_from - horizontal / 2 - vertical / 2 - focus_dist * w;
 
+        this->samples_per_pixel = samples_per_pixel;
         this->lens_radius = aperture / 2;
         this->time0 = time0;
         this->time1 = time1;
     };
+
+    void setImageData(int image_width)
+    {
+        this->image = ImageData(image_width, aspect_ratio);
+    }
 
     Ray get_ray(double u, double v) const
     {
@@ -58,6 +65,8 @@ public:
     double viewport_height;
     double time0, time1; // shutter open/close times
     double aspect_ratio;
+    int samples_per_pixel;
+    ImageData image;
 };
 
 #endif // CAMERA_H

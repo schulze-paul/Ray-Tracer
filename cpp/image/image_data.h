@@ -18,17 +18,14 @@ private:
     int width;
     int height;
     double aspect_ratio;
-    int samples_per_pixel;
-    int max_depth;
     std::vector<std::vector<std::vector<double>>> pixels;
     std::vector<std::vector<int>> number_of_samples;
 
 public:
-    ImageData(int width, double aspect_ratio, int samples_per_pixel, int max_depth);
+    ImageData(){};
+    ImageData(int width, double aspect_ratio);
     int get_width() const;
     int get_height() const;
-    int get_samples_per_pixel() const;
-    int get_max_depth() const;
     int write_ppm(std::ostream &out);
     void write_to_file(std::string filename);
     int add_color(int i, int j, Color color);
@@ -36,13 +33,11 @@ public:
     double get_u(int i) const;
     double get_v(int j) const;
 };
-ImageData::ImageData(int width, double aspect_ratio, int samples_per_pixel, int max_depth)
+ImageData::ImageData(int width, double aspect_ratio)
 {
     this->width = width;
     this->height = width / aspect_ratio;
     this->aspect_ratio = aspect_ratio;
-    this->samples_per_pixel = samples_per_pixel;
-    this->max_depth = max_depth;
     this->pixels = std::vector<std::vector<std::vector<double>>>(this->height, std::vector<std::vector<double>>(this->width, std::vector<double>(3, 0.0f)));
     this->number_of_samples = std::vector<std::vector<int>>(this->height, std::vector<int>(this->width, 0));
 }
@@ -65,15 +60,6 @@ int ImageData::get_height() const
     return this->height;
 }
 
-int ImageData::get_samples_per_pixel() const
-{
-    return this->samples_per_pixel;
-}
-
-int ImageData::get_max_depth() const
-{
-    return this->max_depth;
-}
 double ImageData::get_aspect_ratio() const
 {
     return this->aspect_ratio;

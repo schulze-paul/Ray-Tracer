@@ -40,13 +40,16 @@ inline void loadCamera(Camera &camera, YAML::Node &camera_data)
     double focus_distance = camera_data["focus_dist"].as<double>();
     double time0 = camera_data["time0"].as<double>();
     double time1 = camera_data["time1"].as<double>();
+    int samples_per_pixel = camera_data["samples_per_pixel"].as<int>();
+    int image_width = camera_data["image_width"].as<int>();
 
     auto look_from_data = camera_data["look_from"];
     Vec3 look_from = loadVec3(look_from_data); 
     auto look_at_data = camera_data["look_at"];
     Vec3 look_at = loadVec3(look_at_data);
     
-    camera.setUp(vfov, aspect_ratio, aperture, focus_distance, look_from, look_at, time0, time1);
+    camera.setUp(vfov, aspect_ratio, aperture, focus_distance, samples_per_pixel, look_from, look_at, time0, time1);
+    camera.setImageData(image_width);
 }
 
 
