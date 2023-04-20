@@ -7,6 +7,8 @@ scene:
     aperture: 0.0
     aspect_ratio: 1.0
     focus_dist: 800.0
+    image_width: 400
+    samples_per_pixel: 100
     time0: 0.0
     time1: 1.0
 
@@ -29,6 +31,13 @@ scene:
       material:
         type: diffuse
         color: [0.65, 0.05, 0.05]
+    # add sphere light source in ceiling
+    - type: sphere
+      center: [343, 548.8, 227]
+      radius: 100
+      material:
+        type: diffuse_light
+        color: [15, 15, 15]
     - type: xz_rectangle
       x0: 213
       x1: 343

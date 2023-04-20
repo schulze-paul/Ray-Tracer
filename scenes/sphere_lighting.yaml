@@ -1,0 +1,67 @@
+scene:
+  # camera looking at the 3 spheres
+  camera:
+    look_from: [0, 2, 8]
+    look_at: [0, 2, 0]
+    vup: [0, 1, 0]
+    vfov: 60
+    aperture: 0.0
+    aspect_ratio: 1.333
+    focus_dist: 10.0
+    image_width: 400
+    samples_per_pixel: 100
+    time0: 0.0
+    time1: 1.0
+
+ 
+ # dark background
+  # backround:
+  #   type: solid_background
+  #     color: [0.0, 0.0, 0.0]
+
+  objects:
+    # sphere as ground
+    - type: sphere
+      center: [0, -1000, 0]
+      radius: 1000
+      material:
+        type: diffuse
+        color: [0.5, 0.5, 0.5]
+    # sphere as sun up in the sky
+    - type: sphere
+      center: [-10, 10, 0]
+      radius: 2
+      material:
+        type: diffuse_light
+        color: [15, 15, 15]
+    # three spheres with different materials on the ground
+    - type: sphere
+      center: [-4, 1, 0]
+      radius: 1
+      material:
+        type: diffuse
+        color: [0.4, 0.2, 0.1]
+    - type: sphere
+      center: [0, 1, 0]
+      radius: 1
+      material:
+        type: metal
+        albedo: [0.7, 0.6, 0.5]
+        fuzz: 0.0
+    - type: sphere
+      center: [4, 1, 0]
+      radius: 1
+      material:
+        type: dielectric
+        refraction_index: 1.5
+
+    # add back wall behind the spheres
+    - type: xy_rectangle
+      x0: -10
+      x1: 10
+      y0: -10
+      y1: 10
+      k: -2
+      material:
+        type: diffuse
+        color: [0.5, 0.5, 0.5]
