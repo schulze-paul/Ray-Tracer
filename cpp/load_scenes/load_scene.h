@@ -108,6 +108,11 @@ inline void load_yz_rectangle(HittableList &objects, YAML::Node &rectangle_data,
 HittableList load_scene(std::string filename, Camera &camera)
 {
     std::ifstream fin(filename);
+    // check if file exists
+    if (!fin.good())
+    {
+        std::cerr << "File not accessible: " << filename << std::endl;
+    }
 
     YAML::Node scene = YAML::Load(fin);
 
