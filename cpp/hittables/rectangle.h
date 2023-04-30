@@ -18,6 +18,8 @@ public:
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
     std::string toString() const { return "XY_Rectangle"; }
+    double pdf_value(const Vec3 &o, const Vec3 &v, double time) const override;
+    Vec3 random(const Vec3 &o) const override;
 
 public:
     double x0, x1, y0, y1, k;
@@ -32,6 +34,8 @@ public:
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
     std::string toString() const { return "XZ_Rectangle"; }
+    double pdf_value(const Vec3 &o, const Vec3 &v, double time) const override;
+    Vec3 random(const Vec3 &o) const override;
 
 public:
     double x0, x1, z0, z1, k;
@@ -46,6 +50,8 @@ public:
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
     std::string toString() const { return "YZ_Rectangle"; }
+    double pdf_value(const Vec3 &o, const Vec3 &v, double time) const override;
+    Vec3 random(const Vec3 &o) const override;
 
 public:
     double y0, y1, z0, z1, k;
@@ -118,6 +124,67 @@ bool YZ_Rectangle::bounding_box(double time0, double time1, AABB &output_box) co
     return true;
 }
 
+Vec3 XY_Rectangle::random(const Vec3 &origin) const
+{
+    Vec3 random_point = Vec3(random_double(x0, x1), random_double(y0,y1), k);
+    return random_point - origin;
+}
+
+Vec3 XZ_Rectangle::random(const Vec3 &origin) const
+{
+    Vec3 random_point = Vec3(random_double(x0, x1), k, random_double(z0, z1));
+    return random_point - origin;
+}
+
+Vec3 YZ_Rectangle::random(const Vec3 &origin) const
+{
+    Vec3 random_point = Vec3(k, random_double(y0, y1), random_double(z0, z1));
+    return random_point - origin;
+}
+
+double XY_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) const
+{
+    HitRecord rec;
+    if (this->hit(Ray(origin, v, time), 0.001, infinity, rec))
+    {
+        double area = (x1 - x0) * (y1 - y0);
+        double distance_squared = rec.getT() * rec.getT() * v.length_squared();
+        double cosine = fabs(dot(v, rec.getNormal()) / v.length());
+        return distance_squared / (cosine * area);
+    }
+    else
+        return 0;
+}
+
+double XZ_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) const
+{
+    HitRecord rec;
+    if (this->hit(Ray(origin, v, time), 0.001, infinity, rec))
+    {
+        double area = (x1 - x0) * (z1 - z0);
+        double distance_squared = rec.getT() * rec.getT() * v.length_squared();
+        double cosine = fabs(dot(v, rec.getNormal()) / v.length());
+        return distance_squared / (cosine * area);
+    }
+    else
+        return 0;
+}
+
+double YZ_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) const
+{
+    HitRecord rec;
+    if (this->hit(Ray(origin, v, time), 0.001, infinity, rec))
+    {
+        double area = (y1 - y0) * (z1 - z0);
+        double distance_squared = rec.getT() * rec.getT() * v.length_squared();
+        double cosine = fabs(dot(v, rec.getNormal()) / v.length());
+        return distance_squared / (cosine * area);
+    }
+    else
+        return 0;
+}
+
+
 class Box : public Hittable
 {
 public:
@@ -140,12 +207,18 @@ Box::Box(const Vec3 &p0, const Vec3 &p1, Material *material)
 {
     box_min = p0;
     box_max = p1;
-    sides.add(std::make_shared<XY_Rectangle>(p0.x(), p1.x(), p0.y(), p1.y(), p1.z(), material));
-    sides.add(std::make_shared<XY_Rectangle>(p0.x(), p1.x(), p0.y(), p1.y(), p0.z(), material));
-    sides.add(std::make_shared<XZ_Rectangle>(p0.x(), p1.x(), p0.z(), p1.z(), p1.y(), material));
-    sides.add(std::make_shared<XZ_Rectangle>(p0.x(), p1.x(), p0.z(), p1.z(), p0.y(), material));
-    sides.add(std::make_shared<YZ_Rectangle>(p0.y(), p1.y(), p0.z(), p1.z(), p1.x(), material));
-    sides.add(std::make_shared<YZ_Rectangle>(p0.y(), p1.y(), p0.z(), p1.z(), p0.x(), material));
+    double min_x = std::min(p0.x(), p1.x());
+    double min_y = std::min(p0.y(), p1.y());
+    double min_z = std::min(p0.z(), p1.z());
+    double max_x = std::max(p0.x(), p1.x());
+    double max_y = std::max(p0.y(), p1.y());
+    double max_z = std::max(p0.z(), p1.z());
+    sides.add(std::make_shared<XY_Rectangle>(min_x, max_x, min_y, max_y, max_z, material));
+    sides.add(std::make_shared<XY_Rectangle>(min_x, max_x, min_y, max_y, min_z, material));
+    sides.add(std::make_shared<XZ_Rectangle>(min_x, max_x, min_z, max_z, max_y, material));
+    sides.add(std::make_shared<XZ_Rectangle>(min_x, max_x, min_z, max_z, min_y, material));
+    sides.add(std::make_shared<YZ_Rectangle>(min_y, max_y, min_z, max_z, max_x, material));
+    sides.add(std::make_shared<YZ_Rectangle>(min_y, max_y, min_z, max_z, min_x, material));
 }
 
 bool Box::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const

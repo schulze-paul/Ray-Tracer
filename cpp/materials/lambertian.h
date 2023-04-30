@@ -6,6 +6,8 @@
 #include "vec3.h"
 #include "ray.h"
 #include "hit_record.h"
+#include "onb.h"
+#include "pdf.h"
 
 class Lambertian : public Material
 {
@@ -19,13 +21,20 @@ public:
     };
 
     Lambertian(Texture *a) : albedo(a) {}
-    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
+    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &albedo, Ray &scattered, double &pdf) const override
     {
-        Vec3 normal = rec.isFrontFace(r_in) ? rec.getNormal() : -rec.getNormal();
-        Vec3 scatter_direction = normal + random_unit_vector();
-        scattered = Ray(rec.getHitPoint(), scatter_direction, r_in.get_time());
-        attenuation = albedo->value(rec.u, rec.v, rec.getHitPoint());
+        ONB uvw;
+        uvw.build_from_w(rec.getNormal());
+        auto direction = uvw.local(random_cosine_direction());
+        scattered = Ray(rec.getHitPoint(), unit_vector(direction), r_in.get_time());
+        albedo = this->albedo->value(rec.u, rec.v, rec.getHitPoint());
+        pdf = dot(uvw.w(), scattered.direction) / pi;
         return true;
+    }
+    double scattering_pdf(const Ray &r_in, const HitRecord &hit_record, const Ray& scattered) const override
+    {
+        auto cosine = dot(hit_record.getNormal(), unit_vector(scattered.direction));
+        return cosine < 0 ? 0 : cosine/pi;
     }
     Color emitted(double u, double v, const Vec3 &p) const override
     {
@@ -33,6 +42,10 @@ public:
     }
     std::string toString() {
         return "Lambertian";
+    }
+    virtual bool isLambertian() const override
+    {
+        return true;
     }
 };
 

@@ -52,6 +52,12 @@ public:
     {
         return std::to_string(e[0]) + " " + std::to_string(e[1]) + " " + std::to_string(e[2]);
     }
+    inline bool isNearZero() const
+    {
+        // Return true if the vector is close to zero in all dimensions.
+        const auto s = 1e-8;
+        return (fabs(e[0]) < s) && (fabs(e[1]) < s) && (fabs(e[2]) < s);
+    }
 };
 
 // for printing

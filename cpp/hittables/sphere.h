@@ -3,6 +3,8 @@
 
 #include "hittable.h"
 
+Vec3 random_to_sphere(double radius, double distance_squared);
+
 class Sphere : public Hittable
 {
 public:
@@ -33,6 +35,24 @@ public:
         return ss;
     }
     void setMaterial(Material *m) { material = m; }
+    double pdf_value(const Vec3& o, const Vec3& v, double time) const override {
+        HitRecord rec;
+        if (this->hit(Ray(o, v, time), 0.001, infinity, rec)) {
+            auto cos_theta_max = sqrt(1 - radius*radius/(center-o).length_squared());
+            auto solid_angle = 2*pi*(1-cos_theta_max);
+            return 1 / solid_angle;
+        }
+        else {
+            return 0;
+        }
+    }
+    Vec3 random(const Vec3& o) const override {
+        Vec3 direction = center - o;
+        auto distance_squared = direction.length_squared();
+        ONB uvw;
+        uvw.build_from_w(direction);
+        return uvw.local(random_to_sphere(radius, distance_squared));
+    }
     
 private:
     Vec3 center;
@@ -74,6 +94,16 @@ bool Sphere::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
         return true;
     }
     return false;
+}
+
+Vec3 random_to_sphere(double radius, double distance_squared) {
+    auto r1 = random_double();
+    auto r2 = random_double();
+    auto z = 1 + r2*(sqrt(1-radius*radius/distance_squared) - 1);
+    auto phi = 2*pi*r1;
+    auto x = cos(phi)*sqrt(1-z*z);
+    auto y = sin(phi)*sqrt(1-z*z);
+    return Vec3(x, y, z);
 }
 
 #endif // SPHERE_H

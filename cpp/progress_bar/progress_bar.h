@@ -49,6 +49,7 @@ public:
                 std::cerr << " ";
         }
         std::cerr << "] " << int(progress * 100.0 / total) << " %\t";
+        std::cerr << "Progress: " << progress << " / " << total << " \t";
         std::cerr << "Elapsed: " << seconds_to_time(elapsed) << " \t";
         std::cerr << "ETA: " << seconds_to_time(eta) << " \r";
         std::cerr.flush();

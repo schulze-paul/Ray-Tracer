@@ -21,6 +21,14 @@ public:
     {
         return "Hittable";
     };
+    virtual double pdf_value(const Vec3 &o, const Vec3 &v, double time) const
+    {
+        return 0.0;
+    }
+    virtual Vec3 random(const Vec3 &o) const
+    {
+        return Vec3(1, 0, 0);
+    }
 private:
     Material *material;
 };

@@ -26,6 +26,10 @@ public:
     }
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const;
     virtual bool bounding_box(double t0, double t1, AABB &box) const;
+    std::shared_ptr<Hittable> get(int i) const
+    {
+        return objects[i];
+    }
     std::vector<std::shared_ptr<Hittable>> getObjects() const
     {
         return objects;
