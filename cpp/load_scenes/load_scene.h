@@ -104,6 +104,17 @@ inline void load_yz_rectangle(HittableList &objects, YAML::Node &rectangle_data,
     objects.add(rectangle);
 }
 
+inline void load_box(HittableList &objects, YAML::Node &box_data, Material *material)
+{
+    std::cerr << "loading box" << std::endl;
+    auto box_min_data = box_data["box_min"];
+    auto box_max_data = box_data["box_max"];
+    Vec3 box_min = loadVec3(box_min_data);
+    Vec3 box_max = loadVec3(box_max_data);
+    auto material_data = box_data["material"];
+    auto box = std::make_shared<Box>(box_min, box_max, material);
+    objects.add(box);
+}
 
 HittableList load_scene(std::string filename, Camera &camera)
 {
@@ -186,6 +197,11 @@ HittableList load_scene(std::string filename, Camera &camera)
         {
             auto rectangle_data = objects_data[i];
             load_yz_rectangle(hittable_list, rectangle_data, material);
+        }
+        else if (shapeType.compare("box") == 0)
+        {
+            auto box_data = objects_data[i];
+            load_box(hittable_list, box_data, material);
         }
         else {
             std::cerr << "Unknown shape type: " << shapeType << std::endl;
