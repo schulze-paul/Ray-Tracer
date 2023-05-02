@@ -21,7 +21,7 @@ public:
     };
 
     DiffuseLight(Texture *a) : albedo(a) {}
-    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
+    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered, double &pdf, std::shared_ptr<HittableList>& lights) const override
     {
         return false;
     }
@@ -31,6 +31,10 @@ public:
     }
     std::string toString() {
         return "DiffuseLight";
+    }
+    virtual bool isEmissive() const override
+    {
+        return true;
     }
 };
 

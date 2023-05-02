@@ -4,6 +4,8 @@
 #include "materials.h"
 #include "hit_record.h"
 
+double reflectance(double cosine, double ref_idx);
+
 class Dielectric : public Material
 {
 private:
@@ -11,7 +13,7 @@ private:
 
 public:
     Dielectric(double ri) : ref_idx(ri) {}
-    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered) const override
+    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered, double &pdf, std::shared_ptr<HittableList>& lights) const override
     {
         attenuation = Color(1.0, 1.0, 1.0);
         double refraction_ratio = rec.isFrontFace(r_in) ? (1.0 / ref_idx) : ref_idx;
@@ -25,10 +27,15 @@ public:
         Vec3 direction;
 
         if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double())
+        {
             direction = reflect(unit_direction, normal);
+            pdf = 1;
+        }
         else
+        {
             direction = refract(unit_direction, normal, refraction_ratio);
-
+            pdf = 1;
+        }
         scattered = Ray(rec.getHitPoint(), unit_vector(direction), r_in.time);
         return true;
     }
@@ -40,14 +47,14 @@ public:
         return "Dielectric";
     }
 
-private:
-    static double reflectance(double cosine, double ref_idx)
-    {
-        // Use Schlick's approximation for reflectance.
-        auto r0 = (1 - ref_idx) / (1 + ref_idx);
-        r0 = r0 * r0;
-        return r0 + (1 - r0) * pow((1 - cosine), 5);
-    }
 };
+
+double reflectance(double cosine, double ref_idx)
+{
+    // Use Schlick's approximation for reflectance.
+    auto r0 = (1 - ref_idx) / (1 + ref_idx);
+    r0 = r0 * r0;
+    return r0 + (1 - r0) * pow((1 - cosine), 5);
+}
 
 #endif // DIELECTRIC_H

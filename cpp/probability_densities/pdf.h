@@ -8,7 +8,7 @@
 class PDF
 {
 public:
-    virtual void generate(std::vector<Vec3> &directions, std::vector<double> &values) const = 0;
+    virtual void generate(Vec3 &direction, double &value) const = 0;
 };
 
 inline Vec3 random_cosine_direction();
@@ -30,12 +30,10 @@ public:
         return (cosine <= 0) ? 0 : cosine / pi;
     }
 
-    virtual void generate(std::vector<Vec3> &directions, std::vector<double> &values) const override
+    virtual void generate(Vec3 &direction, double &value) const override
     {
-        Vec3 direction = uvw.local(random_cosine_direction());
-        directions.push_back(direction);
-        double pdf_value = this->get_pdf_value(direction);
-        values.push_back(pdf_value);	
+        direction = uvw.local(random_cosine_direction());
+        value = this->get_pdf_value(direction);	
     }
 };
 
@@ -49,13 +47,12 @@ private:
 public:
     HittablePDF(std::shared_ptr<HittableList> hittables, const Vec3 &o, double time) : hittables(hittables), o(o), time(time) {}
 
-    virtual void generate(std::vector<Vec3> &directions, std::vector<double> &values) const override
+    virtual void generate(Vec3 &direction, double &value) const override
     {
         int hittableIndex = random_int(0, hittables->size() - 1);
         std::shared_ptr<Hittable> hittable = hittables->get(hittableIndex);
-        Vec3 direction = hittable->random(o);
-        directions.push_back(direction);
-        values.push_back(hittable->pdf_value(o, direction, time)); 
+        direction = hittable->random(o);
+        value = hittable->pdf_value(o, direction, time); 
     }
 };
 
@@ -70,10 +67,16 @@ public:
         p[0] = p0;
         p[1] = p1;
     }
-    virtual void generate(std::vector<Vec3> &directions, std::vector<double> &values) const override
+    virtual void generate(Vec3 &direction, double &value) const override
     {
-        p[0]->generate(directions, values);
-        p[1]->generate(directions, values);
+        if (random_double() < 0.5)
+        {
+            p[0]->generate(direction, value);
+        }
+        else
+        {
+            p[1]->generate(direction, value);
+        }
     }
 };
 
@@ -100,14 +103,17 @@ private:
 public:
     MetalPDF(const Vec3 &o, const Vec3 &normal, double fuzz) : o(o), normal(normal), fuzz(fuzz) {}
 
-    virtual void generate(std::vector<Vec3> &directions, std::vector<double> &values) const override
+    virtual void generate(Vec3 &direction, double &value) const override
     {
         Vec3 reflected = reflect(unit_vector(o), normal);
-        Vec3 direction = reflected + fuzz * random_in_unit_sphere();
+        direction = reflected + fuzz * random_in_unit_sphere();
         if (dot(direction, normal) > 0)
         {
-            directions.push_back(direction);
-            values.push_back(1);
+            value = dot(reflected, direction) / dot(reflected, reflected);
+        }
+        else
+        {
+            value = 0;
         }
     }
 };
@@ -122,17 +128,21 @@ private:
 public:
     DielectricPDF(const Vec3 &o, const Vec3 &normal, double ref_idx) : o(o), normal(normal), ref_idx(ref_idx) {}
 
-    virtual void generate(std::vector<Vec3> &directions, std::vector<double> &values) const override
+    virtual void generate(Vec3 &direction, double &value) const override
     {
         double cosine = dot(unit_vector(o), normal);
         double reflect_prob = reflectance(cosine, ref_idx);
         double refract_prob = 1 - reflect_prob;
-        Vec3 reflected = reflect(unit_vector(o), normal);
-        directions.push_back(reflected);
-        values.push_back(1);
-        Vec3 refracted = refract(unit_vector(o), normal, ref_idx);
-        directions.push_back(refracted);
-        values.push_back(1);
+        if (random_double() < reflect_prob)
+        {
+            direction = reflect(unit_vector(o), normal);
+            value = reflect_prob;
+        }
+        else
+        {
+            direction = refract(unit_vector(o), normal, ref_idx);
+            value = refract_prob;
+        }
     }
 };
 

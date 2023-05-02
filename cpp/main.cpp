@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
     find_light_sources(world, lights);
     
     ProgressBar bar(camera.image.get_height());
+    Color color;
     for (int j = camera.image.get_height() - 1; j >= 0; --j)
     {
         bar.increment();
@@ -59,13 +60,12 @@ int main(int argc, char *argv[])
                 double v = camera.image.get_v(j);
                 Ray ray = camera.get_ray(u, v);
 
-                Color color = ray_tracing_shader(ray, world, lights, night_background, 16);
+                color = ray_tracing_shader(ray, world, lights, night_background, 16);
 
                 // discard NANs
                 if (color.x() != color.x()) color = Color(0,0,0);
                 if (color.y() != color.y()) color = Color(0,0,0);
                 if (color.z() != color.z()) color = Color(0,0,0);
-
                 camera.image.add_color(i, j, color);
             }
         }

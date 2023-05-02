@@ -21,20 +21,18 @@ public:
     };
 
     Lambertian(Texture *a) : albedo(a) {}
-    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &albedo, Ray &scattered, double &pdf) const override
+    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &albedo, Ray &scattered, double &pdf, std::shared_ptr<HittableList>& lights) const override
     {
-        ONB uvw;
-        uvw.build_from_w(rec.getNormal());
-        auto direction = uvw.local(random_cosine_direction());
+        auto light_pdf = std::make_shared<HittablePDF>(lights, rec.getHitPoint(), r_in.get_time());
+        auto cosine_pdf = std::make_shared<CosinePDF>(rec.getNormal());
+        MixturePDF mixture_pdf = MixturePDF(light_pdf, cosine_pdf);
+
+        Vec3 direction;
+        mixture_pdf.generate(direction, pdf);
+    
         scattered = Ray(rec.getHitPoint(), unit_vector(direction), r_in.get_time());
         albedo = this->albedo->value(rec.u, rec.v, rec.getHitPoint());
-        pdf = dot(uvw.w(), scattered.direction) / pi;
         return true;
-    }
-    double scattering_pdf(const Ray &r_in, const HitRecord &hit_record, const Ray& scattered) const override
-    {
-        auto cosine = dot(hit_record.getNormal(), unit_vector(scattered.direction));
-        return cosine < 0 ? 0 : cosine/pi;
     }
     Color emitted(double u, double v, const Vec3 &p) const override
     {
@@ -47,6 +45,7 @@ public:
     {
         return true;
     }
+
 };
 
 
