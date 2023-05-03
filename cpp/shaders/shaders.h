@@ -17,7 +17,7 @@
  * @param background: background for the scene
  * @param depth: max depth for recursion 
  */   
-Color ray_tracing_shader(const Ray &r, HittableList &world, std::shared_ptr<HittableList>& lights, Background &background, int depth)
+Color ray_tracing_shader(const Ray &r, HittableList &world, Background &background, int depth)
 {
     
     HitRecord rec;
@@ -34,15 +34,15 @@ Color ray_tracing_shader(const Ray &r, HittableList &world, std::shared_ptr<Hitt
     // hit something
     Ray scattered;
     Color attenuation;
-    Color emitted = rec.getMaterial()->emitted(rec.getU(), rec.getV(), rec.getHitPoint());
+    Color emitted = rec.get_material()->emitted(rec.get_u(), rec.get_v(), rec.get_hit_point());
     double pdf_value;
     Color albedo;
 
-    if (!rec.getMaterial()->scatter(r, rec, albedo, scattered, pdf_value, lights)) {
+    if (!rec.get_material()->scatter(r, rec, albedo, scattered, pdf_value)) {
         return emitted;
     }
     
-    return emitted + albedo * ray_tracing_shader(scattered, world, lights, background, depth - 1) / pdf_value;
+    return emitted + albedo * ray_tracing_shader(scattered, world, background, depth - 1) / pdf_value;
 }
 
 
@@ -54,7 +54,7 @@ Color scattering_shader(const Ray &r, HittableList &world, std::shared_ptr<Hitta
         Ray scattered;
         Color attenuation;
         double pdf;  
-        if (rec.getMaterial()->scatter(r, rec, attenuation, scattered, pdf)) 
+        if (rec.get_material()->scatter(r, rec, attenuation, scattered, pdf)) 
         {
             return scattered.direction*0.5 + Vec3(0.5,0.5, 0.5);
         }
@@ -72,6 +72,6 @@ Color normal_shader(const Ray &r, HittableList &world, std::shared_ptr<HittableL
         return background.get_color(r);
     }
     
-    Vec3 normal = rec.isFrontFace(r) ? rec.getNormal() : -rec.getNormal();
+    Vec3 normal = rec.is_front_face(r) ? rec.get_normal() : -rec.get_normal();
     return normal*0.5 + Vec3(0.5, 0.5, 0.5);
 }

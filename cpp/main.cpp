@@ -22,23 +22,35 @@ void find_light_sources(HittableList &world, std::shared_ptr<HittableList>& ligh
 {
     for (int i = 0; i < world.size(); i++)
     {
-        if (world.get(i)->getMaterial()->isEmissive())
+        if (world.get(i)->get_material()->is_emissive())
             lights->add(world.get(i));
     }
+    for (int j = 0; j < world.size(); j++)
+    {
+        // set lights for lambertian materials
+        Lambertian *lambertian = static_cast<Lambertian*>(world.get(j)->get_material());
+        if (lambertian->is_lambertian())
+        {
+            std::cout << "setting lights for material " << j << std::endl;
+
+            lambertian->set_lights(lights);
+        }
+    }
+    
 }
 
 
 int main(int argc, char *argv[]) 
 {
-    std::string inFileName = argv[1];
-    std::string outFileName = argv[2];
+    std::string in_file_name = argv[1];
+    std::string out_file_name = argv[2];
 
-    std::cerr << "Loading scene: " << inFileName << std::endl;
-    std::cerr << "Output file: " << outFileName << std::endl;
+    std::cerr << "Loading scene: " << in_file_name << std::endl;
+    std::cerr << "Output file: " << out_file_name << std::endl;
     
     // world
     Camera camera;
-    HittableList world = load_scene(inFileName, camera);
+    HittableList world = load_scene(in_file_name, camera);
     auto night_background = SolidBackground(Color(0.0, 0.0, 0.0));
     auto day_background = GradientBackground(Color(0.05, 0.07, 0.01), Color(0.1, 0.1, 0.1));
     
@@ -60,7 +72,7 @@ int main(int argc, char *argv[])
                 double v = camera.image.get_v(j);
                 Ray ray = camera.get_ray(u, v);
 
-                color = ray_tracing_shader(ray, world, lights, night_background, 16);
+                color = ray_tracing_shader(ray, world, night_background, 16);
 
                 // discard NANs
                 if (color.x() != color.x()) color = Color(0,0,0);
@@ -71,6 +83,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    camera.image.write_to_file(outFileName);
+    camera.image.write_to_file(out_file_name);
     return 0;
 }
