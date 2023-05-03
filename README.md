@@ -1,7 +1,7 @@
 
 #### Ray Tracing 
 
-![title image](./images/title.ppm ).
+![title image](./images/title.png ).
 
 
 
