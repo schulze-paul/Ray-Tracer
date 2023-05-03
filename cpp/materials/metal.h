@@ -13,14 +13,14 @@ private:
 
 public:
     Metal(const Color &a, double f) : albedo(a), fuzz(f < 1 ? f : 1) {}
-    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered, double &pdf) const override
+    virtual bool scatter(const Ray &r_in, const HitRecord &rec, ScatterRecord &scatter_record) const override
     {
-        Vec3 normal = rec.is_front_face(r_in) ? rec.get_normal() : -rec.get_normal();
-        Vec3 reflected = reflect(unit_vector(r_in.direction), normal);
-        scattered = Ray(rec.get_hit_point(), reflected + fuzz * random_in_unit_sphere(), r_in.time);
-        attenuation = albedo;
-        pdf = 1;
-        return true;//(dot(scattered.direction, normal) > 0);
+        Vec3 reflected = reflect(unit_vector(r_in.direction), rec.get_normal());
+        scatter_record.specular_ray = Ray(rec.get_hit_point(), reflected + fuzz * random_in_unit_sphere(), r_in.get_time());
+        scatter_record.attenuation = albedo;
+        scatter_record.is_specular = true;
+        scatter_record.pdf = nullptr;
+        return true;
     }
     Color emitted(double u, double v, const Vec3 &p) const override
     {

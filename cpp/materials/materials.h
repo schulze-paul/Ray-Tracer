@@ -8,11 +8,12 @@
 #include "texture.h"
 
 class HitRecord;
+class ScatterRecord;
 
 class Material
 {
 public:
-    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered, double &pdf) const 
+    virtual bool scatter(const Ray &r_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const 
     {
         return false;
     };
@@ -59,5 +60,14 @@ inline Vec3 refract(const Vec3 &uv, const Vec3 &normal, double refraction_ratio)
     Vec3 r_out_parallel = -sqrt(fabs(1.0 - r_out_perp.length_squared())) * normal;
     return r_out_perp + r_out_parallel;
 }
+
+double reflectance(double cosine, double ref_idx)
+{
+    // Use Schlick's approximation for reflectance.
+    auto r0 = (1 - ref_idx) / (1 + ref_idx);
+    r0 = r0 * r0;
+    return r0 + (1 - r0) * pow((1 - cosine), 5);
+}
+
 
 #endif

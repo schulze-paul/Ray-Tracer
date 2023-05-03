@@ -4,6 +4,7 @@
 #include <vector>
 #include <memory>
 #include "hittable.h"
+#include "hit_record.h"
 
 class HittableList : public Hittable
 {

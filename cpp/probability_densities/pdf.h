@@ -2,8 +2,15 @@
 #define PDF_H
 
 #include <vector>
+#include <memory>
+
 #include "vec3.h"
-#include "dielectric.h"
+#include "hittable_list.h"
+#include "hittable.h"
+#include "materials.h"
+
+#include "onb.h"
+
 
 class PDF
 {

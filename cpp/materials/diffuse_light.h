@@ -21,7 +21,7 @@ public:
     };
 
     DiffuseLight(Texture *a) : albedo(a) {}
-    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered, double &pdf) const override
+    virtual bool scatter(const Ray &r_in, const HitRecord &rec, ScatterRecord &scatter_record) const override
     {
         return false;
     }
