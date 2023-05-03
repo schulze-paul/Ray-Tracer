@@ -19,7 +19,7 @@ public:
         auto radians = degrees_to_radians(angle);
         sin_theta = std::sin(radians);
         cos_theta = std::cos(radians);
-        hasbox = hittable->bounding_box(0, 1, bbox);
+        has_box = hittable->bounding_box(0, 1, bbox);
 
         Vec3 min(infinity, infinity, infinity);
         Vec3 max(-infinity, -infinity, -infinity);
@@ -55,14 +55,14 @@ public:
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override
     {
         output_box = bbox;
-        return hasbox;
+        return has_box;
     }
 
 public:
     std::shared_ptr<Hittable> hittable;
     double sin_theta;
     double cos_theta;
-    bool hasbox;
+    bool has_box;
     AABB bbox;
 };
 
@@ -83,17 +83,17 @@ bool RotateY::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) cons
     if (!hittable->hit(rotated_r, t_min, t_max, rec))
         return false;
 
-    auto p = rec.getHitPoint();
-    auto normal = rec.getNormal();
+    auto p = rec.get_hit_point();
+    auto normal = rec.get_normal();
 
-    p[0] = cos_theta * rec.getHitPoint()[0] + sin_theta * rec.getHitPoint()[2];
-    p[2] = -sin_theta * rec.getHitPoint()[0] + cos_theta * rec.getHitPoint()[2];
+    p[0] = cos_theta * rec.get_hit_point()[0] + sin_theta * rec.get_hit_point()[2];
+    p[2] = -sin_theta * rec.get_hit_point()[0] + cos_theta * rec.get_hit_point()[2];
 
-    normal[0] = cos_theta * rec.getNormal()[0] + sin_theta * rec.getNormal()[2];
-    normal[2] = -sin_theta * rec.getNormal()[0] + cos_theta * rec.getNormal()[2];
+    normal[0] = cos_theta * rec.get_normal()[0] + sin_theta * rec.get_normal()[2];
+    normal[2] = -sin_theta * rec.get_normal()[0] + cos_theta * rec.get_normal()[2];
 
-    rec.setHitPoint(p);
-    rec.setNormal(normal);
+    rec.set_hit_point(p);
+    rec.set_normal(normal);
 
     return true;
 }

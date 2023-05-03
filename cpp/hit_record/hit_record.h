@@ -17,43 +17,43 @@ public:
         hit = false;
         t = 0;
     }
-    HitRecord(double t, const Vec3 &normal, const Vec3 &hitPoint, Material *material, double u, double v)
+    HitRecord(double t, const Vec3 &normal, const Vec3 &hit_point, Material *material, double u, double v)
     {
         this->hit = true;
         this->t = t;
         this->normal = normal;
-        this->hitPoint = hitPoint;
+        this->hit_point = hit_point;
         this->material = material;
         this->u = u;
         this->v = v;
     }
-    void set(double t, const Vec3 &normal, const Vec3 &hitPoint, Material *material, double u, double v)
+    void set(double t, const Vec3 &normal, const Vec3 &hit_point, Material *material, double u, double v)
     {
         this->hit = true;
         this->t = t;
         this->normal = normal;
-        this->hitPoint = hitPoint;
+        this->hit_point = hit_point;
         this->material = material;
         this->u = u;
         this->v = v;
     }
-    void setHit(bool hit) { this->hit = hit; }
-    bool getHit() const { return hit; }
+    void set_hit(bool hit) { this->hit = hit; }
+    bool get_hit() const { return hit; }
 
-    void setT(double t) { this->t = t; }
-    double getT() const { return t; }
+    void set_t(double t) { this->t = t; }
+    double get_t() const { return t; }
 
-    void setNormal(const Vec3 &normal) { this->normal = normal; }
-    Vec3 getNormal() const { return normal; }
+    void set_normal(const Vec3 &normal) { this->normal = normal; }
+    Vec3 get_normal() const { return normal; }
 
-    void setHitPoint(const Vec3 &hitPoint) { this->hitPoint = hitPoint; }
-    Vec3 getHitPoint() const { return hitPoint; }
+    void set_hit_point(const Vec3 &hit_point) { this->hit_point = hit_point; }
+    Vec3 get_hit_point() const { return hit_point; }
 
-    void setMaterial(Material *material) { this->material = material; }
-    Material *getMaterial() const { return material; }
+    void set_material(Material *material) { this->material = material; }
+    Material *get_material() const { return material; }
 
-    double getU() const { return u; }
-    double getV() const { return v; }
+    double get_u() const { return u; }
+    double get_v() const { return v; }
 
     bool operator<(const HitRecord &other) const
     {
@@ -85,7 +85,7 @@ public:
         return t != other.t;
     }
 
-    bool isFrontFace(const Ray &r) const
+    bool is_front_face(const Ray &r) const
     {
         return dot(r.direction, normal) < 0;
     }
@@ -94,7 +94,7 @@ private:
     bool hit;
     double t;
     Vec3 normal;
-    Vec3 hitPoint;
+    Vec3 hit_point;
     Ray ray;
     Material *material;
 };

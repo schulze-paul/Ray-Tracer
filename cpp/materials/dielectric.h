@@ -13,12 +13,12 @@ private:
 
 public:
     Dielectric(double ri) : ref_idx(ri) {}
-    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered, double &pdf, std::shared_ptr<HittableList>& lights) const override
+    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered, double &pdf) const override
     {
         attenuation = Color(1.0, 1.0, 1.0);
-        double refraction_ratio = rec.isFrontFace(r_in) ? (1.0 / ref_idx) : ref_idx;
+        double refraction_ratio = rec.is_front_face(r_in) ? (1.0 / ref_idx) : ref_idx;
         Vec3 unit_direction = unit_vector(r_in.direction);
-        Vec3 normal = rec.isFrontFace(r_in) ? rec.getNormal() : -rec.getNormal();
+        Vec3 normal = rec.is_front_face(r_in) ? rec.get_normal() : -rec.get_normal();
 
         double cos_theta = fmin(dot(-unit_direction, normal), 1.0);
         double sin_theta = sqrt(1.0 - cos_theta * cos_theta);
@@ -36,7 +36,7 @@ public:
             direction = refract(unit_direction, normal, refraction_ratio);
             pdf = 1;
         }
-        scattered = Ray(rec.getHitPoint(), unit_vector(direction), r_in.time);
+        scattered = Ray(rec.get_hit_point(), unit_vector(direction), r_in.time);
         return true;
     }
     Color emitted(double u, double v, const Vec3 &p) const override

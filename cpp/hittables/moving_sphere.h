@@ -17,15 +17,15 @@ public:
         this->material = material;
     }
 
-    Vec3 getCenter(double time) const
+    Vec3 get_center(double time) const
     {
         return center0 + ((time - time0) / (time1 - time0)) * (center1 - center0);
     }
-    double getRadius() const { return radius; }
+    double get_radius() const { return radius; }
 
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override
     {
-        Vec3 center = getCenter(r.time);
+        Vec3 center = get_center(r.time);
         Vec3 oc = r.origin - center;              // origin to center
         double a = dot(r.direction, r.direction); // direction squared
         double b = 2.0 * dot(oc, r.direction);    // 2 * alignment of center direction and ray direction
@@ -60,8 +60,8 @@ public:
 
     virtual bool bounding_box(double t0, double t1, AABB &box) const override
     {
-        AABB box0(getCenter(t0) - Vec3(radius, radius, radius), getCenter(t0) + Vec3(radius, radius, radius));
-        AABB box1(getCenter(t1) - Vec3(radius, radius, radius), getCenter(t1) + Vec3(radius, radius, radius));
+        AABB box0(get_center(t0) - Vec3(radius, radius, radius), getCenter(t0) + Vec3(radius, radius, radius));
+        AABB box1(get_center(t1) - Vec3(radius, radius, radius), getCenter(t1) + Vec3(radius, radius, radius));
         box = surrounding_box(box0, box1);
         return true;
     }

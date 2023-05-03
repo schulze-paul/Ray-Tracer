@@ -30,15 +30,15 @@ public:
     {
         return objects[i];
     }
-    std::vector<std::shared_ptr<Hittable>> getObjects() const
+    std::vector<std::shared_ptr<Hittable>> get_objects() const
     {
         return objects;
     }
-    std::shared_ptr<Hittable> getObject(int i) const
+    std::shared_ptr<Hittable> get_object(int i) const
     {
         return objects[i];
     }
-    std::string toString() const
+    std::string to_string() const
     {
         return "HittableList";
     }
@@ -58,7 +58,7 @@ bool HittableList::hit(const Ray &r, double t_min, double t_max, HitRecord &rec)
         if (object->hit(r, t_min, closest_so_far, temp_rec))
         {
             hit_anything = true;
-            closest_so_far = temp_rec.getT();
+            closest_so_far = temp_rec.get_t();
             rec = temp_rec;
         }
     }

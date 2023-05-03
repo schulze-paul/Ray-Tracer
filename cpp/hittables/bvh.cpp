@@ -54,7 +54,7 @@ bool BVHNode::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) cons
     }
 
     bool hit_left = left->hit(r, t_min, t_max, rec);
-    bool hit_right = right->hit(r, t_min, hit_left ? rec.getT() : t_max, rec);
+    bool hit_right = right->hit(r, t_min, hit_left ? rec.get_t() : t_max, rec);
 
     return hit_left || hit_right;
 }
@@ -75,7 +75,7 @@ bool box_compare(const std::shared_ptr<Hittable> a, const std::shared_ptr<Hittab
         std::cerr << "No bounding box in bvh_node constructor." << std::endl;
     }
 
-    return box_a.getMin().e[axis] < box_b.getMin().e[axis];
+    return box_a.get_min().e[axis] < box_b.get_min().e[axis];
 }
 
 bool box_x_compare(const std::shared_ptr<Hittable> a, const std::shared_ptr<Hittable> b)

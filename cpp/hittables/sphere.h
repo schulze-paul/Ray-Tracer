@@ -16,8 +16,8 @@ public:
         this->material = material;
     }
 
-    Vec3 getCenter() const { return center; }
-    double getRadius() const { return radius; }
+    Vec3 get_center() const { return center; }
+    double get_radius() const { return radius; }
 
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     Vec3 get_normal(const Vec3 &point) const { return (point - center) / radius; }
@@ -26,15 +26,15 @@ public:
         box = AABB(center - Vec3(radius, radius, radius), center + Vec3(radius, radius, radius));
         return true;
     }
-    std::string toString() const
+    std::string to_string() const
     {
         std::string ss = "";
         ss +="Sphere: \n";
-        ss += "center: " + center.toString() + "\n";
+        ss += "center: " + center.to_string() + "\n";
         ss += "radius: " + std::to_string(radius) + "\n";
         return ss;
     }
-    void setMaterial(Material *m) { material = m; }
+    void set_material(Material *m) { material = m; }
     double pdf_value(const Vec3& o, const Vec3& v, double time) const override {
         HitRecord rec;
         if (this->hit(Ray(o, v, time), 0.001, infinity, rec)) {
@@ -87,7 +87,7 @@ bool Sphere::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
 
         // sphere in range, compute hit
         double u, v;
-        get_sphere_uv((rec.getHitPoint() - center) / radius, u, v);
+        get_sphere_uv((rec.get_hit_point() - center) / radius, u, v);
         rec.set(hit_at_t, get_normal(r.point_at_parameter(hit_at_t)), r.point_at_parameter(hit_at_t), material, u, v);
         
 

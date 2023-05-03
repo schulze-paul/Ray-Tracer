@@ -18,7 +18,7 @@
 #include "sphere.h"
 #include "dielectric.h"
 
-inline Vec3 loadVec3(YAML::Node &vector)    
+inline Vec3 load_vec3(YAML::Node &vector)    
 {
     double x = vector[0].as<double>();
     double y = vector[1].as<double>();
@@ -31,7 +31,7 @@ inline Vec3 loadVec3(YAML::Node &vector)
     return vec3;
 }
 
-inline void loadCamera(Camera &camera, YAML::Node &camera_data)
+inline void load_camera(Camera &camera, YAML::Node &camera_data)
 {   
     std::cerr << "loading camera" << std::endl;
     double vfov = camera_data["vfov"].as<double>();
@@ -44,12 +44,12 @@ inline void loadCamera(Camera &camera, YAML::Node &camera_data)
     int image_width = camera_data["image_width"].as<int>();
     
     auto look_from_data = camera_data["look_from"];
-    Vec3 look_from = loadVec3(look_from_data); 
+    Vec3 look_from = load_vec3(look_from_data); 
     auto look_at_data = camera_data["look_at"];
-    Vec3 look_at = loadVec3(look_at_data);
+    Vec3 look_at = load_vec3(look_at_data);
     
-    camera.setUp(vfov, aspect_ratio, aperture, focus_distance, samples_per_pixel, look_from, look_at, time0, time1);
-    camera.setImageData(image_width);
+    camera.set_up(vfov, aspect_ratio, aperture, focus_distance, samples_per_pixel, look_from, look_at, time0, time1);
+    camera.set_image_data(image_width);
 }
 
 
@@ -57,7 +57,7 @@ inline void load_sphere(HittableList &objects, YAML::Node &sphere_data, Material
 {
     std::cerr << "loading sphere" << std::endl;
     auto position_data = sphere_data["center"];
-    Vec3 position = loadVec3(position_data);
+    Vec3 position = load_vec3(position_data);
     double radius = sphere_data["radius"].as<double>();
     auto material_data = sphere_data["material"];
 
@@ -109,8 +109,8 @@ inline void load_box(HittableList &objects, YAML::Node &box_data, Material *mate
     std::cerr << "loading box" << std::endl;
     auto box_min_data = box_data["box_min"];
     auto box_max_data = box_data["box_max"];
-    Vec3 box_min = loadVec3(box_min_data);
-    Vec3 box_max = loadVec3(box_max_data);
+    Vec3 box_min = load_vec3(box_min_data);
+    Vec3 box_max = load_vec3(box_max_data);
     auto material_data = box_data["material"];
     auto box = std::make_shared<Box>(box_min, box_max, material);
     objects.add(box);
@@ -128,7 +128,7 @@ HittableList load_scene(std::string filename, Camera &camera)
     YAML::Node scene = YAML::Load(fin);
 
     auto camera_data = scene["scene"]["camera"];
-    loadCamera(camera, camera_data);
+    load_camera(camera, camera_data);
 
     HittableList hittable_list = HittableList();
     std::vector<Material *> materials;
@@ -148,14 +148,14 @@ HittableList load_scene(std::string filename, Camera &camera)
         {
             auto diffuseData = objects_data[i]["material"];
             auto color_data = material_data["color"];
-            Color color = loadVec3(color_data);
+            Color color = load_vec3(color_data);
             material = new Lambertian(color);
         }
         else if (materialType.compare("metal") == 0)
         {
             auto metalData = objects_data[i]["material"];
             auto color_data = material_data["albedo"];
-            Color color = loadVec3(color_data);
+            Color color = load_vec3(color_data);
             double fuzz = material_data["fuzz"].as<double>();
             material = new Metal(color, fuzz);
         }
@@ -169,7 +169,7 @@ HittableList load_scene(std::string filename, Camera &camera)
         {
             auto diffuseLightData = objects_data[i]["material"];
             auto color_data = material_data["color"];
-            Color color = loadVec3(color_data);
+            Color color = load_vec3(color_data);
             material = new DiffuseLight(color);
         }
         else {
@@ -209,19 +209,19 @@ HittableList load_scene(std::string filename, Camera &camera)
         }
     }
 
-    std::cerr << material->toString() << std::endl;
+    std::cerr << material->to_string() << std::endl;
     
 
-    auto objects = hittable_list.getObjects();
+    auto objects = hittable_list.get_objects();
 
     // print data from hittable_list
     std::cerr << "objects size: " << objects.size() << std::endl;
     for (int i=0; i<objects.size(); i++) {
 
-        objects[i]->setMaterial(materials.at(i));
+        objects[i]->set_material(materials.at(i));
         std::cerr << "object " << i << std::endl;
-        std::cerr << objects[i]->toString() << std::endl;
-        std::cerr << "material: " << objects[i]->getMaterial()->toString() << std::endl;
+        std::cerr << objects[i]->to_string() << std::endl;
+        std::cerr << "material: " << objects[i]->get_material()->to_string() << std::endl;
     }
     BVHNode node = BVHNode(objects, 0, objects.size(), 0, 1);
     return hittable_list;

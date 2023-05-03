@@ -12,10 +12,10 @@ public:
     Camera(){};
     Camera(double vfov, double aspect_ratio, double aperture, double focus_dist, int samples_per_pixel, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
     {
-        setUp(vfov, aspect_ratio, aperture, focus_dist, samples_per_pixel, look_from, look_at, time0, time1);
+        set_up(vfov, aspect_ratio, aperture, focus_dist, samples_per_pixel, look_from, look_at, time0, time1);
     };
 
-    void setUp(double vfov, double aspect_ratio, double aperture, double focus_dist, int samples_per_pixel, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
+    void set_up(double vfov, double aspect_ratio, double aperture, double focus_dist, int samples_per_pixel, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
     {
         double theta = degrees_to_radians(vfov);
         double h = tan(theta / 2);
@@ -39,7 +39,7 @@ public:
         this->time1 = time1;
     };
 
-    void setImageData(int image_width)
+    void set_image_data(int image_width)
     {
         this->image = ImageData(image_width, aspect_ratio);
     }

@@ -12,31 +12,31 @@ class HitRecord;
 class Material
 {
 public:
-    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered, double &pdf, std::shared_ptr<HittableList>& lights) const 
+    virtual bool scatter(const Ray &r_in, const HitRecord &rec, Color &attenuation, Ray &scattered, double &pdf) const 
     {
         return false;
     };
     virtual Color emitted(double u, double v, const Vec3 &p) const = 0;
-    std::shared_ptr<Texture> getAlbedo() const
+    std::shared_ptr<Texture> get_albedo() const
     {
         return albedo;
     }
-    void setAlbedo(std::shared_ptr<Texture> a)
+    void set_albedo(std::shared_ptr<Texture> a)
     {
         albedo = a;
     }
-    virtual std::string toString() {
+    virtual std::string to_string() {
         return "Material";
     };
     virtual double scattering_pdf(const Ray &r_in, const HitRecord &rec, const Ray &scattered) const
     {
         return 0;
     }
-    virtual bool isEmissive() const
+    virtual bool is_emissive() const
     {
         return false;
     }
-    virtual bool isLambertian() const
+    virtual bool is_lambertian() const
     {
         return false;
     }

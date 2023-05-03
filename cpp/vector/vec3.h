@@ -48,11 +48,11 @@ public:
     {
         return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
     }
-    std::string toString() const
+    std::string to_string() const
     {
         return std::to_string(e[0]) + " " + std::to_string(e[1]) + " " + std::to_string(e[2]);
     }
-    inline bool isNearZero() const
+    inline bool is_near_zero() const
     {
         // Return true if the vector is close to zero in all dimensions.
         const auto s = 1e-8;

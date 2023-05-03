@@ -17,7 +17,7 @@ public:
     XY_Rectangle(double _x0, double _x1, double _y0, double _y1, double _k, Material *m) : x0(_x0), x1(_x1), y0(_y0), y1(_y1), k(_k), material(m) {}
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
-    std::string toString() const { return "XY_Rectangle"; }
+    std::string to_string() const { return "XY_Rectangle"; }
     double pdf_value(const Vec3 &o, const Vec3 &v, double time) const override;
     Vec3 random(const Vec3 &o) const override;
 
@@ -33,7 +33,7 @@ public:
     XZ_Rectangle(double _x0, double _x1, double _z0, double _z1, double _k, Material *m) : x0(_x0), x1(_x1), z0(_z0), z1(_z1), k(_k), material(m) {}
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
-    std::string toString() const { return "XZ_Rectangle"; }
+    std::string to_string() const { return "XZ_Rectangle"; }
     double pdf_value(const Vec3 &o, const Vec3 &v, double time) const override;
     Vec3 random(const Vec3 &o) const override;
 
@@ -49,7 +49,7 @@ public:
     YZ_Rectangle(double _y0, double _y1, double _z0, double _z1, double _k, Material *m) : y0(_y0), y1(_y1), z0(_z0), z1(_z1), k(_k), material(m) {}
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
     virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
-    std::string toString() const { return "YZ_Rectangle"; }
+    std::string to_string() const { return "YZ_Rectangle"; }
     double pdf_value(const Vec3 &o, const Vec3 &v, double time) const override;
     Vec3 random(const Vec3 &o) const override;
 
@@ -148,8 +148,8 @@ double XY_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) c
     if (this->hit(Ray(origin, v, time), 0.001, infinity, rec))
     {
         double area = (x1 - x0) * (y1 - y0);
-        double distance_squared = rec.getT() * rec.getT() * v.length_squared();
-        double cosine = fabs(dot(v, rec.getNormal()) / v.length());
+        double distance_squared = rec.get_t() * rec.get_t() * v.length_squared();
+        double cosine = fabs(dot(v, rec.get_normal()) / v.length());
         return distance_squared / (cosine * area);
     }
     else
@@ -162,8 +162,8 @@ double XZ_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) c
     if (this->hit(Ray(origin, v, time), 0.001, infinity, rec))
     {
         double area = (x1 - x0) * (z1 - z0);
-        double distance_squared = rec.getT() * rec.getT() * v.length_squared();
-        double cosine = fabs(dot(v, rec.getNormal()) / v.length());
+        double distance_squared = rec.get_t() * rec.get_t() * v.length_squared();
+        double cosine = fabs(dot(v, rec.get_normal()) / v.length());
         return distance_squared / (cosine * area);
     }
     else
@@ -176,8 +176,8 @@ double YZ_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) c
     if (this->hit(Ray(origin, v, time), 0.001, infinity, rec))
     {
         double area = (y1 - y0) * (z1 - z0);
-        double distance_squared = rec.getT() * rec.getT() * v.length_squared();
-        double cosine = fabs(dot(v, rec.getNormal()) / v.length());
+        double distance_squared = rec.get_t() * rec.get_t() * v.length_squared();
+        double cosine = fabs(dot(v, rec.get_normal()) / v.length());
         return distance_squared / (cosine * area);
     }
     else
@@ -196,7 +196,7 @@ public:
         output_box = AABB(box_min, box_max);
         return true;
     }
-    std::string toString() const { return "Box"; }
+    std::string to_string() const { return "Box"; }
 
 public:
     Vec3 box_min, box_max;

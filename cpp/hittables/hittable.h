@@ -13,11 +13,11 @@ class Hittable
 {
 public:
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const = 0;
-    void setMaterial(Material *m);
-    Material* getMaterial() const { return material; }
+    void set_material(Material *m);
+    Material* get_material() const { return material; }
     virtual bool bounding_box(double t0, double t1, AABB &box) const = 0;
     
-    virtual std::string toString()
+    virtual std::string to_string()
     {
         return "Hittable";
     };
@@ -33,7 +33,7 @@ private:
     Material *material;
 };
 
-void Hittable::setMaterial(Material *m)
+void Hittable::set_material(Material *m)
 {
     material = m;
 }

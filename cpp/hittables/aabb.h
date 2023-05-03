@@ -12,8 +12,8 @@ public:
         maximum = b;
     }
 
-    Vec3 getMin() const { return minimum; }
-    Vec3 getMax() const { return maximum; }
+    Vec3 get_min() const { return minimum; }
+    Vec3 get_max() const { return maximum; }
 
     bool hit(const Ray &r, double t_min, double t_max) const;
 
