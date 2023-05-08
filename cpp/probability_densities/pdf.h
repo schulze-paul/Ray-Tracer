@@ -1,3 +1,10 @@
+/*
+probability_densities/pdf.h
+===========================
+Probability density functions for use in Monte Carlo integration
+of the rendering equation.
+*/
+
 #ifndef PDF_H
 #define PDF_H
 
@@ -7,11 +14,12 @@
 #include "vec3.h"
 #include "hittable_list.h"
 #include "hittable.h"
-#include "materials.h"
 
 #include "onb.h"
 
-
+/**
+ * @brief      Base class for probability density function.
+ */
 class PDF
 {
 public:
@@ -20,6 +28,9 @@ public:
 
 inline Vec3 random_cosine_direction();
 
+/**
+ * @brief      Class for cosine pdf.
+ */
 class CosinePDF : public PDF
 {
 private:
@@ -44,6 +55,9 @@ public:
     }
 };
 
+/**
+ * @brief      Class for hittable pdf.
+ */
 class HittablePDF : public PDF
 {
 private:
@@ -63,6 +77,10 @@ public:
     }
 };
 
+/**
+ * @brief      Class for mixture pdf.
+ *             Generates a direction from one of two pdfs with equal probability.
+ */
 class MixturePDF : public PDF
 {
 private:
@@ -87,6 +105,9 @@ public:
     }
 };
 
+/**
+ * @brief     Generates a random direction on a hemisphere.
+*/
 inline Vec3 random_cosine_direction()
 {
     auto r1 = random_double();
@@ -99,59 +120,5 @@ inline Vec3 random_cosine_direction()
 
     return Vec3(x, y, z);
 }
-
-class MetalPDF : public PDF
-{
-private:
-    Vec3 o;
-    Vec3 normal;
-    double fuzz;
-
-public:
-    MetalPDF(const Vec3 &o, const Vec3 &normal, double fuzz) : o(o), normal(normal), fuzz(fuzz) {}
-
-    virtual void generate(Vec3 &direction, double &value) const override
-    {
-        Vec3 reflected = reflect(unit_vector(o), normal);
-        direction = reflected + fuzz * random_in_unit_sphere();
-        if (dot(direction, normal) > 0)
-        {
-            value = dot(reflected, direction) / dot(reflected, reflected);
-        }
-        else
-        {
-            value = 0;
-        }
-    }
-};
-
-class DielectricPDF : public PDF
-{
-private:
-    Vec3 o;
-    Vec3 normal;
-    double ref_idx;
-
-public:
-    DielectricPDF(const Vec3 &o, const Vec3 &normal, double ref_idx) : o(o), normal(normal), ref_idx(ref_idx) {}
-
-    virtual void generate(Vec3 &direction, double &value) const override
-    {
-        double cosine = dot(unit_vector(o), normal);
-        double reflect_prob = reflectance(cosine, ref_idx);
-        double refract_prob = 1 - reflect_prob;
-        if (random_double() < reflect_prob)
-        {
-            direction = reflect(unit_vector(o), normal);
-            value = reflect_prob;
-        }
-        else
-        {
-            direction = refract(unit_vector(o), normal, ref_idx);
-            value = refract_prob;
-        }
-    }
-};
-
 
 #endif // PDF_H

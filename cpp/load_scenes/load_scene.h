@@ -1,3 +1,90 @@
+/*
+Load scene from yaml file
+
+Example yaml file:
+```yaml
+# scene.yaml
+# Scene description
+#
+# Camera
+camera:
+  lookfrom: [0, 0, 0]
+  lookat: [0, 0, -1]
+  vup: [0, 1, 0]
+  vfov: 90
+  aspect_ratio: 16/9
+  aperture: 0.0
+  focus_dist: 1.0
+  time0: 0.0
+  time1: 1.0
+    samples_per_pixel: 100
+    image_width: 400
+# Objects
+objects:
+  - type: sphere
+    center: [0, 0, -1]
+    radius: 0.5
+    material:
+      type: lambertian
+      albedo: [0.1, 0.2, 0.5]
+  - type: sphere
+    center: [0, -100.5, -1]
+    radius: 100
+    material:
+      type: lambertian
+      albedo: [0.8, 0.8, 0.0]
+  - type: sphere
+    center: [1, 0, -1]
+    radius: 0.5
+    material:
+      type: metal
+      albedo: [0.8, 0.6, 0.2]
+      fuzz: 1.0
+  - type: sphere
+    center: [-1, 0, -1]
+    radius: 0.5
+    material:
+      type: dielectric
+      ir: 1.5
+  - type: sphere
+    center: [-1, 0, -1]
+    radius: -0.45
+    material:
+      type: dielectric
+      ir: 1.5
+  - type: rectangle
+    x0: [-1, 0, -1]
+    x1: [1, 0, -1]
+    y0: [-1, 0, -1]
+    y1: [-1, 0, 1]
+    k: -0.5
+    material:
+      type: diffuse_light
+      color: [4, 4, 4]
+  - type: rectangle
+    x0: [-1, 0, -1]
+    x1: [1, 0, -1]
+    y0: [1, 0, -1]
+    y1: [1, 0, 1]
+    k: -0.5
+    material:
+      type: diffuse_light
+      color: [4, 4, 4]
+  - type: rectangle
+    x0: [-1, 0, -1]
+    x1: [1, 0, -1]
+    y0: [-1, 0, 1]
+    y1: [1, 0, 1]
+    k: -0.5
+    material:
+      type: diffuse_light
+      color: [4, 4, 4]
+```
+
+The file includes object geometries and materials as well as the camera setup and the image size.
+*/
+
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -18,6 +105,11 @@
 #include "sphere.h"
 #include "dielectric.h"
 
+/**
+ * @brief Load Vec3 from yaml node
+ * @param vector yaml node
+ * @return Vec3
+*/
 inline Vec3 load_vec3(YAML::Node &vector)    
 {
     double x = vector[0].as<double>();
@@ -31,6 +123,11 @@ inline Vec3 load_vec3(YAML::Node &vector)
     return vec3;
 }
 
+/**
+ * @brief Load Camera setup from yaml node.
+ * @param camera Camera object
+ * @param camera_data yaml node
+*/
 inline void load_camera(Camera &camera, YAML::Node &camera_data)
 {   
     std::cerr << "loading camera" << std::endl;
@@ -52,7 +149,12 @@ inline void load_camera(Camera &camera, YAML::Node &camera_data)
     camera.set_image_data(image_width);
 }
 
-
+/**
+ * @brief Load Sphere object from yaml node.
+ * @param objects HittableList objects to add sphere to
+ * @param sphere_data yaml node
+ * @param material Material object to assign to sphere
+*/
 inline void load_sphere(HittableList &objects, YAML::Node &sphere_data, Material *material)
 {
     std::cerr << "loading sphere" << std::endl;
@@ -65,6 +167,12 @@ inline void load_sphere(HittableList &objects, YAML::Node &sphere_data, Material
     objects.add(sphere);
 }
 
+/**
+ * @brief Load XY Rectangle object from yaml node.
+ * @param objects HittableList objects to add rectangle to
+ * @param rectangle_data yaml node
+ * @param material Material object to assign to rectangle
+*/
 inline void load_xy_rectangle(HittableList &objects, YAML::Node &rectangle_data, Material *material)
 {
     std::cerr << "loading xy rectangle" << std::endl;
@@ -78,6 +186,12 @@ inline void load_xy_rectangle(HittableList &objects, YAML::Node &rectangle_data,
     objects.add(rectangle);
 }
 
+/**
+ * @brief Load XZ Rectangle object from yaml node.
+ * @param objects HittableList objects to add rectangle to
+ * @param rectangle_data yaml node
+ * @param material Material object to assign to rectangle
+*/
 inline void load_xz_rectangle(HittableList &objects, YAML::Node &rectangle_data, Material *material)
 {
     std::cerr << "loading xz rectangle" << std::endl;
@@ -91,6 +205,12 @@ inline void load_xz_rectangle(HittableList &objects, YAML::Node &rectangle_data,
     objects.add(rectangle);
 }
 
+/**
+ * @brief Load YZ Rectangle object from yaml node.
+ * @param objects HittableList objects to add rectangle to
+ * @param rectangle_data yaml node
+ * @param material Material object to assign to rectangle
+*/
 inline void load_yz_rectangle(HittableList &objects, YAML::Node &rectangle_data, Material *material)
 {
     std::cerr << "loading yz rectangle" << std::endl;
@@ -104,6 +224,12 @@ inline void load_yz_rectangle(HittableList &objects, YAML::Node &rectangle_data,
     objects.add(rectangle);
 }
 
+/**
+ * @brief Load Box object from yaml node.
+ * @param objects HittableList objects to add box to
+ * @param box_data yaml node
+ * @param material Material object to assign to box
+*/
 inline void load_box(HittableList &objects, YAML::Node &box_data, Material *material)
 {
     std::cerr << "loading box" << std::endl;
@@ -116,6 +242,12 @@ inline void load_box(HittableList &objects, YAML::Node &box_data, Material *mate
     objects.add(box);
 }
 
+/**
+ * @brief load camera setup and objects from yaml file
+ * @param filename yaml file to load
+ * @param camera Camera object to load
+ * @return HittableList of objects in scene
+*/
 HittableList load_scene(std::string filename, Camera &camera)
 {
     std::ifstream fin(filename);

@@ -1,8 +1,17 @@
+/*
+Moving Sphere
+=============
+A sphere that moves over time.
+*/
+
 #ifndef MOVING_SPHERE_H
 #define MOVING_SPHERE_H
 
 #include "hittable.h"
 
+/**
+ * @brief      Class for moving sphere.
+ */
 class MovingSphere : public Hittable
 {
 public:
@@ -23,6 +32,14 @@ public:
     }
     double get_radius() const { return radius; }
 
+    /**
+     * @brief      Determines if ray hits the sphere.
+     * @param      r      The ray
+     * @param[in]  t_min  The minimum t
+     * @param[in]  t_max  The maximum t
+     * @param[out] rec    The hit record
+     * @return     True if hit, False otherwise.
+     */
     virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override
     {
         Vec3 center = get_center(r.time);
@@ -58,6 +75,12 @@ public:
         return false;
     }
 
+    /**
+     * @brief      Constructs the bounding box.
+     * @param[in]  t0   The start time
+     * @param[in]  t1   The end time
+     * @param[out] box  The bounding box
+    */
     virtual bool bounding_box(double t0, double t1, AABB &box) const override
     {
         AABB box0(get_center(t0) - Vec3(radius, radius, radius), getCenter(t0) + Vec3(radius, radius, radius));

@@ -1,7 +1,14 @@
 
-
 #include "bvh.h"
 
+/**
+ * @brief      Constructs the BHV tree.
+ * @param[in]  objects  The objects
+ * @param[in]  start    The start index
+ * @param[in]  end      The end index
+ * @param[in]  time0    The time 0
+ * @param[in]  time1    The time 1
+ */
 BVHNode::BVHNode(std::vector<std::shared_ptr<Hittable>> &objects, size_t start, size_t end, double time0, double time1)
 {
     int axis = random_int(0, 2);
@@ -46,6 +53,14 @@ BVHNode::BVHNode(std::vector<std::shared_ptr<Hittable>> &objects, size_t start, 
     box = surrounding_box(box_left, box_right);
 }
 
+/**
+ * @brief      Checks if the ray hits the bounding box of the node.
+ * @param[in]  r       The ray
+ * @param[in]  t_min   The minimum parameter value
+ * @param[in]  t_max   The maximum parameter value
+ * @param[out] rec     The hit record
+ * @return     True if the ray hits the BVH node bounding box, False otherwise.
+ */
 bool BVHNode::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
 {
     if (!box.hit(r, t_min, t_max))
@@ -59,12 +74,26 @@ bool BVHNode::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) cons
     return hit_left || hit_right;
 }
 
+/**
+ * @brief      Get the bounding box of the node.
+ * @param[in]  time0       The time 0
+ * @param[in]  time1       The time 1
+ * @param[out]      output_box  The output box
+ * @return     True if the bounding box is valid, False otherwise.
+ */
 bool BVHNode::bounding_box(double time0, double time1, AABB &output_box) const
 {
     output_box = box;
     return true;
 }
 
+/**
+ * @brief      Compares the bounding boxes of two objects.
+ * @param[in]  a      The first object
+ * @param[in]  b      The second object
+ * @param[in]  axis   The axis
+ * @return     True if the bounding box of the first object is smaller than the bounding box of the second object, False otherwise.
+ */
 bool box_compare(const std::shared_ptr<Hittable> a, const std::shared_ptr<Hittable> b, int axis)
 {
     AABB box_a;
@@ -78,16 +107,35 @@ bool box_compare(const std::shared_ptr<Hittable> a, const std::shared_ptr<Hittab
     return box_a.get_min().e[axis] < box_b.get_min().e[axis];
 }
 
+/**
+ * @brief      Compares the bounding boxes of two objects along the x axis.
+ * @param[in]  a      The first object
+ * @param[in]  b      The second object
+ * @return     True if the bounding box of the first object is smaller than the bounding box of the second object, False otherwise.
+ */
+
 bool box_x_compare(const std::shared_ptr<Hittable> a, const std::shared_ptr<Hittable> b)
 {
     return box_compare(a, b, 0);
 }
 
+/**
+ * @brief      Compares the bounding boxes of two objects along the y axis.
+ * @param[in]  a      The first object
+ * @param[in]  b      The second object
+ * @return     True if the bounding box of the first object is smaller than the bounding box of the second object, False otherwise.
+ */
 bool box_y_compare(const std::shared_ptr<Hittable> a, const std::shared_ptr<Hittable> b)
 {
     return box_compare(a, b, 1);
 }
 
+/**
+ * @brief      Compares the bounding boxes of two objects along the z axis.
+ * @param[in]  a      The first object
+ * @param[in]  b      The second object
+ * @return     True if the bounding box of the first object is smaller than the bounding box of the second object, False otherwise.
+ */
 bool box_z_compare(const std::shared_ptr<Hittable> a, const std::shared_ptr<Hittable> b)
 {
     return box_compare(a, b, 2);

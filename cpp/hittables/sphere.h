@@ -1,3 +1,8 @@
+/*
+Sphere.h
+========
+*/
+
 #ifndef SPHERE_H
 #define SPHERE_H
 
@@ -5,6 +10,9 @@
 
 Vec3 random_to_sphere(double radius, double distance_squared);
 
+/**
+ * @brief      Class for sphere.
+ */
 class Sphere : public Hittable
 {
 public:
@@ -60,6 +68,14 @@ private:
     Material *material;
 };
 
+/**
+ * @brief      Check if ray hits sphere
+ * @param[in]  r     Ray
+ * @param[in]  t_min  Minimum distance
+ * @param[in]  t_max  Maximum distance
+ * @param[out] rec   Hit record
+ * @return     True if hit, False otherwise.
+*/
 bool Sphere::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
 {   
     Vec3 oc = r.origin - center;              // origin to center
@@ -96,6 +112,12 @@ bool Sphere::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
     return false;
 }
 
+/**
+ * @brief      Get random point on sphere
+ * @param[in]  radius            The radius
+ * @param[in]  distance_squared  The distance squared
+ * @return     Random point on sphere
+ */
 Vec3 random_to_sphere(double radius, double distance_squared) {
     auto r1 = random_double();
     auto r2 = random_double();

@@ -1,11 +1,28 @@
+/*
+Hit Record
+==========
+This class is used to store information about a ray-object intersection.
+*/
+
 #ifndef HIT_RECORD_H
 #define HIT_RECORD_H
 
 #include <memory>
 
 #include "ray.h"
-#include "materials.h"
 
+class Material;
+
+/**
+ * @brief      This class is used to store information about a ray-object intersection.
+ * @details    It stores the following information:
+ *             - t: the distance along the ray to the intersection point
+ *             - normal: the normal vector of the surface at the intersection point
+ *             - hit_point: the intersection point
+ *             - material: the material of the object that was hit
+ *             - hit: a boolean value indicating whether the ray hit an object
+ *             - u, v: the texture coordinates of the intersection point
+ */
 class HitRecord
 {
 public:

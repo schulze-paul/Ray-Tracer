@@ -1,8 +1,17 @@
+/*
+ray.h
+=====
+Represents a ray in 3D space, defined by an origin, a direction and a time.
+*/
+
 #ifndef RAY_H
 #define RAY_H
 
 #include "vec3.h"
 
+/**
+ * @brief      Class for ray.
+ */
 class Ray
 {
 public:

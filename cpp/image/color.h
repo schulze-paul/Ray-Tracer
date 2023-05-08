@@ -1,8 +1,17 @@
+/*
+Color.h
+=======
+Represents a color in RGB space.
+*/
+
 #ifndef COLOR_H
 #define COLOR_H
 
 #include "vec3.h"
 
+/**
+ * @brief      Class for color.
+*/
 class Color : public Vec3
 {
 public:

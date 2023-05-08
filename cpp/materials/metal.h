@@ -1,3 +1,10 @@
+/*
+metal.h
+=======
+A material that reflects light in a specular manner.
+A surface roughness parameter is used to control the amount of fuzziness.
+*/
+
 #ifndef METAL_H
 #define METAL_H
 
@@ -5,6 +12,9 @@
 #include "hit_record.h"
 #include "vec3.h"
 
+/**
+ * @brief      Class for metal.
+*/
 class Metal : public Material
 {
 private:

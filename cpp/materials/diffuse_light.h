@@ -1,3 +1,9 @@
+/*
+diffuse_light.h
+==============
+A material that emits light uniformly in all directions.
+*/
+
 #ifndef DIFFUSE_LIGHT_H
 #define DIFFUSE_LIGHT_H
 
@@ -8,7 +14,9 @@
 #include "hit_record.h"
 #include "texture.h"
 
-
+/**
+ * @brief      Class for diffuse light.
+ */
 class DiffuseLight : public Material
 {
 private:

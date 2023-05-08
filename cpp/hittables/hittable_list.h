@@ -1,3 +1,10 @@
+/*
+Hittable List
+=============
+
+The HittableList class contains a list of hittable objects.
+*/
+
 #ifndef HITTABLE_LIST_H
 #define HITTABLE_LIST_H
 
@@ -6,6 +13,10 @@
 #include "hittable.h"
 #include "hit_record.h"
 
+
+/**
+ * @brief      Class for hittable list.
+ */
 class HittableList : public Hittable
 {
 public:
@@ -43,11 +54,20 @@ public:
     {
         return "HittableList";
     }
+    virtual Vec3 random(const Vec3 &o) const;
 
 private:
     std::vector<std::shared_ptr<Hittable>> objects;
 };
 
+/**
+ * @brief      Determines if the ray hits any of the objects in the list.
+ * @param[in]  r       The ray
+ * @param[in]  t_min   The minimum distance along the ray
+ * @param[in]  t_max   The maximum distance along the ray
+ * @param[out] rec     The hit record
+ * @return     True if the ray hits any of the objects in the list, False otherwise.
+ */
 bool HittableList::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
 {
     HitRecord temp_rec;
@@ -67,6 +87,13 @@ bool HittableList::hit(const Ray &r, double t_min, double t_max, HitRecord &rec)
     return hit_anything;
 }
 
+/**
+ * @brief      Constructs an AABB that contains all of the objects in the list.
+ * @param[in]  t0    The start time
+ * @param[in]  t1    The end time
+ * @param[out] box   The AABB
+ * @return     True if the AABB was constructed, False otherwise.
+ */
 bool HittableList::bounding_box(double t0, double t1, AABB &box) const
 {
     if (objects.empty())
@@ -89,5 +116,9 @@ bool HittableList::bounding_box(double t0, double t1, AABB &box) const
     return true;
 }
 
-
+Vec3 HittableList::random(const Vec3 &o) const
+{
+    int index = random_int(0, list_size - 1);
+    return objects[index]->random(o);
+}
 #endif // HITTABLE_LIST_H

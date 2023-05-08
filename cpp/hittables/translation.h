@@ -1,3 +1,10 @@
+/*
+Translation.h
+=============
+
+Implements a translation of a hittable object.
+*/
+
 #ifndef TRANSLATIONS_H
 #define TRANSLATIONS_H
 
@@ -5,6 +12,9 @@
 
 #include "hittable.h"
 
+/**
+ * @brief      Class for translate.
+ */
 class Translate : public Hittable
 {
 public:
@@ -18,6 +28,14 @@ public:
     Vec3 offset;
 };
 
+/**
+ * @brief      Determines if the ray hits the hittable object.
+ * @param[in]  r      The ray
+ * @param[in]  t_min  The minimum parameter
+ * @param[in]  t_max  The maximum parameter
+ * @param[out] rec    The hit record
+ * @return     True if the ray hits the hittable object, False otherwise.
+*/
 bool Translate::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
 {
     Ray moved_r(r.origin - offset, r.direction, r.get_time());
@@ -30,6 +48,12 @@ bool Translate::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) co
     return true;
 }
 
+/**
+ * @brief      Determines if the ray hits the bounding box.
+ * @param[in]  time0       The time 0
+ * @param[in]  time1       The time 1
+ * @param[out] output_box  The output box
+*/
 bool Translate::bounding_box(double time0, double time1, AABB &output_box) const
 {
     if (!hittable->bounding_box(time0, time1, output_box))

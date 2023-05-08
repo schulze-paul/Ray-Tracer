@@ -1,3 +1,10 @@
+/*
+Rotation.h
+==========
+Rotate hittable objects around the y-axis.
+*/
+
+
 #ifndef ROTATE_H
 #define ROTATE_H
 
@@ -9,7 +16,9 @@
 #include "ray.h"
 #include "aabb.h"
 
-
+/**
+ * @brief      Class for rotate y.
+ */
 class RotateY : public Hittable
 {
 public:
@@ -67,6 +76,14 @@ public:
 };
 
 
+/**
+ * @brief      Determines if the ray hits the rotated object.
+ * @param[in]  r       The ray
+ * @param[in]  t_min   The minimum parameter
+ * @param[in]  t_max   The maximum parameter
+ * @param[out] rec     The hit record
+ * @return     True if the ray hits the rotated object, False otherwise.
+*/
 bool RotateY::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
 {
     auto origin = r.origin;

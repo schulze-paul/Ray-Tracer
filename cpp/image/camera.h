@@ -1,3 +1,12 @@
+/*
+Camera.h
+========
+
+The Camera class is used to represent a camera in the scene.
+It can generate rays from the camera to the scene.
+It also saves the image data.
+*/
+
 #ifndef CAMERA_H
 #define CAMERA_H
 
@@ -6,6 +15,9 @@
 #include "color.h"
 #include "image_data.h"
 
+/**
+ * @brief      Class for camera.
+ */
 class Camera
 {
 public:
@@ -15,6 +27,18 @@ public:
         set_up(vfov, aspect_ratio, aperture, focus_dist, samples_per_pixel, look_from, look_at, time0, time1);
     };
 
+    /**
+     * @brief      Sets up the camera.
+     * @param[in]  vfov              The vertical field of view
+     * @param[in]  aspect_ratio      The aspect ratio
+     * @param[in]  aperture          The aperture
+     * @param[in]  focus_dist        The focus distance
+     * @param[in]  samples_per_pixel The number of samples per pixel
+     * @param[in]  look_from         The location of the camera
+     * @param[in]  look_at           The location the camera is looking at
+     * @param[in]  time0             The time 0
+     * @param[in]  time1             The time 1
+    */
     void set_up(double vfov, double aspect_ratio, double aperture, double focus_dist, int samples_per_pixel, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
     {
         double theta = degrees_to_radians(vfov);
@@ -39,11 +63,21 @@ public:
         this->time1 = time1;
     };
 
+    /**
+     * @brief      Sets the image data.
+     * @param[in]  image_width  The image width
+     */
     void set_image_data(int image_width)
     {
         this->image = ImageData(image_width, aspect_ratio);
     }
 
+    /**
+     * @brief      Generates a ray from the camera to the scene.
+     * @param[in]  u     The horizontal coordinate
+     * @param[in]  v     The vertical coordinate
+     * @return     A ray from the camera to the scene.
+    */
     Ray get_ray(double u, double v) const
     {
         Vec3 rd = lens_radius * random_in_unit_disk();

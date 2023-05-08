@@ -1,3 +1,9 @@
+/*
+Hittable
+========
+The Hittable class is an abstract class that represents an object that can be hit by a ray.
+*/
+
 #ifndef HITTABLE_H
 #define HITTABLE_H
 
@@ -5,10 +11,16 @@
 
 #include "vec3.h"
 #include "ray.h"
-#include "hit_record.h"
-#include "materials.h"
 #include "aabb.h"
 
+
+class Material;
+class HitRecord;
+
+/**
+ * @brief      Class for hittable.
+ * @details    The Hittable class is an abstract class that represents an object that can be hit by a ray.
+ */
 class Hittable
 {
 public:
@@ -33,12 +45,21 @@ private:
     Material *material;
 };
 
+/**
+ * @brief      Sets the material.
+ * @param      m     The material
+ */
 void Hittable::set_material(Material *m)
 {
     material = m;
 }
 
-
+/**
+ * @brief   Get the UV coordinates of a point on a sphere.
+ * @param   p   The point
+ * @param   u   The u coordinate
+ * @param   v   The v coordinate
+ */
 void get_sphere_uv(const Vec3 &p, double &u, double &v)
 {
     double phi = atan2(p.z(), p.x());

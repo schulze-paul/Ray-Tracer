@@ -1,11 +1,23 @@
+/*
+dielectric.h
+============
+Dielectric material.
+
+A ray that hits a dielectric material can either be reflected or refracted.
+The probability of reflection increases as the angle of incidence increases.
+The probability of reflection also increases as the refractive index of the
+material increases.
+*/
+
 #ifndef DIELECTRIC_H
 #define DIELECTRIC_H
 
 #include "materials.h"
 #include "hit_record.h"
-#include "scatter_record.h"
 
-
+/**
+ * @brief      Class for dielectric.
+ */
 class Dielectric : public Material
 {
 private:
@@ -13,6 +25,13 @@ private:
 
 public:
     Dielectric(double ri) : ref_idx(ri) {}
+
+    /**
+     * @brief      Scatter a ray from a dielectric material.
+     * @param[in]  r_in         The incoming ray
+     * @param[in]  hit_record   The hit record
+     * @param[out] scatter_record   The scatter record
+     */
     virtual bool scatter(const Ray &r_in, const HitRecord &hit_record, ScatterRecord &scatter_record) const override
     {
         scatter_record.is_specular = true;
@@ -40,10 +59,12 @@ public:
         scatter_record.specular_ray = Ray(hit_record.get_hit_point(), direction, r_in.time);
         return true;
     }
+
     Color emitted(double u, double v, const Vec3 &p) const override
     {
         return Color(0, 0, 0);
     }
+    
     std::string toString() {
         return "Dielectric";
     }

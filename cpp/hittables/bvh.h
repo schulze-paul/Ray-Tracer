@@ -1,3 +1,18 @@
+/*
+BVHNode is a binary tree structure that is used to speed up ray tracing.
+It is used to speed up ray-object intersection tests.
+
+The tree is constructed by recursively splitting the objects into two groups
+until each group contains only one object. The splitting is done by choosing
+the longest axis of the bounding box of the objects and splitting the objects
+into two groups based on the median of the longest axis.
+
+The tree is traversed by checking if the ray hits the bounding box of the node.
+If the ray hits the bounding box, then the ray is recursively checked against
+the left and right child nodes. If the ray does not hit the bounding box, then
+the ray does not hit any of the objects in the node.
+*/
+
 #ifndef BVG_H
 #define BVG_H
 
@@ -8,6 +23,9 @@
 #include "hittable.h"
 #include "aabb.h"
 
+/**
+ * @brief      Class for bounding volume hierarchy node.
+ */
 class BVHNode : public Hittable
 {
 public:

@@ -27,6 +27,11 @@ public:
 
     inline static Vec3 random(double min, double max);
 
+    inline double sum() const
+    {
+        return e[0] + e[1] + e[2];
+    }
+
     inline double x() const
     {
         return e[0];

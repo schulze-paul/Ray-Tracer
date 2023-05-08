@@ -1,8 +1,37 @@
+/*
+progress_bar.h
+==============
+A progress bar for the terminal.
+
+Usage
+-----
+    ProgressBar bar(total);
+    for (int i = 0; i < total; i++)
+    {
+        bar.update(i);
+        // do something
+    }
+
+    // or
+
+    ProgressBar bar(total);
+    for (int i = 0; i < total; i++)
+    {
+        bar.increment();
+        // do something
+    }
+*/
+
 #include <iostream>
 #include <chrono>
 #include <ctime>
 #include <string>
 
+/**
+ * @brief      Convert seconds to time string (hours, minutes, seconds)
+ * @param[in]  seconds  The number of seconds
+ * @return     The time string.
+*/
 std::string seconds_to_time(int seconds)
 {
     if (seconds < 0)
@@ -14,6 +43,9 @@ std::string seconds_to_time(int seconds)
     return std::to_string(hours) + "h " + std::to_string(minutes) + "m " + std::to_string(seconds) + "s";
 }
 
+/**
+ * @brief      Class for progress bar.
+*/
 class ProgressBar
 {
 private:
@@ -28,6 +60,11 @@ public:
         this->total = total;
         this->start = std::chrono::system_clock::now();
     }
+
+    /**
+     * @brief      Update the progress bar to a specific progress
+     * @param[in]  progress  The progress
+    */
     void update(int progress)
     {
         this->progress = progress;
@@ -61,6 +98,10 @@ public:
             std::cerr << std::endl;
         }
     }
+
+    /**
+     * @brief      Increment the progress bar by one
+    */
     void increment()
     {
         update(progress + 1);

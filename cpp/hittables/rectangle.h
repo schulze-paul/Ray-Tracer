@@ -1,3 +1,11 @@
+/*
+Rectangle.h
+===========
+
+The Rectangle class represents an axis-aligned rectangle.
+The Box class is constructed from 6 axis-aligned rectangles.
+*/
+
 #ifndef RECTANGLE_H
 #define RECTANGLE_H
 
@@ -9,7 +17,9 @@
 #include "ray.h"
 #include "hit_record.h"
 
-
+/**
+ * @brief      Class for rectangle along XY plane.
+ */
 class XY_Rectangle : public Hittable
 {
 public:
@@ -26,6 +36,9 @@ public:
     Material *material;
 };
 
+/**
+ * @brief      Class for rectangle along XZ plane.
+ */
 class XZ_Rectangle : public Hittable
 {
 public:
@@ -42,6 +55,9 @@ public:
     Material *material;
 };
 
+/**
+ * @brief      Class for rectangle along YZ plane.
+ */
 class YZ_Rectangle : public Hittable
 {
 public:
@@ -58,6 +74,13 @@ public:
     Material *material;
 };
 
+/**
+ * @brief     Check if a ray hits the rectangle.
+ * @param[in] r Ray to check.
+ * @param[in] t_min Minimum distance along the ray to check.
+ * @param[in] t_max Maximum distance along the ray to check.
+ * @param[out] rec Hit record.
+ */
 bool XY_Rectangle::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
 {
     double t = (k - r.origin.z()) / r.direction.z();
@@ -74,12 +97,26 @@ bool XY_Rectangle::hit(const Ray &r, double t_min, double t_max, HitRecord &rec)
     return true;
 }
 
+/**
+ * @brief     Get the bounding box of the rectangle.
+ * @param[in] time0 Start time.
+ * @param[in] time1 End time.
+ * @param[out] output_box Bounding box.
+ * @return    True if bounding box is valid.
+ */
 bool XY_Rectangle::bounding_box(double time0, double time1, AABB &output_box) const
 {
     output_box = AABB(Vec3(x0, y0, k - 0.0001), Vec3(x1, y1, k + 0.0001));
     return true;
 }
 
+/**
+ * @brief     Check if a ray hits the rectangle.
+ * @param[in] r Ray to check.
+ * @param[in] t_min Minimum distance along the ray to check.
+ * @param[in] t_max Maximum distance along the ray to check.
+ * @param[out] rec Hit record.
+ */
 bool XZ_Rectangle::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
 {
     double t = (k - r.origin.y()) / r.direction.y();
@@ -96,12 +133,27 @@ bool XZ_Rectangle::hit(const Ray &r, double t_min, double t_max, HitRecord &rec)
     return true;
 }
 
+/**
+ * @brief   Construct a bounding box for the rectangle.
+ * @param[in] time0 Start time.
+ * @param[in] time1 End time.
+ * @param[out] output_box Bounding box.
+ * @return    True if bounding box is valid.
+*/
 bool XZ_Rectangle::bounding_box(double time0, double time1, AABB &output_box) const
 {
     output_box = AABB(Vec3(x0, k - 0.0001, z0), Vec3(x1, k + 0.0001, z1));
     return true;
 }
 
+/**
+ * @brief     Check if a ray hits the rectangle.
+ * @param[in] r Ray to check.
+ * @param[in] t_min Minimum distance along the ray to check.
+ * @param[in] t_max Maximum distance along the ray to check.
+ * @param[out] rec Hit record.
+ * @return    True if hit.
+*/
 bool YZ_Rectangle::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
 {
     double t = (k - r.origin.x()) / r.direction.x();
@@ -118,30 +170,59 @@ bool YZ_Rectangle::hit(const Ray &r, double t_min, double t_max, HitRecord &rec)
     return true;
 }
 
+/**
+ * @brief   Construct a bounding box for the rectangle.
+ * @param[in] time0 Start time.
+ * @param[in] time1 End time.
+ * @param[out] output_box Bounding box.
+ * @return    True if bounding box is valid.
+*/
 bool YZ_Rectangle::bounding_box(double time0, double time1, AABB &output_box) const
 {
     output_box = AABB(Vec3(k - 0.0001, y0, z0), Vec3(k + 0.0001, y1, z1));
     return true;
 }
 
+/**
+ * @brief     Get a random point on the rectangle.
+ * @param[in] origin Origin of the ray.
+ * @return    Random point on the rectangle.
+ */
 Vec3 XY_Rectangle::random(const Vec3 &origin) const
 {
     Vec3 random_point = Vec3(random_double(x0, x1), random_double(y0,y1), k);
     return random_point - origin;
 }
 
+/**
+ * @brief     Get a random point on the rectangle.
+ * @param[in] origin Origin of the ray.
+ * @return    Random point on the rectangle.
+ */
 Vec3 XZ_Rectangle::random(const Vec3 &origin) const
 {
     Vec3 random_point = Vec3(random_double(x0, x1), k, random_double(z0, z1));
     return random_point - origin;
 }
 
+/**
+ * @brief     Get a random point on the rectangle.
+ * @param[in] origin Origin of the ray.
+ * @return    Random point on the rectangle.
+ */
 Vec3 YZ_Rectangle::random(const Vec3 &origin) const
 {
     Vec3 random_point = Vec3(k, random_double(y0, y1), random_double(z0, z1));
     return random_point - origin;
 }
 
+/**
+ * @brief     Get the probability density function value for a given ray.
+ * @param[in] origin Origin of the ray.
+ * @param[in] v Direction of the ray.
+ * @param[in] time Time of the ray.
+ * @return    Probability density function value.
+ */
 double XY_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) const
 {
     HitRecord rec;
@@ -156,6 +237,13 @@ double XY_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) c
         return 0;
 }
 
+/**
+ * @brief     Get the probability density function value for a given ray.
+ * @param[in] origin Origin of the ray.
+ * @param[in] v Direction of the ray.
+ * @param[in] time Time of the ray.
+ * @return    Probability density function value.
+ */
 double XZ_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) const
 {
     HitRecord rec;
@@ -170,6 +258,13 @@ double XZ_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) c
         return 0;
 }
 
+/**
+ * @brief     Get the probability density function value for a given ray.
+ * @param[in] origin Origin of the ray.
+ * @param[in] v Direction of the ray.
+ * @param[in] time Time of the ray.
+ * @return    Probability density function value.
+ */
 double YZ_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) const
 {
     HitRecord rec;
@@ -184,7 +279,9 @@ double YZ_Rectangle::pdf_value(const Vec3 &origin, const Vec3 &v, double time) c
         return 0;
 }
 
-
+/**
+ * @brief   Box class.
+ */
 class Box : public Hittable
 {
 public:
@@ -203,6 +300,12 @@ public:
     HittableList sides;
 };
 
+/**
+ * @brief     Box constructor.
+ * @param[in] p0       First point.
+ * @param[in] p1       Second point.
+ * @param[in] material Material.
+ */
 Box::Box(const Vec3 &p0, const Vec3 &p1, Material *material)
 {
     box_min = p0;
@@ -221,6 +324,14 @@ Box::Box(const Vec3 &p0, const Vec3 &p1, Material *material)
     sides.add(std::make_shared<YZ_Rectangle>(min_y, max_y, min_z, max_z, min_x, material));
 }
 
+/**
+ * @brief      Check if the box is hit by a ray.
+ * @param[in]  r     Ray.
+ * @param[in]  t_min Minimum value of t.
+ * @param[in]  t_max Maximum value of t.
+ * @param[out] rec   Hit record.
+ * @return     True if the box is hit, false otherwise.
+ */
 bool Box::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
 {
     return sides.hit(r, t_min, t_max, rec);
