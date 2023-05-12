@@ -81,7 +81,7 @@ bool Lambertian::scatter(const Ray &r_in, const HitRecord &hit_record, ScatterRe
     auto mixture_pdf = std::make_shared<MixturePDF>(light_pdf, cosine_pdf);
     scatter_record.is_specular = false;
     scatter_record.attenuation = this->albedo->value(hit_record.u, hit_record.v, hit_record.get_hit_point());
-    scatter_record.pdf = mixture_pdf;
+    scatter_record.pdf = light_pdf;
     return true;
 }
 

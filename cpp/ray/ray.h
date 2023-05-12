@@ -18,9 +18,11 @@ public:
     Vec3 origin;
     Vec3 direction;
     double time;
+    double wavelength;
 
     Ray() {}
-    Ray(const Vec3 &origin, const Vec3 &direction, double time) : origin(origin), direction(direction), time(time) {}
+    Ray(const Vec3 &origin, const Vec3 &direction, double time) : origin(origin), direction(direction), time(time), wavelength(550){}
+    Ray(const Vec3 &origin, const Vec3 &direction, double time, double wavelength) : origin(origin), direction(direction), time(time), wavelength(wavelength){}
 
     double get_time() const { return time; }
     Vec3 point_at_parameter(double t) const

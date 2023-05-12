@@ -161,8 +161,6 @@ inline void load_sphere(HittableList &objects, YAML::Node &sphere_data, Material
     auto position_data = sphere_data["center"];
     Vec3 position = load_vec3(position_data);
     double radius = sphere_data["radius"].as<double>();
-    auto material_data = sphere_data["material"];
-
     auto sphere = std::make_shared<Sphere>(position, radius, material);
     objects.add(sphere);
 }
@@ -181,7 +179,6 @@ inline void load_xy_rectangle(HittableList &objects, YAML::Node &rectangle_data,
     double y0 = rectangle_data["y0"].as<double>();
     double y1 = rectangle_data["y1"].as<double>();
     double k = rectangle_data["k"].as<double>();
-    auto material_data = rectangle_data["material"];
     auto rectangle = std::make_shared<XY_Rectangle>(x0, x1, y0, y1, k, material);
     objects.add(rectangle);
 }
@@ -200,7 +197,6 @@ inline void load_xz_rectangle(HittableList &objects, YAML::Node &rectangle_data,
     double z0 = rectangle_data["z0"].as<double>();
     double z1 = rectangle_data["z1"].as<double>();
     double k = rectangle_data["k"].as<double>();
-    auto material_data = rectangle_data["material"];
     auto rectangle = std::make_shared<XZ_Rectangle>(x0, x1, z0, z1, k, material);
     objects.add(rectangle);
 }
@@ -219,7 +215,6 @@ inline void load_yz_rectangle(HittableList &objects, YAML::Node &rectangle_data,
     double z0 = rectangle_data["z0"].as<double>();
     double z1 = rectangle_data["z1"].as<double>();
     double k = rectangle_data["k"].as<double>();
-    auto material_data = rectangle_data["material"];
     auto rectangle = std::make_shared<YZ_Rectangle>(y0, y1, z0, z1, k, material);
     objects.add(rectangle);
 }
@@ -237,9 +232,27 @@ inline void load_box(HittableList &objects, YAML::Node &box_data, Material *mate
     auto box_max_data = box_data["box_max"];
     Vec3 box_min = load_vec3(box_min_data);
     Vec3 box_max = load_vec3(box_max_data);
-    auto material_data = box_data["material"];
     auto box = std::make_shared<Box>(box_min, box_max, material);
     objects.add(box);
+}
+
+inline void load_triangular_prism(HittableList &objects, YAML::Node &prism_data, Material *material)
+{
+    std::cerr << "loading triangular prism" << std::endl;
+    auto v0_data = prism_data["v0"];
+    auto v1_data = prism_data["v1"];
+    auto v2_data = prism_data["v2"];
+    auto v3_data = prism_data["v3"];
+    auto v4_data = prism_data["v4"];
+    auto v5_data = prism_data["v5"];
+    Vec3 v0 = load_vec3(v0_data);
+    Vec3 v1 = load_vec3(v1_data);
+    Vec3 v2 = load_vec3(v2_data);
+    Vec3 v3 = load_vec3(v3_data);
+    Vec3 v4 = load_vec3(v4_data);
+    Vec3 v5 = load_vec3(v5_data);
+    auto prism = std::make_shared<TriangularPrism>(v0, v1, v2, v3, v4, v5, material);
+    objects.add(prism);
 }
 
 /**
@@ -334,6 +347,11 @@ HittableList load_scene(std::string filename, Camera &camera)
         {
             auto box_data = objects_data[i];
             load_box(hittable_list, box_data, material);
+        }
+        else if (shapeType.compare("triangular_prism") == 0)
+        {
+            auto triangular_prism_data = objects_data[i];
+            load_triangular_prism(hittable_list, triangular_prism_data, material);
         }
         else {
             std::cerr << "Unknown shape type: " << shapeType << std::endl;

@@ -72,6 +72,8 @@ public:
         std::chrono::duration<double> elapsed_seconds = end - start;
         double elapsed = elapsed_seconds.count();
         double time_per_iteration = elapsed / progress;
+        if (progress == 0)
+            time_per_iteration = 0;
 
         double eta = elapsed / progress * (total - progress);
         std::cerr << " |";
@@ -90,7 +92,15 @@ public:
         std::cerr << "| " << progress << " / " << total; 
         std::cerr << " [" << seconds_to_time(elapsed) << " -> ";
         std::cerr << seconds_to_time(eta) << "] ";
-        std::cerr << (double)((int)(time_per_iteration*100))/100.0 << "s/it \t\t\r";
+        
+        if (time_per_iteration > 1)
+            std::cerr << (double)((int)(time_per_iteration*100))/100.0 << "s/it \t\t\r";
+        else
+        {
+            // iterations per second
+            std::cerr << (double)((int)(1.0/time_per_iteration*100))/100.0 << "it/s \t\t\r";
+        }
+
         std::cerr.flush();
 
         if (progress == total)

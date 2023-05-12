@@ -335,6 +335,177 @@ Box::Box(const Vec3 &p0, const Vec3 &p1, Material *material)
 bool Box::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
 {
     return sides.hit(r, t_min, t_max, rec);
+    // set normal to outward normal
+    // TODO
+}
+
+class Triangle : public Hittable
+{
+public:
+    Triangle() {}
+    Triangle(const Vec3 &p0, const Vec3 &p1, const Vec3 &p2, Material *material);
+    virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
+    virtual bool bounding_box(double time0, double time1, AABB &output_box) const override
+    {
+        Vec3 box_min = Vec3(std::min(p0.x(), std::min(p1.x(), p2.x())),
+                            std::min(p0.y(), std::min(p1.y(), p2.y())),
+                            std::min(p0.z(), std::min(p1.z(), p2.z())));
+        Vec3 box_max = Vec3(std::max(p0.x(), std::max(p1.x(), p2.x())),
+                            std::max(p0.y(), std::max(p1.y(), p2.y())),
+                            std::max(p0.z(), std::max(p1.z(), p2.z())));
+        output_box = AABB(box_min, box_max);
+        return true;
+    }
+    std::string to_string() const { return "Triangle"; }
+
+public:
+    Vec3 p0, p1, p2;
+    Material *m;
+};
+
+/**
+ * @brief     Triangle constructor.
+ * @param[in] p0       First point.
+ * @param[in] p1       Second point.
+ * @param[in] p2       Third point.
+ * @param[in] material Material.
+ */
+Triangle::Triangle(const Vec3 &p0, const Vec3 &p1, const Vec3 &p2, Material *material)
+{
+    this->p0 = p0;
+    this->p1 = p1;
+    this->p2 = p2;
+    Vec3 normal = unit_vector(cross(p1 - p0, p2 - p0));
+    m = material;
+}
+
+/**
+ * @brief      Check if the triangle is hit by a ray.
+ * @param[in]  r     Ray.
+ * @param[in]  t_min Minimum value of t.
+ * @param[in]  t_max Maximum value of t.
+ * @param[out] rec   Hit record.
+ * @return     True if the triangle is hit, false otherwise.
+ */
+bool Triangle::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
+{
+    Vec3 e1 = p1 - p0;
+    Vec3 e2 = p2 - p0;
+    Vec3 s = r.origin - p0;
+    Vec3 s1 = cross(r.direction, e2);
+    Vec3 s2 = cross(s, e1);
+    double t = dot(s2, e2) / dot(s1, e1);
+    double b1 = dot(s1, s) / dot(s1, e1);
+    double b2 = dot(s2, r.direction) / dot(s1, e1);
+    if (t < t_min || t > t_max || b1 < 0 || b2 < 0 || b1 + b2 > 1)
+        return false;
+    rec.set_t(t);
+    rec.set_hit_point(r.point_at_parameter(t));
+    rec.set_normal(unit_vector(cross(e1, e2)));
+    rec.set_material(m);
+    return true;
+}
+
+class TriangularPrism : public Hittable
+{
+public:
+    TriangularPrism() {}
+    TriangularPrism(const Vec3 &p0, const Vec3 &p1, const Vec3 &p2, const Vec3 &p3, const Vec3 &p4, const Vec3 &p5, Material *material);
+    virtual bool hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const override;
+    virtual bool bounding_box(double time0, double time1, AABB &output_box) const override;
+    std::string to_string() const { return "TriangularPrism"; }
+    bool is_inside(const Vec3 &p) const
+    {
+        Vec3 face_normal_1 = unit_vector(cross(p1 - p0, p2 - p0));
+        Vec3 face_normal_2 = unit_vector(cross(p4 - p3, p5 - p3));
+
+        Vec3 face_normal_3 = unit_vector(cross(p0 - p1, p4 - p1));
+        Vec3 face_normal_4 = unit_vector(cross(p2 - p1, p5 - p1));
+        Vec3 face_normal_5 = unit_vector(cross(p0 - p2, p3 - p2));
+
+        Vec3 body_center = (p0 + p1 + p2 + p3 + p4 + p5) / 6.0;
+
+        Vec3 face_center_1 = (p0 + p1 + p2) / 3.0;
+        Vec3 face_center_2 = (p3 + p4 + p5) / 3.0;
+
+        Vec3 face_center_3 = (p0 + p1 + p4) / 3.0;
+        Vec3 face_center_4 = (p1 + p2 + p5) / 3.0;
+        Vec3 face_center_5 = (p0 + p2 + p3) / 3.0;
+
+        if (dot(p - body_center, face_normal_1) < 0)
+            face_normal_1 = -face_normal_1;
+        if (dot(p - body_center, face_normal_2) < 0)
+            face_normal_2 = -face_normal_2;
+        if (dot(p - body_center, face_normal_3) < 0)
+            face_normal_3 = -face_normal_3;
+        if (dot(p - body_center, face_normal_4) < 0)
+            face_normal_4 = -face_normal_4;
+        if (dot(p - body_center, face_normal_5) < 0)
+            face_normal_5 = -face_normal_5;
+        
+        if (dot(p - face_center_1, face_normal_1) < 0)
+            return false;
+        if (dot(p - face_center_2, face_normal_2) < 0)  
+            return false;
+        if (dot(p - face_center_3, face_normal_3) < 0)
+            return false;
+        if (dot(p - face_center_4, face_normal_4) < 0)  
+            return false;
+        if (dot(p - face_center_5, face_normal_5) < 0)  
+            return false;
+        
+        return true;
+    }
+
+public:
+    Vec3 p0, p1, p2, p3, p4, p5;
+    HittableList sides;
+    Material *m;
+};
+
+TriangularPrism::TriangularPrism(const Vec3 &p0, const Vec3 &p1, const Vec3 &p2, const Vec3 &p3, const Vec3 &p4, const Vec3 &p5, Material *material)
+{
+    this->p0 = p0;
+    this->p1 = p1;
+    this->p2 = p2;
+    this->p3 = p3;
+    this->p4 = p4;
+    this->p5 = p5;
+    m = material;
+
+    sides.add(std::make_shared<Triangle>(p0, p1, p2, m));
+    sides.add(std::make_shared<Triangle>(p3, p4, p5, m));
+    sides.add(std::make_shared<Triangle>(p0, p1, p4, m));
+    sides.add(std::make_shared<Triangle>(p0, p3, p4, m));
+    sides.add(std::make_shared<Triangle>(p1, p2, p5, m));
+    sides.add(std::make_shared<Triangle>(p1, p4, p5, m));
+    sides.add(std::make_shared<Triangle>(p2, p0, p3, m));
+    sides.add(std::make_shared<Triangle>(p2, p3, p5, m));
+}
+
+bool TriangularPrism::bounding_box(double time0, double time1, AABB &output_box) const
+{
+    double x_min = std::min(p0.x(), std::min(p1.x(), std::min(p2.x(), std::min(p3.x(), std::min(p4.x(), p5.x())))));
+    double y_min = std::min(p0.y(), std::min(p1.y(), std::min(p2.y(), std::min(p3.y(), std::min(p4.y(), p5.y())))));
+    double z_min = std::min(p0.z(), std::min(p1.z(), std::min(p2.z(), std::min(p3.z(), std::min(p4.z(), p5.z())))));
+    double x_max = std::max(p0.x(), std::max(p1.x(), std::max(p2.x(), std::max(p3.x(), std::max(p4.x(), p5.x())))));
+    double y_max = std::max(p0.y(), std::max(p1.y(), std::max(p2.y(), std::max(p3.y(), std::max(p4.y(), p5.y())))));
+    double z_max = std::max(p0.z(), std::max(p1.z(), std::max(p2.z(), std::max(p3.z(), std::max(p4.z(), p5.z())))));
+
+    output_box = AABB(Vec3(x_min, y_min, z_min), Vec3(x_max, y_max, z_max));
+    return true;
+}
+
+bool TriangularPrism::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) const
+{
+    return sides.hit(r, t_min, t_max, rec);
+    // set the correct normal direction
+    Vec3 point_normal_offset = 0.001 * rec.get_normal() + rec.get_hit_point();
+    if (is_inside(point_normal_offset))
+    {
+        rec.set_normal(-rec.get_normal());
+    }
+
 }
 
 #endif
