@@ -20,6 +20,14 @@ Not satisfied with the result, I ported the whole project to C++, and implemente
 - Bounding volume hierarchy nodes: The scene is split into a tree of bounding boxes, which are then traversed to find the closest hit.
 - Probability Distribution functions: The rays are distributed according to a cosine distribution to simulate diffuse reflection. Light sources are sampled according to their intensity to reduce noise.
 
+## Noise decreases with the number of iterations:
+
+| 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 |
+|---|---|---|---|----|----|----|-----|
+| ![zoomed image](./images/zoom_1.png ) | ![zoomed image](./images/zoom_2.png ) | ![zoomed image](./images/zoom_4.png ) | ![zoomed image](./images/zoom_8.png ) | ![zoomed image](./images/zoom_16.png ) | ![zoomed image](./images/zoom_32.png ) | ![zoomed image](./images/zoom_64.png ) | ![zoomed image](./images/zoom_128.png ) |
+| 256 | 512 | 1024 | 2048 | 4096 | 8192 | 16384 | 32768 |
+| ![zoomed image](./images/zoom_256.png ) | ![zoomed image](./images/zoom_512.png ) | ![zoomed image](./images/zoom_1024.png ) | ![zoomed image](./images/zoom_2048.png ) | ![zoomed image](./images/zoom_4096.png ) | ![zoomed image](./images/zoom_8192.png ) | ![zoomed image](./images/zoom_16384.png ) | ![zoomed image](./images/zoom_32768.png ) |
+
 ## Input files
 
 The scene is described in a YAML file, which is parsed with the help of the [yaml-cpp](www.github.com/jbeder/yaml-cpp) library. It contains objects, materials, light sources and the camera setup. The objects and camera are loaded dynamically at runtime.
