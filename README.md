@@ -22,11 +22,15 @@ Not satisfied with the result, I ported the whole project to C++, and implemente
 
 ## Noise decreases with the number of iterations:
 
-| 1 | 2 | 4 | 8 | 16 | 32 | 64 | 128 |
-|---|---|---|---|----|----|----|-----|
-| ![zoomed image](./images/zoom_1.png ) | ![zoomed image](./images/zoom_2.png ) | ![zoomed image](./images/zoom_4.png ) | ![zoomed image](./images/zoom_8.png ) | ![zoomed image](./images/zoom_16.png ) | ![zoomed image](./images/zoom_32.png ) | ![zoomed image](./images/zoom_64.png ) | ![zoomed image](./images/zoom_128.png ) |
-| 256 | 512 | 1024 | 2048 | 4096 | 8192 | 16384 | 32768 |
-| ![zoomed image](./images/zoom_256.png ) | ![zoomed image](./images/zoom_512.png ) | ![zoomed image](./images/zoom_1024.png ) | ![zoomed image](./images/zoom_2048.png ) | ![zoomed image](./images/zoom_4096.png ) | ![zoomed image](./images/zoom_8192.png ) | ![zoomed image](./images/zoom_16384.png ) | ![zoomed image](./images/zoom_32768.png ) |
+| 1 | 2 | 4 | 8 |
+|---|---|---|---|
+| ![zoomed image](./images/zoom_1.png ) | ![zoomed image](./images/zoom_2.png ) | ![zoomed image](./images/zoom_4.png ) | ![zoomed image](./images/zoom_8.png ) |
+| 16 | 32 | 64 | 128 |
+| ![zoomed image](./images/zoom_16.png ) | ![zoomed image](./images/zoom_32.png ) | ![zoomed image](./images/zoom_64.png ) | ![zoomed image](./images/zoom_128.png ) |
+| 256 | 512 | 1024 | 2048 |
+| ![zoomed image](./images/zoom_256.png ) | ![zoomed image](./images/zoom_512.png ) | ![zoomed image](./images/zoom_1024.png ) | ![zoomed image](./images/zoom_2048.png ) |
+| 4096 | 8192 | 16384 | 32768 |
+| ![zoomed image](./images/zoom_4096.png ) | ![zoomed image](./images/zoom_8192.png ) | ![zoomed image](./images/zoom_16384.png ) | ![zoomed image](./images/zoom_32768.png ) |
 
 ## Input files
 
