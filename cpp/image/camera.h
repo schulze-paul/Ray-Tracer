@@ -22,9 +22,9 @@ class Camera
 {
 public:
     Camera(){};
-    Camera(double vfov, double aspect_ratio, double aperture, double focus_dist, int samples_per_pixel, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
+    Camera(double vfov, double aspect_ratio, double aperture, double focus_dist, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
     {
-        set_up(vfov, aspect_ratio, aperture, focus_dist, samples_per_pixel, look_from, look_at, time0, time1);
+        set_up(vfov, aspect_ratio, aperture, focus_dist, look_from, look_at, time0, time1);
     };
 
     /**
@@ -33,13 +33,12 @@ public:
      * @param[in]  aspect_ratio      The aspect ratio
      * @param[in]  aperture          The aperture
      * @param[in]  focus_dist        The focus distance
-     * @param[in]  samples_per_pixel The number of samples per pixel
      * @param[in]  look_from         The location of the camera
      * @param[in]  look_at           The location the camera is looking at
      * @param[in]  time0             The time 0
      * @param[in]  time1             The time 1
     */
-    void set_up(double vfov, double aspect_ratio, double aperture, double focus_dist, int samples_per_pixel, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
+    void set_up(double vfov, double aspect_ratio, double aperture, double focus_dist, Vec3 look_from, Vec3 look_at, double time0 = 0, double time1 = 0)
     {
         double theta = degrees_to_radians(vfov);
         double h = tan(theta / 2);
@@ -57,7 +56,6 @@ public:
         this->vertical = focus_dist * viewport_height * v;
         this->lower_left_corner = look_from - horizontal / 2 - vertical / 2 - focus_dist * w;
 
-        this->samples_per_pixel = samples_per_pixel;
         this->lens_radius = aperture / 2;
         this->time0 = time0;
         this->time1 = time1;
@@ -99,7 +97,6 @@ public:
     double viewport_height;
     double time0, time1; // shutter open/close times
     double aspect_ratio;
-    int samples_per_pixel;
     ImageData image;
 };
 

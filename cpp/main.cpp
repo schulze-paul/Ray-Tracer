@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
-
+#include <string_view>
 
 #include "ray_tracer.h"
 #include "vec3.h"
@@ -17,6 +17,8 @@
 #include "load_scene.h"
 #include "background.h"
 #include "shaders.h"
+
+using namespace std::literals;
 
 void find_light_sources(HittableList &world, std::shared_ptr<HittableList>& lights)
 {
@@ -36,18 +38,78 @@ void find_light_sources(HittableList &world, std::shared_ptr<HittableList>& ligh
             lambertian->set_lights(lights);
         }
     }
-    
 }
 
+class InputParser{
+    public:
+        InputParser (int &argc, char **argv){
+            for (int i=1; i < argc; ++i)
+                this->tokens.push_back(std::string(argv[i]));
+        }
+        /// @author iain
+        const std::string& getCmdOption(const std::string &option) const{
+            std::vector<std::string>::const_iterator itr;
+            itr =  std::find(this->tokens.begin(), this->tokens.end(), option);
+            if (itr != this->tokens.end() && ++itr != this->tokens.end()){
+                return *itr;
+            }
+            static const std::string empty_string("");
+            return empty_string;
+        }
+        /// @author iain
+        bool cmdOptionExists(const std::string &option) const{
+            return std::find(this->tokens.begin(), this->tokens.end(), option)
+                   != this->tokens.end();
+        }
+    private:
+        std::vector <std::string> tokens;
+};
 
-int main(int argc, char *argv[]) 
+
+
+int main(int argc, char** argv) 
 {
-    std::string in_file_name = argv[1];
-    std::string out_file_name = argv[2];
+    // help 
+    InputParser input(argc, argv);
+    if(input.cmdOptionExists("-h"))
+    {
+        std::cout << "List of commands:..." << std::endl;
+        std::cout << " -h: Help" << std::endl;
+        std::cout << " -i: Input scene file (.yaml)" << std::endl;
+        std::cout << " -o: Output file name (.ppm)" << std::endl;
+        std::cout << " -v: Verbose" << std::endl;
+        std::cout << " -s: Number of samples per pixel" << std::endl;
+        return 0;
+    }
+    
+    const std::string in_file_name = input.getCmdOption("-i");
+    const std::string out_file_name = input.getCmdOption("-o");
+    if (in_file_name.empty() || out_file_name.empty())
+    {
+        // Do interesting things ...
+        std::cout << "Specify input and output file names with -i and -o." << std::endl;
+        return 1;
+    }
+    
+    // samples per pixel
+    int samples_per_pixel = 1048;
+    const std::string num_samples_string = input.getCmdOption("-s");
+    if (!num_samples_string.empty())
+    {
+        samples_per_pixel = std::stoi(num_samples_string);
+    }
+    else
+    {
+        std::cout << "Number of samples not specified: Default=" << samples_per_pixel << std::endl;
+    }
+
+
+    
+
 
     std::cerr << "Loading scene: " << in_file_name << std::endl;
     std::cerr << "Output file: " << out_file_name << std::endl;
-    
+
     // world
     Camera camera;
     HittableList world = load_scene(in_file_name, camera);
@@ -65,7 +127,7 @@ int main(int argc, char *argv[])
         for (int i = 0; i < camera.image.get_width(); ++i)
         {
             // progress bar
-            for (int s = 0; s < camera.samples_per_pixel; ++s)
+            for (int s = 0; s < samples_per_pixel; ++s)
             {
                 // ray
                 double u = camera.image.get_u(i);
@@ -83,6 +145,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    camera.image.write_to_file(out_file_name);
+    camera.image.write_to_ppm(out_file_name);
     return 0;
 }
