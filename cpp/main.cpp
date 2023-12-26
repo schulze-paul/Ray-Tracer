@@ -33,7 +33,7 @@ void find_light_sources(HittableList &world, std::shared_ptr<HittableList>& ligh
         Lambertian *lambertian = static_cast<Lambertian*>(world.get(j)->get_material());
         if (lambertian->is_lambertian())
         {
-            std::cout << "setting lights for material " << j << std::endl;
+            std::cerr << "setting lights for material " << j << std::endl;
 
             lambertian->set_lights(lights);
         }
@@ -69,7 +69,9 @@ class InputParser{
 
 int main(int argc, char** argv) 
 {
-    // help 
+    
+    // Parse input
+    // -----------------------------------------------------------------
     InputParser input(argc, argv);
     if(input.cmdOptionExists("-h"))
     {
@@ -78,7 +80,8 @@ int main(int argc, char** argv)
         std::cout << " -i: Input scene file (.yaml)" << std::endl;
         std::cout << " -o: Output file name (.ppm)" << std::endl;
         std::cout << " -v: Verbose" << std::endl;
-        std::cout << " -s: Number of samples per pixel" << std::endl;
+        std::cout << " -n: Number of samples per pixel" << std::endl;
+        std::cout << " -s: Shader (normal, depth, scatter)" << std::endl;
         return 0;
     }
     
@@ -93,24 +96,25 @@ int main(int argc, char** argv)
     
     // samples per pixel
     int samples_per_pixel = 1048;
-    const std::string num_samples_string = input.getCmdOption("-s");
+    const std::string num_samples_string = input.getCmdOption("-n");
     if (!num_samples_string.empty())
     {
         samples_per_pixel = std::stoi(num_samples_string);
     }
     else
     {
-        std::cout << "Number of samples not specified: Default=" << samples_per_pixel << std::endl;
+        std::cerr << "Number of samples not specified: Default=" << samples_per_pixel << std::endl;
     }
-
-
-    
-
 
     std::cerr << "Loading scene: " << in_file_name << std::endl;
     std::cerr << "Output file: " << out_file_name << std::endl;
 
-    // world
+    // shader
+    const std::string shader = input.getCmdOption("-s");
+
+    
+    // Load Scene
+    // -----------------------------------------------------------------
     Camera camera;
     HittableList world = load_scene(in_file_name, camera);
     auto night_background = SolidBackground(Color(0.0, 0.0, 0.0));
@@ -126,7 +130,6 @@ int main(int argc, char** argv)
         bar.increment();
         for (int i = 0; i < camera.image.get_width(); ++i)
         {
-            // progress bar
             for (int s = 0; s < samples_per_pixel; ++s)
             {
                 // ray
@@ -134,8 +137,27 @@ int main(int argc, char** argv)
                 double v = camera.image.get_v(j);
                 Ray ray = camera.get_ray(u, v);
 
-                color = ray_tracing_shader(ray, world, night_background, 16);
-
+                if (shader.empty()) 
+                {
+                    color = ray_tracing_shader(ray, world, day_background, 16);
+                }
+                else if (shader == "normal")
+                {
+                    color = normal_shader(ray, world, day_background, 16);
+                }
+                else if (shader == "scatter")
+                {
+                    color = scattering_shader(ray, world, day_background, 16);
+                }
+                else if (shader == "cosine")
+                {
+                    color = cosine_pdf_ray_tracing_shader(ray, world, day_background, 16);
+                }
+                else if (shader == "lights")
+                {
+                    color = light_pdf_ray_tracing_shader(ray, world, day_background, 16, lights);
+                }
+                
                 // discard NANs
                 if (color.x() != color.x()) color = Color(0,0,0);
                 if (color.y() != color.y()) color = Color(0,0,0);
