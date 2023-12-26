@@ -32,6 +32,9 @@ public:
         objects.push_back(object);
         return 0;
     }
+    void pop_back() {
+        objects.pop_back();
+    }
     int size() const
     {
         return objects.size();

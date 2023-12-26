@@ -39,9 +39,9 @@ public:
             {
                 for (int k = 0; k < 2; k++)
                 {
-                    auto x = i * bbox.getMax().x() + (1 - i) * bbox.getMin().x();
-                    auto y = j * bbox.getMax().y() + (1 - j) * bbox.getMin().y();
-                    auto z = k * bbox.getMax().z() + (1 - k) * bbox.getMin().z();
+                    auto x = i * bbox.get_max().x() + (1 - i) * bbox.get_min().x();
+                    auto y = j * bbox.get_max().y() + (1 - j) * bbox.get_min().y();
+                    auto z = k * bbox.get_max().z() + (1 - k) * bbox.get_min().z();
 
                     auto newx = cos_theta * x + sin_theta * z;
                     auto newz = -sin_theta * x + cos_theta * z;

@@ -101,6 +101,7 @@ The file includes object geometries and materials as well as the camera setup an
 #include "metal.h"
 #include "diffuse_light.h"
 #include "rectangle.h"
+#include "rotation.h"
 #include "texture.h"
 #include "sphere.h"
 #include "dielectric.h"
@@ -241,6 +242,16 @@ inline void load_box(HittableList &objects, YAML::Node &box_data, Material *mate
     objects.add(box);
 }
 
+
+inline void load_rotation_y(HittableList &objects, YAML::Node &rotation_data, Material *material)
+{
+    std::cerr << "loading rotation y" << std::endl;
+    double rotation_angle = rotation_data["angle"].as<double>();
+    auto rotation = std::make_shared<RotateY>(objects.get(objects.size()-1), rotation_angle);
+    objects.pop_back();
+    objects.add(rotation);
+}
+
 inline void load_material(std::vector<Material *> &material_list, YAML::Node &material_data)
 {
     Material *material;
@@ -282,40 +293,32 @@ inline void load_object(HittableList &objects, YAML::Node &data_for_object, Mate
 
     std::string shapeType = data_for_object["type"].as<std::string>();
 
-    if (shapeType == "sphere")
-    {
-        auto sphere_data = data_for_object;
-        load_sphere(objects, sphere_data, material);
+    if (shapeType == "sphere") {
+        load_sphere(objects, data_for_object, material);
     }
     else if (shapeType == "xy_rectangle")
     {
-        auto rectangle_data = data_for_object;
-        load_xy_rectangle(objects, rectangle_data, material);
+        load_xy_rectangle(objects, data_for_object, material);
     }
     else if (shapeType == "xz_rectangle")
     {
-        auto rectangle_data = data_for_object;
-        load_xz_rectangle(objects, rectangle_data, material);
+        load_xz_rectangle(objects, data_for_object, material);
     }
     else if (shapeType == "yz_rectangle")
     {
         auto rectangle_data = data_for_object;
-        load_yz_rectangle(objects, rectangle_data, material);
+        load_yz_rectangle(objects, data_for_object, material);
     }
     else if (shapeType == "box")
     {
-        auto box_data = data_for_object;
-        load_box(objects, box_data, material);
+        load_box(objects, data_for_object, material);
     }
-    /*
     else if (shapeType == "rotate_y")
-    {
-        auto rotate_data = data_for_object
-        
-        auto box_data = data_for_object;
-        load_box(hittable_list, box_data, material);
+    {   
+        auto inner_object_data = data_for_object["object"];
+        load_object(objects, inner_object_data, material);
+        load_rotation_y(objects, data_for_object, material);
     }
-    */
     
     else {
         std::cerr << "Unknown shape type: " << shapeType << std::endl;
