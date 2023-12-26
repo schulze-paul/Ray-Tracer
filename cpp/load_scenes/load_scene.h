@@ -241,6 +241,89 @@ inline void load_box(HittableList &objects, YAML::Node &box_data, Material *mate
     objects.add(box);
 }
 
+inline void load_material(std::vector<Material *> &material_list, YAML::Node &material_data)
+{
+    Material *material;
+    std::string materialType = material_data["type"].as<std::string>();
+
+    if (materialType == "diffuse")
+    {
+        auto color_data = material_data["color"];
+        Color color = load_vec3(color_data);
+        material = new Lambertian(color);
+    }
+    else if (materialType =="metal")
+    {
+        auto color_data = material_data["albedo"];
+        Color color = load_vec3(color_data);
+        double fuzz = material_data["fuzz"].as<double>();
+        material = new Metal(color, fuzz);
+    }
+    else if (materialType == "dielectric")
+    {
+        double refraction_index = material_data["refraction_index"].as<double>();
+        material = new Dielectric(refraction_index);
+    }
+    else if (materialType == "diffuse_light")
+    {
+        auto color_data = material_data["color"];
+        Color color = load_vec3(color_data);
+        material = new DiffuseLight(color);
+    }
+    else {
+        std::cerr << "Unknown material type: " << materialType << std::endl;
+        exit(1);
+    }
+    material_list.push_back(material);
+}
+
+inline void load_object(HittableList &objects, YAML::Node &data_for_object, Material *material)
+{
+
+    std::string shapeType = data_for_object["type"].as<std::string>();
+
+    if (shapeType == "sphere")
+    {
+        auto sphere_data = data_for_object;
+        load_sphere(objects, sphere_data, material);
+    }
+    else if (shapeType == "xy_rectangle")
+    {
+        auto rectangle_data = data_for_object;
+        load_xy_rectangle(objects, rectangle_data, material);
+    }
+    else if (shapeType == "xz_rectangle")
+    {
+        auto rectangle_data = data_for_object;
+        load_xz_rectangle(objects, rectangle_data, material);
+    }
+    else if (shapeType == "yz_rectangle")
+    {
+        auto rectangle_data = data_for_object;
+        load_yz_rectangle(objects, rectangle_data, material);
+    }
+    else if (shapeType == "box")
+    {
+        auto box_data = data_for_object;
+        load_box(objects, box_data, material);
+    }
+    /*
+    else if (shapeType == "rotate_y")
+    {
+        auto rotate_data = data_for_object
+        
+        auto box_data = data_for_object;
+        load_box(hittable_list, box_data, material);
+    }
+    */
+    
+    else {
+        std::cerr << "Unknown shape type: " << shapeType << std::endl;
+        exit(1);
+    }
+    std::cerr << material->to_string() << std::endl;
+}
+
 /**
  * @brief load camera setup and objects from yaml file
  * @param filename yaml file to load
@@ -265,83 +348,14 @@ HittableList load_scene(std::string filename, Camera &camera)
     std::vector<Material *> materials;
     auto objects_data = scene["scene"]["objects"];
     int numberOfObjects = objects_data.size();
-    std::string shapeType;
-    std::string materialType;
-    Material *material;
-
+    
     for (int i=0; i<numberOfObjects; i++) 
     {
-        shapeType = objects_data[i]["type"].as<std::string>();
-        materialType = objects_data[i]["material"]["type"].as<std::string>();
-        auto material_data = objects_data[i]["material"];
-
-        if (materialType.compare("diffuse") == 0)
-        {
-            auto diffuseData = objects_data[i]["material"];
-            auto color_data = material_data["color"];
-            Color color = load_vec3(color_data);
-            material = new Lambertian(color);
-        }
-        else if (materialType.compare("metal") == 0)
-        {
-            auto metalData = objects_data[i]["material"];
-            auto color_data = material_data["albedo"];
-            Color color = load_vec3(color_data);
-            double fuzz = material_data["fuzz"].as<double>();
-            material = new Metal(color, fuzz);
-        }
-        else if (materialType.compare("dielectric") == 0)
-        {
-            auto dielectricData = objects_data[i]["material"];        
-            double refraction_index = material_data["refraction_index"].as<double>();
-            material = new Dielectric(refraction_index);
-        }
-        else if (materialType.compare("diffuse_light") == 0)
-        {
-            auto diffuseLightData = objects_data[i]["material"];
-            auto color_data = material_data["color"];
-            Color color = load_vec3(color_data);
-            material = new DiffuseLight(color);
-        }
-        else {
-            std::cerr << "Unknown material type: " << materialType << std::endl;
-            exit(1);
-        }
-        materials.push_back(material);
-
-        if (shapeType.compare("sphere") == 0)
-        {
-            auto sphere_data = objects_data[i];
-            load_sphere(hittable_list, sphere_data, material);
-        }
-        else if (shapeType.compare("xy_rectangle") == 0)
-        {
-            auto rectangle_data = objects_data[i];
-            load_xy_rectangle(hittable_list, rectangle_data, material);
-        }
-        else if (shapeType.compare("xz_rectangle") == 0)
-        {
-            auto rectangle_data = objects_data[i];
-            load_xz_rectangle(hittable_list, rectangle_data, material);
-        }
-        else if (shapeType.compare("yz_rectangle") == 0)
-        {
-            auto rectangle_data = objects_data[i];
-            load_yz_rectangle(hittable_list, rectangle_data, material);
-        }
-        else if (shapeType.compare("box") == 0)
-        {
-            auto box_data = objects_data[i];
-            load_box(hittable_list, box_data, material);
-        }
-        else {
-            std::cerr << "Unknown shape type: " << shapeType << std::endl;
-            exit(1);
-        }
-    }
-
-    std::cerr << material->to_string() << std::endl;
-    
+        auto data_for_object = objects_data[i];
+        auto material_data = data_for_object["material"];
+        load_material(materials, material_data);
+        load_object(hittable_list, data_for_object, materials[materials.size()-1]);
+    }    
 
     auto objects = hittable_list.get_objects();
 
