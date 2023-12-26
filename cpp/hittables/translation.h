@@ -42,8 +42,8 @@ bool Translate::hit(const Ray &r, double t_min, double t_max, HitRecord &rec) co
     if (!hittable->hit(moved_r, t_min, t_max, rec))
         return false;
 
-    rec.setHitPoint(rec.getHitPoint() + offset);
-    rec.setNormal(rec.getNormal());
+    rec.set_hit_point(rec.get_hit_point() + offset);
+    rec.set_normal(rec.get_normal());
 
     return true;
 }
@@ -59,7 +59,7 @@ bool Translate::bounding_box(double time0, double time1, AABB &output_box) const
     if (!hittable->bounding_box(time0, time1, output_box))
         return false;
 
-    output_box = AABB(output_box.getMin() + offset, output_box.getMax() + offset);
+    output_box = AABB(output_box.get_min() + offset, output_box.get_max() + offset);
     return true;
 }
 

@@ -102,6 +102,7 @@ The file includes object geometries and materials as well as the camera setup an
 #include "diffuse_light.h"
 #include "rectangle.h"
 #include "rotation.h"
+#include "translation.h"
 #include "texture.h"
 #include "sphere.h"
 #include "dielectric.h"
@@ -252,6 +253,17 @@ inline void load_rotation_y(HittableList &objects, YAML::Node &rotation_data, Ma
     objects.add(rotation);
 }
 
+inline void load_translation(HittableList &objects, YAML::Node &translation_data, Material *material)
+{
+    std::cerr << "loading rotation y" << std::endl;
+    auto displacement_data = translation_data["displacement"];
+    Vec3 displacement = load_vec3(displacement_data);
+    auto rotation = std::make_shared<Translate>(objects.get(objects.size()-1), displacement);
+    objects.pop_back();
+    objects.add(rotation);
+}
+
+
 inline void load_material(std::vector<Material *> &material_list, YAML::Node &material_data)
 {
     Material *material;
@@ -319,7 +331,12 @@ inline void load_object(HittableList &objects, YAML::Node &data_for_object, Mate
         load_object(objects, inner_object_data, material);
         load_rotation_y(objects, data_for_object, material);
     }
-    
+    else if (shapeType == "translate")
+    {   
+        auto inner_object_data = data_for_object["object"];
+        load_object(objects, inner_object_data, material);
+        load_translation(objects, data_for_object, material);
+    }
     else {
         std::cerr << "Unknown shape type: " << shapeType << std::endl;
         exit(1);
