@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="newPrefix">
+    <file>direct_to_light.ppm</file>
+  </qresource>
+</RCC>
