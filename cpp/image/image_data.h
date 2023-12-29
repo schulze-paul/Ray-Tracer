@@ -34,7 +34,6 @@ private:
     int width;
     int height;
     double aspect_ratio;
-    std::vector<std::vector<std::vector<double>>> pixels;
     std::vector<std::vector<int>> number_of_samples;
 
 public:
@@ -43,6 +42,7 @@ public:
     ImageData(int width, int height);
     int get_width() const;
     int get_height() const;
+    double get_max() const;
     int write_ppm(std::ostream &out);
     void write_to_ppm(std::string filename);
     void write_to_png(std::string filename);
@@ -50,6 +50,8 @@ public:
     double get_aspect_ratio() const;
     double get_u(int i) const;
     double get_v(int j) const;
+    std::vector<std::vector<std::vector<double>>> pixels;
+    ImageData &operator*=(const double &val);
 };
 
 /**
@@ -109,6 +111,27 @@ int ImageData::get_width() const
 int ImageData::get_height() const
 {
     return this->height;
+}
+
+double ImageData::get_max() const
+{
+    double maximum = 0;
+    for (int j = this->height - 1; j >= 0; --j)
+    {
+        for (int i = 0; i < this->width; ++i)
+        {
+            if (this->pixels[j][i][0] > maximum) {
+                maximum = pixels[j][i][0];
+            }
+            if (this->pixels[j][i][1] > maximum) {
+                maximum = pixels[j][i][1];
+            }
+            if (this->pixels[j][i][2] > maximum) {
+                maximum = pixels[j][i][2];
+            }
+        }
+    }  
+    return maximum;
 }
 
 /**
@@ -198,5 +221,22 @@ double ImageData::get_v(int j) const
     double random_offset = (random_double() - 0.5) / this->height;
     return pixel_center + random_offset;
 }
+
+inline ImageData &ImageData::operator*=(const double &val)
+{
+    for (int j = this->height - 1; j >= 0; --j)
+    {
+        for (int i = 0; i < this->width; ++i)
+        {
+            this->pixels[j][i][0] *= val;
+            this->pixels[j][i][1] *= val;
+            this->pixels[j][i][2] *= val;
+            ;
+        }
+    }
+
+    return *this;
+}
+
 
 #endif // IMAGE_DATA_H

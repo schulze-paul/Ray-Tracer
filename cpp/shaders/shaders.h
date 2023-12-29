@@ -92,7 +92,17 @@ Color normal_shader(const Ray &ray_in, HittableList &world, Background &backgrou
     return normal*0.5 + Vec3(0.5, 0.5, 0.5);
 }
 
-// Not tested:
+Color depth_shader(const Ray &ray_in, HittableList &world, Background &background, int depth)
+{
+    HitRecord rec;
+    if (world.hit(ray_in, 0.001f, 100.0f, rec))
+    {
+        return rec.get_t()*Vec3(1,1,1);
+    }
+    
+    return Vec3(0, 0, 0);
+}
+
 
 Color cosine_pdf_ray_tracing_shader(const Ray &ray_in, HittableList &world, Background &background, int depth)
 {
