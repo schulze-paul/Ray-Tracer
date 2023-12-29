@@ -61,11 +61,22 @@ Color scattering_shader(const Ray &ray_in, HittableList &world, Background &back
         ScatterRecord scatter_rec;
         if (hit_rec.get_material()->scatter(ray_in, hit_rec, scatter_rec)) 
         {
-            return scatter_rec.specular_ray.direction*0.5 + Vec3(0.5,0.5, 0.5);
+            if (scatter_rec.is_specular)
+            {
+                return scatter_rec.specular_ray.direction*0.5 + Vec3(0.5,0.5,0.5);
+            }
+            else
+            {
+                // diffuse
+                Vec3 direction;
+                double pdf_val;
+                scatter_rec.pdf->generate(direction, pdf_val);
+                return direction*0.5 + Vec3(0.5,0.5,0.5);
+            }
         }
     }
     
-    return background.get_color(ray_in);
+    return Color(Vec3(0,0,0));
 }
 
 

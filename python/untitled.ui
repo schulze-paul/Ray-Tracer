@@ -249,7 +249,8 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen_Scene"/>
-    <addaction name="actionRender_Scene"/>
+    <addaction name="actionSave_Scene"/>
+    <addaction name="actionRender_Scene_2"/>
    </widget>
    <widget class="QMenu" name="menuAdd_Object">
     <property name="title">
@@ -283,10 +284,16 @@
    <property name="text">
     <string>Open Scene</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
   </action>
-  <action name="actionRender_Scene">
+  <action name="actionSave_Scene">
    <property name="text">
-    <string>Render Scene</string>
+    <string>Save Scene</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
   <action name="actionAdd_Sphere">
@@ -347,6 +354,14 @@
   <action name="actionDiffuse_Light">
    <property name="text">
     <string>Diffuse Light</string>
+   </property>
+  </action>
+  <action name="actionRender_Scene_2">
+   <property name="text">
+    <string>Render Scene</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+R</string>
    </property>
   </action>
  </widget>

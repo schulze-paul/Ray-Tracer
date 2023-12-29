@@ -21,8 +21,9 @@ class MainWindow(QMainWindow):
         self.ui.setupUi(self)
 
         self.ui.pushButton.clicked.connect(self.handleRenderButton)
-        self.ui.actionAdd_Sphere.triggered.connect(self.handleAddSphere)
         self.ui.actionOpen_Scene.triggered.connect(self.handleOpenScene)
+        self.ui.actionSave_Scene.triggered.connect(self.handleSaveScene)
+        self.ui.actionRender_Scene_2.triggered.connect(self.handleRenderButton)
         # self.ui.textEdit.textChanged.connect(self.onTextChanged)
         # self.ui.textEdit = YAMLEditor()
 
@@ -36,8 +37,7 @@ class MainWindow(QMainWindow):
         
     def handleRenderButton(self):
 
-        with open(self.in_file_path, "w") as in_file:
-            in_file.write(self.ui.textEdit.toPlainText())
+        self.handleSaveScene()
         shaderIdx = self.ui.comboBox.currentIndex()
         shader = ["ray_tracing", "normal", "depth", "scatter"][shaderIdx]
         number_iterations = self.ui.lineEdit.text()
@@ -53,6 +53,11 @@ class MainWindow(QMainWindow):
         dialog = QDialog(self)
         AddSphereDialog(dialog)
         dialog.exec()
+
+    def handleSaveScene(self):
+        with open(self.in_file_path, "w") as in_file:
+            in_file.write(self.ui.textEdit.toPlainText())
+        
 
     @pyqtSlot(str)
     def onTextChanged(self, text):
