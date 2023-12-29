@@ -243,6 +243,25 @@ inline void load_box(HittableList &objects, YAML::Node &box_data, Material *mate
     objects.add(box);
 }
 
+inline void load_triangular_prism(HittableList &objects, YAML::Node &prism_data, Material *material)
+{
+    std::cerr << "loading triangular prism" << std::endl;
+    auto v0_data = prism_data["v0"];
+    auto v1_data = prism_data["v1"];
+    auto v2_data = prism_data["v2"];
+    auto v3_data = prism_data["v3"];
+    auto v4_data = prism_data["v4"];
+    auto v5_data = prism_data["v5"];
+    Vec3 v0 = load_vec3(v0_data);
+    Vec3 v1 = load_vec3(v1_data);
+    Vec3 v2 = load_vec3(v2_data);
+    Vec3 v3 = load_vec3(v3_data);
+    Vec3 v4 = load_vec3(v4_data);
+    Vec3 v5 = load_vec3(v5_data);
+    auto prism = std::make_shared<TriangularPrism>(v0, v1, v2, v3, v4, v5, material);
+    objects.add(prism);
+}
+
 
 inline void load_rotation_y(HittableList &objects, YAML::Node &rotation_data, Material *material)
 {
@@ -324,6 +343,11 @@ inline void load_object(HittableList &objects, YAML::Node &data_for_object, Mate
     else if (shapeType == "box")
     {
         load_box(objects, data_for_object, material);
+    }
+
+    else if (shapeType == "triangular_prism")
+    {
+        load_triangular_prism(objects, data_for_object, material);
     }
     else if (shapeType == "rotate_y")
     {   
