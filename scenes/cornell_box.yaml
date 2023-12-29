@@ -1,107 +1,110 @@
 scene:
   camera:
-    look_from: [-800, 278, 278]
-    look_at: [0, 278, 278]
+    look_from: [-1800, 0, 0]
+    look_at: [0, 0, 0]
     vup: [0, 1, 0]
-    vfov: 40
+    vfov: 45
     aperture: 0.0
     aspect_ratio: 1.0
-    focus_dist: 800.0
-    image_width: 400
-    samples_per_pixel: 100
+    focal_length: 800.0
+    image_width: 1000
     time0: 0.0
     time1: 1.0
 
   objects:
     - type: xy_rectangle
-      x0: 0
+      x0: -555
       x1: 555
-      y0: 0
+      y0: -555
       y1: 555
       k: 555 
       material:
         type: diffuse
         color: [0.12, 0.45, 0.15]
     - type: xy_rectangle
-      x0: 0
+      x0: -555
       x1: 555
-      y0: 0
+      y0: -555
       y1: 555
-      k: 0
+      k: -555
       material:
         type: diffuse
         color: [0.65, 0.05, 0.05]
     # add sphere light source in ceiling
-    - type: sphere
-      center: [343, 548.8, 227]
-      radius: 100
+    # - type: sphere
+    #   center: [343, 548.8, 227]
+    #   radius: 100
+    #   material:
+    #     type: diffuse_light
+    #     color: [15, 15, 15]
+
+    - type: box
+      box_min: [-300, 550, -300]
+      box_max: [300, 551, 300]
       material:
         type: diffuse_light
         color: [15, 15, 15]
-    - type: xz_rectangle
-      x0: 213
-      x1: 343
-      z0: 227
-      z1: 332
-      k: 554
+    - type: box
+      box_min: [600, -550, -150]
+      box_max: [500, -250, 150]
       material:
-        type: diffuse_light
-        color: [0.73, 0.73, 0.73]
+        type: diffuse
+        color: [1, 1, 1]
+
     - type: xz_rectangle
-      x0: 0
+      x0: -555
       x1: 555
-      z0: 0
+      z0: -555
       z1: 555
-      k: 0
+      k: -555
       material:
         type: diffuse
         color: [0.73, 0.73, 0.73]
     - type: xz_rectangle
-      x0: 0
+      x0: -555
       x1: 555
-      z0: 0
+      z0: -555
       z1: 555
       k: 555
       material:
         type: diffuse
         color: [0.73, 0.73, 0.73]
-    - type: yz_rectangle
-      y0: 0
-      y1: 555
-      z0: 0
-      z1: 555
-      k: 555
+
+    - type: box
+      box_min: [555, -555, -555]
+      box_max: [556, 555, 555]
       material:
         type: diffuse
         color: [0.73, 0.73, 0.73]
+
     - type: sphere
-      center: [190, 90, 190]
-      radius: 90
+      center: [190, 50, 190]
+      radius: 50
       material:
         type: dielectric
         refraction_index: 1.5
     - type: sphere
-      center: [400, 100, 400]
-      radius: 100
+      center: [400, 50, 400]
+      radius: 50
       material:
         type: dielectric
         refraction_index: 1.5
     - type: sphere
-      center: [250, 150, 450]
-      radius: 150
+      center: [250, 50, 450]
+      radius: 50
       material:
         type: metal
         albedo: [0.8, 0.85, 0.88]
         fuzz: 0.0
     - type: sphere
-      center: [400, 200, 300]
-      radius: 200
+      center: [400, 50, 300]
+      radius: 50
       material:
-        type: diffuse
+        type: diffuse_light
         color: [0.7, 0.3, 0.1]
     - type: sphere
-      center: [120, 150, 145]
-      radius: 150
+      center: [120, 50, 145]
+      radius: 50
       material:
         type: metal
         albedo: [0.9, 0.76, 0.46]

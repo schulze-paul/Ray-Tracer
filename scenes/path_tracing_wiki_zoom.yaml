@@ -1,0 +1,129 @@
+scene:
+  camera:
+    look_from: [0, 3, 8]
+    look_at: [-2.5, 0.4, 1.4]
+    vup: [0, 1, 0]
+    vfov: 10
+    aperture: 0.0
+    aspect_ratio: 1.0
+    focal_length: 10.0
+    image_width: 256
+    time0: 0.0
+    time1: 1.0
+    
+  objects:
+    # rectangle as ground
+    - type: xz_rectangle
+      x0: -10
+      x1: 10
+      z0: -10
+      z1: 10
+      k: 0
+      material:
+        type: diffuse
+        color: [1.0, 1.0, 1.0]
+    
+    # rectangle as back wall
+    - type: xy_rectangle
+      x0: -10
+      x1: 10
+      y0: 0
+      y1: 10
+      k: -2
+      material:
+        type: diffuse
+        color: [1.0, 1.0, 1.0]
+
+    # diffuse sphere on the left
+    - type: sphere
+      center: [-3, 1, 0]
+      radius: 1
+      material:
+        type: diffuse
+        color: [1.0, 1.0, 1.0]
+
+    # metal sphere on the right
+    - type: sphere
+      center: [3, 1, 0]
+      radius: 1
+      material:
+        type: metal
+        albedo: [1.0, 1.0, 1.0]
+        fuzz: 0.0
+
+    # white sphere with glossy reflection in the middle
+    - type: sphere
+      center: [0, 1, 0]
+      radius: 1
+      material:
+        type: dielectric
+        refraction_index: 1.5
+    - type: sphere
+      center: [-0, 1, 0]
+      radius: 0.99
+      material:
+        type: diffuse
+        color: [1.0, 1.0, 1.0]
+
+    # red small sphere on the left
+    - type: sphere
+      center: [-3, 0.4, 1.4]
+      radius: 0.4
+      material:
+        type: diffuse
+        color: [1.0, 0.0, 0.0]
+    # green small sphere on the right
+    - type: sphere
+      center: [3, 0.4, 1.4]
+      radius: 0.4
+      material:
+        type: diffuse
+        color: [0.0, 1.0, 0.0]
+    # blue small sphere in the middle
+    - type: sphere
+      center: [0, 0.4, 1.4]
+      radius: 0.4
+      material:
+        type: diffuse
+        color: [0.0, 0.0, 1.0]
+    
+    # round light source top left
+    - type: sphere
+      center: [-8, 8, 0]
+      radius: 3
+      material:
+        type: diffuse_light
+        color: [10, 10, 10]
+
+    # small thin boxes between the colored balls
+    - type: box
+      # box middle = [-1.5, 0.1, 1.4]
+      box_min: [-0.9, 0.01, 0.8]
+      box_max: [-2.1, 0.1, 2.0]
+      material:
+        type: diffuse
+        color: [1.0, 1.0, 1.0]
+
+    - type: box
+      # box middle = [0, 0.1, 1.4]
+      box_min: [0.9, 0.01, 0.8]
+      box_max: [2.1, 0.1, 2.0]
+      material:
+        type: diffuse
+        color: [1.0, 1.0, 1.0]
+
+    # small balls on the thin boxes
+    - type: sphere
+      center: [-1.5, 0.5, 1.4]
+      radius: 0.4
+      material:
+        type: metal
+        albedo: [1.0, 1.0, 1.0]
+        fuzz: 0.2
+
+    - type: sphere
+      center: [1.5, 0.5, 1.4]
+      radius: 0.4
+      material:
+        type: dielectric
+        refraction_index: 1.5

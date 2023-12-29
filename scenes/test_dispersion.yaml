@@ -1,0 +1,88 @@
+# scene to test dispersion
+scene:
+  # camera
+  camera:
+    look_from: [-2, 3, 4]
+    look_at: [0.5, 0.5, 0.5]    
+    vup: [0, 1, 0]
+    vfov: 45
+    aperture: 0.0
+    aspect_ratio: 1.0
+    focal_length: 10.0
+    image_width: 400
+    time0: 0.0
+    time1: 1.0
+
+  # objects
+  objects:
+    # rectangle as ground
+    - type: xz_rectangle
+      x0: -10
+      x1: 10
+      z0: -10
+      z1: 10
+      k: 0
+      material:
+        type: diffuse
+        color: [1.0, 1.0, 1.0]
+
+    # rectangle as back wall
+    - type: xy_rectangle
+      x0: -10
+      x1: 10
+      y0: 0
+      y1: 10
+      k: -2
+      material:
+        type: diffuse
+        color: [1.0, 1.0, 1.0]
+    
+    # glass prism 
+    - type: triangular_prism
+      v0: [0, 0, 0]
+      v1: [0, 0, 1]
+      v2: [1, 0, 0]
+      v3: [0, 1, 0]
+      v4: [0, 1, 1]
+      v5: [1, 1, 0]
+      material:
+        type: dielectric
+        refraction_index: 1.5
+
+    # spherical light source on the right
+    - type: sphere
+      center: [6, 0.5, 0.5]
+      radius: 0.5
+      material:
+        type: diffuse_light
+        color: [10.0, 10.0, 10.0]
+
+    # light source can only shine through a slit
+    - type: yz_rectangle
+      y0: 0
+      y1: 5
+      z0: -5
+      z1: 0.50
+      k: 1.5
+      material:
+        type: diffuse
+        color: [0.0, 0.0, 0.0]
+    - type: yz_rectangle
+      y0: 0
+      y1: 5
+      z0: 0.55
+      z1: 5
+      k: 1.5
+      material:
+        type: diffuse
+        color: [0.0, 0.0, 0.0]
+#    - type: yz_rectangle
+#     y0: 0
+#      y1: 1
+#      z0: 0.45
+#      z1: 0.55
+#      k: 1.5
+#      material:
+#        type: dielectric
+#        refraction_index: 1.5
+    
