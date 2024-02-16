@@ -139,23 +139,27 @@ int main(int argc, char** argv)
 
                 if (shader.empty()) 
                 {
-                    color = ray_tracing_shader(ray, world, day_background, 16);
+                    color = ray_tracing_shader(ray, world, night_background, 16);
                 }
                 else if (shader == "normal")
                 {
-                    color = normal_shader(ray, world, day_background, 16);
+                    color = normal_shader(ray, world, night_background, 16);
+                }
+                else if (shader == "depth")
+                {
+                    color = depth_shader(ray, world, night_background, 16);
                 }
                 else if (shader == "scatter")
                 {
-                    color = scattering_shader(ray, world, day_background, 16);
+                    color = scattering_shader(ray, world, night_background, 16);
                 }
                 else if (shader == "cosine")
                 {
-                    color = cosine_pdf_ray_tracing_shader(ray, world, day_background, 16);
+                    color = cosine_pdf_ray_tracing_shader(ray, world, night_background, 16);
                 }
                 else if (shader == "lights")
                 {
-                    color = light_pdf_ray_tracing_shader(ray, world, day_background, 16, lights);
+                    color = light_pdf_ray_tracing_shader(ray, world, night_background, 16, lights);
                 }
                 
                 // discard NANs
@@ -165,6 +169,9 @@ int main(int argc, char** argv)
                 camera.image.add_color(i, j, color);
             }
         }
+    }
+    if (shader == "depth") {
+        camera.image *= 1/camera.image.get_max();
     }
 
     camera.image.write_to_ppm(out_file_name);

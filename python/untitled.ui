@@ -160,7 +160,17 @@
               </item>
               <item>
                <property name="text">
-                <string>Scatter Shader</string>
+                <string>Scattering Shader</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Cosine Lambertian Shader</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Lights Lambertian Shader</string>
                </property>
               </item>
              </widget>
