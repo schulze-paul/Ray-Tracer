@@ -28,37 +28,30 @@ impl Hit for Hittable {
 }
 
 fn hit_sphere(sphere: &SphereStruct, ray: &Ray, range: [f64;2], rec: &mut HitRecord) -> bool {
-    let oc: Vec3 = ray.origin - sphere.center;
+    // println!("{} {:?}", sphere.radius, sphere.center);
+    // println!("{:?} {:?}", ray.direction, ray.origin);
+    let oc = ray.origin - sphere.center;              // origin to center
+    let a = ray.direction.dot(ray.direction); // direction squared
+    let b = 2.0 * oc.dot(ray.direction);    // 2 * alignment of center direction and ray direction
+    let c = oc.dot(oc) - sphere.radius * sphere.radius; // center distance squared - radius squared
+    let discriminant = b * b - 4.0 * a * c;
     
-    let a = ray.direction.dot(ray.direction);
-    let b = 2.0 * oc.dot(ray.direction);
-    let c = oc.dot(oc) - sphere.radius*sphere.radius;
-    let discriminant = b*b - 4.0*a*c;
 
-    if discriminant < 0.0 {
-        return false; // NO HIT
-    }
-    /* 
-    // Check if hit point in range
-    let t_hit = [
-        -(b + discriminant.sqrt()) / (2.0 * a),
-        -(b - discriminant.sqrt()) / (2.0 * a)
-    ];
-    for t in t_hit.into_iter().filter(|t| {t > &range[0] && t < &range[1]}) {
-        sphere.set_hit_record(t, ray, rec);
+    if discriminant > 0.0 {
+        // ray in direction of sphere
+        let mut hit_at_t = (-b - discriminant.sqrt()) / (2.0 * a);
+        if !(hit_at_t < range[1] && hit_at_t > range[0]) {
+            // not in range, try other hit
+            hit_at_t = (-b + discriminant.sqrt()) / (2.0 * a);
+            if !(hit_at_t < range[1] && hit_at_t > range[0])
+            {
+                // not in range, no hit
+                return false;
+            }
+        }
         return true;
     }
     return false;
-    */ 
-    let mut t_hit = (-b - discriminant.sqrt()) / 2.0 / a;
-    if !(t_hit > range[0] && t_hit < range[1]) {
-        t_hit = (-b + discriminant.sqrt()) / 2.0 / a;
-        if !(t_hit > range[0] && t_hit < range[1]) {
-            // not in range
-            return false;
-        }
-    }
-    return true;
 }
 
 impl SphereStruct {
