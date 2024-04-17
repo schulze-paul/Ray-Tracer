@@ -12,6 +12,12 @@ impl Vec3 {
             e: [x, y, z]
         }
     }
+    pub fn zero() -> Vec3 {
+        Vec3{e: [0.0,0.0,0.0]}
+    }
+    pub fn one() -> Vec3 {
+        Vec3{e: [0.0,0.0,0.0]}
+    }
     pub fn x(&self) -> f64 {
         self.e[0]
     }
@@ -120,7 +126,7 @@ impl DivAssign<f64> for Vec3 {
 impl Mul<Vec3> for f64 {
     type Output = Vec3;
     fn mul(self, rhs: Vec3) -> Self::Output {
-        Vec3::new(self*rhs.x(),self*rhs.x(),self*rhs.x())
+        Vec3::new(self*rhs.x(),self*rhs.y(),self*rhs.z())
     }
 }
 
