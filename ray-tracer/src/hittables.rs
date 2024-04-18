@@ -1,24 +1,21 @@
-use crate::Vec3;
-use crate::ray::Ray;
-use crate::hit_record::HitRecord;
+use crate::{Vec3, Ray, HitRecord, Material};
 use crate::dot;
 
 pub enum Hittable {
     Sphere(SphereStruct)
 }
 
-pub struct SphereStruct{pub center: Vec3, pub radius: f64}
+pub struct SphereStruct{pub center: Vec3, pub radius: f64, pub material: Material}
 
 
 pub trait Hit {
     fn hit(&self, ray: &Ray, range: [f64;2], rec: &mut HitRecord) -> bool;
 }
 
-impl SphereStruct{
-    pub fn new(center: Vec3, radius: f64) -> SphereStruct{
-        SphereStruct{center, radius}
-    }
+pub trait MaterialTrait {
+    fn material(&self) -> Option<&Material>;
 }
+
 
 impl Hit for Hittable {
     fn hit(&self, ray: &Ray, range: [f64;2], rec: &mut HitRecord) -> bool {
@@ -29,7 +26,18 @@ impl Hit for Hittable {
 }
 
 
+impl MaterialTrait for Hittable {
+    fn material(&self) -> Option<&Material> {
+        match self {
+            Hittable::Sphere(s) => Some(&s.material),
+        }
+    }
+}
+
 impl SphereStruct {
+    pub fn new(center: Vec3, radius: f64, material: Material) -> SphereStruct{
+        SphereStruct{center, radius, material}
+    }
     pub fn hit(&self, ray: &Ray, range: [f64;2], rec: &mut HitRecord) -> bool {
         let oc = ray.origin - self.center;              // origin to center
         let a = dot(ray.direction, ray.direction); // direction squared
