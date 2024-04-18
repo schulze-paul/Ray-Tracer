@@ -133,22 +133,36 @@ impl ImageData {
         return self.pixels[self.width*u + v];
     }
     pub fn write(self, path: String) -> Result<(), std::io::Error> {
-        let max_value: f64 = 255.0;
+        let max_value: f64 = 255.999;
         let mut color: Color;
         let mut out_string: String = format!("P3\n{} {}\n{}\n", self.width, self.height, max_value); 
-        for u_index in 0..self.width {
-            for v_index in 0..self.height {
+        for v_index in 0..self.height {
+            for u_index in 0..self.width {
                 color = self.get(u_index, v_index);
-                let color_string = format!(
-                    "{} {} {}\t", 
-                    max_value*color.r(), 
-                    max_value*color.g(), 
-                    max_value*color.b());
-                out_string += &color_string;
+                out_string += &self.get_color_string(color);
             }
-            out_string += "\n";
         }
-        out_string += "A";
         return fs::write(path, out_string);
+    }
+    fn get_color_string(&self, color: Color) -> String {
+        
+        let max_value: f64 = 255.999;
+        let r = clamp((max_value * color.r()).round() as i32, 0, 255);
+        let g = clamp((max_value * color.g()).round() as i32, 0, 255);
+        let b = clamp((max_value * color.b()).round() as i32, 0, 255);
+        return format!("{} {} {}\n", r, g, b) 
+    }
+}
+
+
+fn clamp(num: i32, min: i32, max: i32) -> i32{
+    if num > min && num < max {
+        return num;
+    }
+    else if num > max {
+        return max;
+    }
+    else {
+        return min;
     }
 }
