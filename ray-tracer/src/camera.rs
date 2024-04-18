@@ -1,8 +1,7 @@
 use std::fs;
 
-use crate::Vec3;
+use crate::{Vec3, dot, cross, Ray};
 use Vec3 as Color;
-use crate::ray::Ray;
 
 #[derive(Debug)]
 pub struct Camera {
@@ -30,13 +29,13 @@ impl Camera {
         let mut camera = Camera {
             image_data,
             look_from: Vec3::new(1.0,0.0,0.0),
-            look_at: Vec3::new(0.0,0.0,0.0),
-            lower_left_corner: Vec3::new(0.0,0.0,0.0),
-            horizontal: Vec3::new(0.0,0.0,0.0),
-            vertical: Vec3::new(0.0,0.0,0.0),
-            u: Vec3::new(0.0,0.0,0.0), 
-            v: Vec3::new(0.0,0.0,0.0), 
-            w: Vec3::new(0.0,0.0,0.0),
+            look_at: Vec3::zero(),
+            lower_left_corner: Vec3::zero(),
+            horizontal: Vec3::zero(),
+            vertical: Vec3::zero(),
+            u: Vec3::zero(),
+            v: Vec3::zero(),
+            w: Vec3::zero(),
             lens_radius: 1.0,
             viewport_width: 0.0,
             viewport_height: 0.0,
@@ -67,8 +66,8 @@ impl Camera {
         self.viewport_width = self.aspect_ratio*self.viewport_height;
         
         self.w = (self.look_from-self.look_at).unit();
-        self.u = Vec3::new(0.0,1.0,0.0).cross(self.w).unit();
-        self.v = self.w.cross(self.u);
+        self.u = cross(Vec3::new(0.0,1.0,0.0), self.w).unit();
+        self.v = cross(self.w, self.u);
         
         self.horizontal = self.u * self.focus_dist * self.viewport_width;
         self.vertical   = self.v * self.focus_dist * self.viewport_height;

@@ -1,6 +1,7 @@
 use crate::Vec3;
 use crate::ray::Ray;
 use crate::hit_record::HitRecord;
+use crate::dot;
 
 pub enum Hittable {
     Sphere(SphereStruct)
@@ -27,13 +28,13 @@ impl Hit for Hittable {
     }
 }
 
-fn hit_sphere(sphere: &SphereStruct, ray: &Ray, range: [f64;2], rec: &mut HitRecord) -> bool {
+pub fn hit_sphere(sphere: &SphereStruct, ray: &Ray, range: [f64;2], rec: &mut HitRecord) -> bool {
     // println!("{} {:?}", sphere.radius, sphere.center);
     // println!("{:?} {:?}", ray.direction, ray.origin);
     let oc = ray.origin - sphere.center;              // origin to center
-    let a = ray.direction.dot(ray.direction); // direction squared
-    let b = 2.0 * oc.dot(ray.direction);    // 2 * alignment of center direction and ray direction
-    let c = oc.dot(oc) - sphere.radius * sphere.radius; // center distance squared - radius squared
+    let a = dot(ray.direction, ray.direction); // direction squared
+    let b = 2.0 * dot(oc, ray.direction);    // 2 * alignment of center direction and ray direction
+    let c = dot(oc,oc) - sphere.radius * sphere.radius; // center distance squared - radius squared
     let discriminant = b * b - 4.0 * a * c;
     
 
