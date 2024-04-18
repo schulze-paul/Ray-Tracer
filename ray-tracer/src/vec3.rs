@@ -16,7 +16,7 @@ impl Vec3 {
         Vec3{e: [0.0,0.0,0.0]}
     }
     pub fn one() -> Vec3 {
-        Vec3{e: [0.0,0.0,0.0]}
+        Vec3{e: [1.0,1.0,1.0]}
     }
     pub fn x(&self) -> f64 {
         self.e[0]
