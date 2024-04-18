@@ -9,10 +9,9 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Vec3, direction: Vec3) -> Ray {
-        let normalized_direction = direction/direction.length();
         Ray {
             origin,
-            direction: normalized_direction,
+            direction: direction.unit(),
             t: 0.0
         }
     }

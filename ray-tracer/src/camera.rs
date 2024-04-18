@@ -116,18 +116,23 @@ pub struct ImageData {
     pixels: Vec<Color>,
     pub width: usize,
     pub height: usize,
+    num_samples: u16
 }
 
 impl ImageData {
-    pub fn new(width: usize, height: usize) -> ImageData{
+    pub fn new(width: usize, height: usize, num_samples: u16) -> ImageData{
         ImageData {
             pixels: vec![Color::zero(); width*height],
             width,
             height,
+            num_samples
         }
     }
     pub fn set(&mut self, u: usize, v: usize, pixel_data: Color) {
         self.pixels[self.width*u + v] = pixel_data;
+    }
+    pub fn add(&mut self, u: usize, v: usize, pixel_data: Color) {
+        self.pixels[self.width*u + v] += pixel_data;
     }
     pub fn get(&self, u: usize, v: usize) -> Color {
         return self.pixels[self.width*u + v];
@@ -135,7 +140,7 @@ impl ImageData {
     pub fn write(self, path: String) -> Result<(), std::io::Error> {
         let max_value: f64 = 255.999;
         let mut color: Color;
-        let mut out_string: String = format!("P3\n{} {}\n{}\n", self.width, self.height, max_value); 
+        let mut out_string: String = format!("P3\n{} {}\n{}\n", self.width, self.height, max_value.floor() as i32); 
         for v_index in 0..self.height {
             for u_index in 0..self.width {
                 color = self.get(u_index, v_index);
@@ -147,9 +152,9 @@ impl ImageData {
     fn get_color_string(&self, color: Color) -> String {
         
         let max_value: f64 = 255.999;
-        let r = clamp((max_value * color.r()).round() as i32, 0, 255);
-        let g = clamp((max_value * color.g()).round() as i32, 0, 255);
-        let b = clamp((max_value * color.b()).round() as i32, 0, 255);
+        let r = clamp((max_value * color.r() / f64::from(self.num_samples)).round() as i32, 0, 255);
+        let g = clamp((max_value * color.g() / f64::from(self.num_samples)).round() as i32, 0, 255);
+        let b = clamp((max_value * color.b() / f64::from(self.num_samples)).round() as i32, 0, 255);
         return format!("{} {} {}\n", r, g, b) 
     }
 }

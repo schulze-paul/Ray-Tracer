@@ -40,13 +40,13 @@ impl SphereStruct {
     }
     pub fn hit(&self, ray: &Ray, range: [f64;2], rec: &mut HitRecord) -> bool {
         let oc = ray.origin - self.center;              // origin to center
-        let a = dot(ray.direction, ray.direction); // direction squared
-        let b = 2.0 * dot(oc, ray.direction);    // 2 * alignment of center direction and ray direction
+        let a = dot(ray.direction, ray.direction);      // direction squared
+        let b = 2.0 * dot(oc, ray.direction);           // 2 * alignment of center direction and ray direction
         let c = dot(oc,oc) - self.radius * self.radius; // center distance squared - radius squared
         let discriminant = b * b - 4.0 * a * c;
 
         if discriminant < 0.0 {
-            return false;
+            return false; // no hit
         }
         // ray in direction of sphere
         let mut hit_at_t = (-b - discriminant.sqrt()) / (2.0 * a);
@@ -63,6 +63,7 @@ impl SphereStruct {
         rec.t_hit = hit_at_t;
         rec.hit_point = ray.at(rec.t_hit);
         rec.normal = self.get_normal(rec.hit_point);
+
         return true;
     }
     fn get_normal(&self, point_on_surface: Vec3) -> Vec3 {
