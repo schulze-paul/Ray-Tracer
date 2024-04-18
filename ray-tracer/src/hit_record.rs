@@ -1,4 +1,5 @@
-use crate::Vec3;
+use crate::{Vec3, Ray};
+use crate::dot;
 
 #[derive(Debug)]
 pub struct HitRecord {
@@ -13,8 +14,11 @@ impl HitRecord {
         HitRecord{
             is_hit: false,
             t_hit: 0.0,
-            normal: Vec3::new(0.0,0.0,0.0),
-            hit_point: Vec3::new(0.0,0.0,0.0)
+            normal: Vec3::zero(),
+            hit_point: Vec3::zero()
         }
+    }
+    pub fn is_front_face(&self, ray: &Ray) -> bool {
+        return dot(ray.direction, self.normal) < 0.0;
     }
 }
