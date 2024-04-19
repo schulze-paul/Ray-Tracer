@@ -7,6 +7,7 @@ mod camera;
 mod background;
 
 use std::f64;
+use rand::Rng;
 
 use hit_record::HitRecord;
 use ray::Ray;
@@ -15,7 +16,7 @@ use Vec3 as Color;
 use camera::{Camera, ImageData};
 use hittables::{Hittable, SphereStruct, Hit, MaterialTrait};
 use background::GradientBackground;
-use material::{DielectricStruct, Material, MetalStruct, Scatter};
+use material::{Material, Scatter, DielectricStruct, MetalStruct, LambertianStruct};
 
 fn main() {
     // image and camera
@@ -25,19 +26,22 @@ fn main() {
     let image_data = ImageData::new(width, height, num_samples);
     let mut camera = Camera::new(image_data);
     camera.look_from(Vec3::zero());
-    camera.set_vfov(45.0);
+    camera.set_vfov(60.0);
 
     // materials
     let metal = Material::Metal(MetalStruct::new(Color::one(), 0.0));
     let dielectric = Material::Dielectric(DielectricStruct::new(1.4));
+    let red_lambertian= Material::Lambertian(LambertianStruct::new(Color::new(1.0,0.0,0.0)));
 
     // objects
     let sphere = SphereStruct::new(
             Vec3::new(0.0,0.0,8.0), 
             2.0,
-            dielectric
+            red_lambertian
         );
     camera.look_at(sphere.center);
+    camera.set_focus_dist(
+        (camera.look_from-camera.look_at).length());
     let hittable = Hittable::Sphere(sphere);
     let background = GradientBackground::new(
         Color::new(0.1, 0.5, 0.7), Color::new(1.0, 1.0, 1.0)
@@ -68,8 +72,7 @@ fn get_color(ray_in: Ray, world: &Hittable, background: &GradientBackground, dep
     // if depth >= max_depth {
     //     return Color::zero();
     // }
-
-
+    let mut attenuation = Color::one();
     let mut hit_record = HitRecord::new();
     if !world.hit(&ray_in, [0.0,1e20], &mut hit_record) {
         return background.get_color(ray_in);
@@ -79,9 +82,13 @@ fn get_color(ray_in: Ray, world: &Hittable, background: &GradientBackground, dep
             return Color::zero();
         }
         Some(m) => {
-            let scattered = m.scatter(&ray_in, &hit_record);
-            return get_color(scattered, world, background, depth+1);
+            let scattered = m.scatter(&ray_in, &hit_record, &mut attenuation);
+            return attenuation * get_color(scattered, world, background, depth+1);
         }
     }
 }
 
+fn random_float(min: f64, max: f64) -> f64 {
+    let mut rng = rand::thread_rng();
+    return rng.gen_range(min..max);
+}

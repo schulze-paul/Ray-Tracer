@@ -1,11 +1,10 @@
-use rand::Rng;
-
 use crate::{Vec3, Color, Ray, HitRecord};
-use crate::{dot};
+use crate::{dot, random_float};
 
 pub enum Material {
     Metal(MetalStruct),
-    Dielectric(DielectricStruct)
+    Dielectric(DielectricStruct),
+    Lambertian(LambertianStruct)
 }
 
 #[derive(Debug)]
@@ -20,14 +19,15 @@ pub struct DielectricStruct {
 }
 
 pub trait Scatter {
-    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Ray;
+    fn scatter(&self, ray: &Ray, hit_record: &HitRecord, attenuation: &mut Color) -> Ray;
 }
 
 impl Scatter for Material {
-    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Ray {
+    fn scatter(&self, ray: &Ray, hit_record: &HitRecord, attenuation: &mut Color) -> Ray {
         match self {
-            Material::Metal(m) => m.scatter(ray, hit_record),
-            Material::Dielectric(d) => d.scatter(ray, hit_record)
+            Material::Metal(m) =>      m.scatter(ray, hit_record, attenuation),
+            Material::Dielectric(d) => d.scatter(ray, hit_record, attenuation),
+            Material::Lambertian(l) => l.scatter(ray, hit_record, attenuation),
         }
     }
 }
@@ -36,8 +36,8 @@ impl MetalStruct {
     pub fn new(albedo: Color, fuzz: f64) -> MetalStruct {
         MetalStruct{albedo, fuzz}
     }
-    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Ray {
-        println!("{:?}, {:?}, {:?}, {:?}", hit_record.hit_point,ray.direction, hit_record.normal, reflect(ray.direction, hit_record.normal));
+    fn scatter(&self, ray: &Ray, hit_record: &HitRecord, attenuation: &mut Color) -> Ray {
+        *attenuation = self.albedo.clone();
         return Ray::new(
             // move away from hit point to avoid double hit
             hit_record.hit_point + hit_record.normal/1000.0, 
@@ -53,7 +53,7 @@ impl DielectricStruct {
     pub fn new(refractive_index: f64) -> DielectricStruct {
         DielectricStruct{refractive_index}
     }
-    fn scatter(&self, ray: &Ray, hit_record: &HitRecord) -> Ray {
+    fn scatter(&self, ray: &Ray, hit_record: &HitRecord, attenuation: &mut Color) -> Ray {
         let refraction_ratio = if hit_record.is_front_face(ray) {
             1.0/self.refractive_index
         } else {
@@ -68,15 +68,17 @@ impl DielectricStruct {
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = refraction_ratio * sin_theta > 1.0;
+        let mut scatter_origin: Vec3;
         let mut scatter_direction: Vec3;
-        if cannot_refract || reflectance(cos_theta, refraction_ratio) > random_float() {
+        if cannot_refract || reflectance(cos_theta, refraction_ratio) > random_float(0.0, 1.0) {
+            scatter_origin = hit_record.hit_point + unit_normal/1024.0;
             scatter_direction = reflect(ray.direction, unit_normal);
         } else {
+            scatter_origin = hit_record.hit_point - unit_normal/1024.0;
             scatter_direction = refract(ray.direction, unit_normal, refraction_ratio);
         }
-        scatter_direction = refract(ray.direction, unit_normal, refraction_ratio);
         return Ray::new(
-            hit_record.hit_point + unit_normal/1000.0, // avoid double hit 
+            scatter_origin, // avoid double hit 
             scatter_direction);
         
     }
@@ -96,7 +98,22 @@ fn reflectance(cosine: f64, ref_idx: f64) -> f64 {
     return r0 + (1.0 - r0) * (1.0 - cosine).powi(5);
 }
 
-fn random_float() -> f64 {
-    let mut rng = rand::thread_rng();
-    return rng.gen()
+
+
+pub struct LambertianStruct {
+    color: Color
 }
+
+impl LambertianStruct {
+    pub fn new(color: Color) -> LambertianStruct {
+        LambertianStruct{color}
+    }
+    fn scatter(&self, ray: &Ray, hit_record: &HitRecord, attenuation: &mut Color) -> Ray {
+        *attenuation = self.color.clone();
+        let scatter_direction = hit_record.normal + Vec3::random_in_unit_sphere().unit();
+        let scatter_origin = hit_record.hit_point + hit_record.normal/1024.0;
+        return Ray::new(scatter_origin, scatter_direction);
+    }
+}
+
+
