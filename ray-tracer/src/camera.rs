@@ -6,8 +6,8 @@ use Vec3 as Color;
 #[derive(Debug)]
 pub struct Camera {
     pub image_data: ImageData,
-    look_from: Vec3,
-    look_at: Vec3,
+    pub look_from: Vec3,
+    pub look_at: Vec3,
     lower_left_corner: Vec3,
     pub horizontal: Vec3,
     pub vertical: Vec3,
@@ -50,8 +50,8 @@ impl Camera {
     }
     pub fn get_ray(&self, u: f64, v: f64) -> Ray {
         // TODO set random function
-        let rd = Vec3::new(0.0,0.0,0.0);
-        let offset = self.u * rd.x() + self.v * rd.y();
+        let random_in_unit_disk = self.lens_radius * Vec3::random_in_unit_sphere();
+        let offset = self.u * random_in_unit_disk.x() + self.v * random_in_unit_disk.y();
         return Ray::new(
             self.look_from + offset,
             self.lower_left_corner + u * self.horizontal + v * self.vertical - self.look_from - offset,
