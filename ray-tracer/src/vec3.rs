@@ -1,6 +1,8 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign};
 use std::cmp::PartialEq;
 
+use crate::random_float;
+
 #[derive(Debug, Clone, Copy)]
 pub struct Vec3 {
     e: [f64;3],
@@ -51,6 +53,22 @@ impl Vec3 {
     }
     pub fn unit(&self) -> Vec3 {
         self.clone()/self.length()
+    }
+    pub fn random(min: f64, max: f64) -> Vec3 {
+       return Vec3::new(
+            random_float(min, max),
+            random_float(min, max),
+            random_float(min, max),
+       ) 
+    }
+    pub fn random_in_unit_sphere() -> Vec3 {
+        let mut p: Vec3;
+        loop {
+            p = Vec3::random(-1.0, 1.0);
+            if p.length_squared() < 1.0 {
+                return p;
+            }
+        }
     }
 }
 
@@ -131,6 +149,16 @@ impl DivAssign<f64> for Vec3 {
         self[0] /= rhs;
         self[1] /= rhs;
         self[2] /= rhs;
+    }
+}
+impl Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+    fn mul(self, rhs: Vec3) -> Self::Output {
+        return Vec3::new(
+            self.x()*rhs.x(),
+            self.y()*rhs.y(),
+            self.z()*rhs.z()
+        );
     }
 }
 
