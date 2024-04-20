@@ -10,7 +10,7 @@ mod background;
 use std::f64;
 use rand::Rng;
 
-use hit_record::HitRecord;
+use hit_record::{HitType, HitRecord};
 use ray::Ray;
 use vec3::{Vec3, dot, cross};
 use color::Color;
@@ -102,8 +102,7 @@ fn cast_ray(ray_in: Ray, world: &Hittable, background: &GradientBackground, dept
     let hit_record = world.hit(&ray_in, [0.1,1e20]);
 
     return match hit_record {
-        None => background.get_color(ray_in),
-        Some(h) => {
+        HitType::Hit(h) => {
             match h.material.zip(h.scattered) {
                 None => Color::black(),
                 Some((m, s)) => {
@@ -111,6 +110,7 @@ fn cast_ray(ray_in: Ray, world: &Hittable, background: &GradientBackground, dept
                 }
             }
         }
+        _ => background.get_color(ray_in),
     }
 }
 

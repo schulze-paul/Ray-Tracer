@@ -1,6 +1,14 @@
 use crate::{Vec3, Color, Ray, Material, Scatter};
 use crate::dot;
 
+
+#[derive(Debug, Clone)]
+pub enum HitType <'a>{
+    Hit(HitRecord<'a>),
+    BoundingHit,
+    None,
+}
+
 #[derive(Debug, Clone)]
 pub struct HitRecord <'a> {
     pub t_hit: f64,
