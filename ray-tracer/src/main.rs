@@ -1,5 +1,6 @@
 mod ray;
 mod vec3;
+mod color;
 mod hit_record;
 mod hittables;
 mod material;
@@ -12,39 +13,65 @@ use rand::Rng;
 use hit_record::HitRecord;
 use ray::Ray;
 use vec3::{Vec3, dot, cross};
-use Vec3 as Color;
+use color::Color;
 use camera::{Camera, ImageData};
-use hittables::{Hittable, SphereStruct, Hit, MaterialTrait};
+use hittables::{Hit, Hittable, HittableListStruct, MaterialTrait, SphereStruct};
 use background::GradientBackground;
-use material::{Material, Scatter, DielectricStruct, MetalStruct, LambertianStruct};
+use material::{Attenuation, DielectricStruct, LambertianStruct, Material, MetalStruct, Scatter};
 
 fn main() {
     // image and camera
     let width = 500;
     let height = 500;
-    let num_samples = 10;
+    let num_samples = 128;
     let image_data = ImageData::new(width, height, num_samples);
-    let mut camera = Camera::new(image_data);
-    camera.look_from(Vec3::zero());
-    camera.set_vfov(60.0);
 
     // materials
-    let metal = Material::Metal(MetalStruct::new(Color::one(), 0.0));
+    let metal = Material::Metal(MetalStruct::new(Color::white(), 0.0));
     let dielectric = Material::Dielectric(DielectricStruct::new(1.4));
-    let red_lambertian= Material::Lambertian(LambertianStruct::new(Color::new(1.0,0.0,0.0)));
+    let red_lambertian = Material::Lambertian(LambertianStruct::new(Color::red()));
+    let grey_lambertian = Material::Lambertian(LambertianStruct::new(Color::grey(0.3)));
 
     // objects
-    let sphere = SphereStruct::new(
-            Vec3::new(0.0,0.0,8.0), 
-            2.0,
-            red_lambertian
-        );
-    camera.look_at(sphere.center);
-    camera.set_focus_dist(
-        (camera.look_from-camera.look_at).length());
-    let hittable = Hittable::Sphere(sphere);
+    let small_r = 2.0;
+    let big_r = 1000.0;
+    let sphere_center = small_r*Vec3::y_hat();
+    let sphere_metal = Hittable::Sphere(SphereStruct::new(
+            sphere_center,
+            small_r,
+            &metal
+        ));
+    let sphere_red = Hittable::Sphere(SphereStruct::new(
+            sphere_center + 2.5*small_r*Vec3::x_hat(),
+            small_r,
+            &red_lambertian
+        ));
+    let sphere_glass = Hittable::Sphere(SphereStruct::new(
+            sphere_center - 2.5*small_r*Vec3::x_hat(),
+            small_r,
+            &dielectric
+        ));
+    let ground = Hittable::Sphere(SphereStruct::new(
+            -big_r*Vec3::y_hat(), 
+            big_r, 
+            &grey_lambertian
+        ));
+    let world = Hittable::HittableList(HittableListStruct::new()
+        .push(&sphere_metal)
+        .push(&sphere_red)
+        .push(&sphere_glass)
+        .push(&ground)
+    );
+
+
+    let mut camera = Camera::new(image_data)
+        .look_from(Vec3::new(0.0, 4.0, -12.0))
+        .set_vfov(60.0)
+        .look_at(sphere_center)
+        .focus_on_look_at()
+        .set_aperture(0.0);
     let background = GradientBackground::new(
-        Color::new(0.1, 0.5, 0.7), Color::new(1.0, 1.0, 1.0)
+        Color::new(0.1, 0.5, 0.7), Color::white()
     );
 
     for i_samples in 0..num_samples {
@@ -56,7 +83,7 @@ fn main() {
                 let ray_in = camera.get_ray(u, v);
 
                 camera.image_data.add(index_u, index_v, 
-                    get_color(ray_in, &hittable, &background, 0)
+                    cast_ray(ray_in, &world, &background, 0)
                 );
             }
         }
@@ -67,23 +94,22 @@ fn main() {
     };
 }
 
-fn get_color(ray_in: Ray, world: &Hittable, background: &GradientBackground, depth: i32) -> Color {
+fn cast_ray(ray_in: Ray, world: &Hittable, background: &GradientBackground, depth: i32) -> Color {
     let max_depth = 16;
-    // if depth >= max_depth {
-    //     return Color::zero();
-    // }
-    let mut attenuation = Color::one();
-    let mut hit_record = HitRecord::new();
-    if !world.hit(&ray_in, [0.0,1e20], &mut hit_record) {
-        return background.get_color(ray_in);
+    if depth >= max_depth {
+        return Color::black();
     }
-    match world.material() {
-        None => {
-            return Color::zero();
-        }
-        Some(m) => {
-            let scattered = m.scatter(&ray_in, &hit_record, &mut attenuation);
-            return attenuation * get_color(scattered, world, background, depth+1);
+    let hit_record = world.hit(&ray_in, [0.1,1e20]);
+
+    return match hit_record {
+        None => background.get_color(ray_in),
+        Some(h) => {
+            match h.material.zip(h.scattered) {
+                None => Color::black(),
+                Some((m, s)) => {
+                    m.attenuation() * cast_ray(s, world, background, depth+1)
+                }
+            }
         }
     }
 }

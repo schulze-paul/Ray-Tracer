@@ -1,9 +1,10 @@
 use std::fs;
 
-use crate::{Vec3, dot, cross, Ray};
-use Vec3 as Color;
+use crate::{Vec3, Color, Ray};
+use crate::{dot, cross};
 
-#[derive(Debug)]
+
+#[derive(Debug, Clone)]
 pub struct Camera {
     pub image_data: ImageData,
     pub look_from: Vec3,
@@ -28,7 +29,7 @@ impl Camera {
     pub fn new(image_data: ImageData) -> Camera{
         let mut camera = Camera {
             image_data,
-            look_from: Vec3::new(1.0,0.0,0.0),
+            look_from: Vec3::x_hat(),
             look_at: Vec3::zero(),
             lower_left_corner: Vec3::zero(),
             horizontal: Vec3::zero(),
@@ -36,7 +37,7 @@ impl Camera {
             u: Vec3::zero(),
             v: Vec3::zero(),
             w: Vec3::zero(),
-            lens_radius: 1.0,
+            lens_radius: 0.1,
             viewport_width: 0.0,
             viewport_height: 0.0,
             t_min: 0.0,
@@ -74,44 +75,50 @@ impl Camera {
         self.lower_left_corner = self.look_from - self.horizontal / 2.0 - self.vertical / 2.0 - self.focus_dist * self.w;
     }
 
-    pub fn set_vfov(&mut self, vfov: f64) -> &Camera {
+    pub fn set_vfov(mut self, vfov: f64) -> Camera {
         self.vfov = vfov;
         self.set_configuration();
         return self
     }
-    pub fn set_aspect_ratio(&mut self, aspect_ratio: f64) -> &Camera {
+    pub fn set_aspect_ratio(mut self, aspect_ratio: f64) -> Camera {
         self.aspect_ratio = aspect_ratio;
         self.set_configuration();
         return self
     }
-    pub fn set_aperture(&mut self, apeture: f64) -> &Camera {
-        self.lens_radius = apeture/2.0;
+    pub fn set_aperture(mut self, aperture: f64) -> Camera {
+        self.lens_radius = aperture/2.0;
         return self
     }
-    pub fn set_focus_dist(&mut self, focus_dist: f64) -> &Camera {
+    pub fn set_focus_dist(mut self, focus_dist: f64) -> Camera {
         self.focus_dist = focus_dist;
         self.set_configuration();
         return self
     }
+    pub fn focus_on_look_at(mut self) -> Camera {
+        self.focus_dist = (
+            self.look_at - self.look_from).length();
+        self.set_configuration();
+        return self
+    }
 
-    pub fn look_from(&mut self, look_from: Vec3) -> &Camera {
+    pub fn look_from(mut self, look_from: Vec3) -> Camera {
         self.look_from = look_from;
         self.set_configuration();
         return self
     }
-    pub fn look_at(&mut self, look_at: Vec3) -> &Camera {
+    pub fn look_at(mut self, look_at: Vec3) -> Camera {
         self.look_at = look_at;
         self.set_configuration();
         return self
     }
-    pub fn set_times(&mut self, t_min: f64, t_max: f64) -> &Camera {
+    pub fn set_times(mut self, t_min: f64, t_max: f64) -> Camera {
         self.t_min = t_min;
         self.t_max = t_max;
         return self
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ImageData {
     pixels: Vec<Color>,
     pub width: usize,
@@ -122,7 +129,7 @@ pub struct ImageData {
 impl ImageData {
     pub fn new(width: usize, height: usize, num_samples: u16) -> ImageData{
         ImageData {
-            pixels: vec![Color::zero(); width*height],
+            pixels: vec![Color::black(); width*height],
             width,
             height,
             num_samples
@@ -141,7 +148,7 @@ impl ImageData {
         let max_value: f64 = 255.999;
         let mut color: Color;
         let mut out_string: String = format!("P3\n{} {}\n{}\n", self.width, self.height, max_value.floor() as i32); 
-        for v_index in 0..self.height {
+        for v_index in (0..self.height).rev() {
             for u_index in 0..self.width {
                 color = self.get(u_index, v_index);
                 out_string += &self.get_color_string(color);

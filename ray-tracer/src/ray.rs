@@ -1,4 +1,4 @@
-use crate::vec3::Vec3;
+use crate::{Vec3, Color};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Ray {
@@ -12,7 +12,7 @@ impl Ray {
         Ray {
             origin,
             direction: direction.unit(),
-            t: 0.0
+            t: 0.0,
         }
     }
     pub fn at(&self, t: f64) -> Vec3{
