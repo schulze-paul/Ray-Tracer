@@ -15,7 +15,7 @@ use ray::Ray;
 use vec3::{Vec3, dot, cross};
 use color::Color;
 use camera::{Camera, ImageData};
-use hittables::{Hit, Hittable, HittableListStruct, MaterialTrait, SphereStruct};
+use hittables::{BVHNodeStruct, Hit, Hittable, HittableListStruct, MaterialTrait, SphereStruct};
 use background::GradientBackground;
 use material::{Attenuation, DielectricStruct, LambertianStruct, Material, MetalStruct, Scatter};
 
@@ -23,7 +23,7 @@ fn main() {
     // image and camera
     let width = 500;
     let height = 500;
-    let num_samples = 128;
+    let num_samples = 1;
     let image_data = ImageData::new(width, height, num_samples);
 
     // materials
@@ -56,12 +56,12 @@ fn main() {
             big_r, 
             &grey_lambertian
         ));
-    let world = Hittable::HittableList(HittableListStruct::new()
+    let mut world = HittableListStruct::new()
         .push(&sphere_metal)
         .push(&sphere_red)
         .push(&sphere_glass)
-        .push(&ground)
-    );
+        .push(&ground);
+    
 
 
     let mut camera = Camera::new(image_data)
@@ -73,6 +73,8 @@ fn main() {
     let background = GradientBackground::new(
         Color::new(0.1, 0.5, 0.7), Color::white()
     );
+    let world_size = world.list.len();
+    let bvh = Hittable::BHVNode(BVHNodeStruct::new(&mut world, 0, world_size));
 
     for i_samples in 0..num_samples {
         for index_u in 0..camera.image_data.width {
@@ -83,7 +85,7 @@ fn main() {
                 let ray_in = camera.get_ray(u, v);
 
                 camera.image_data.add(index_u, index_v, 
-                    cast_ray(ray_in, &world, &background, 0)
+                    cast_ray(ray_in, &bvh, &background, 0)
                 );
             }
         }

@@ -1,5 +1,7 @@
 use std::cmp::Ordering;
 
+use rand::Rng;
+
 use crate::{HitRecord, Material, Ray, Vec3, HitType};
 use crate::dot;
 
@@ -10,6 +12,7 @@ pub enum Hittable <'a>{
     HittableList(HittableListStruct<'a>),
     Sphere(SphereStruct<'a>),
     BoundingBox(BoundingBoxStruct),
+    BHVNode(BVHNodeStruct<'a>),
 }
 
 #[derive(Debug, Clone)]
@@ -43,6 +46,7 @@ impl <'a>Hit<'a> for Hittable<'a> {
             Hittable::Sphere(s) =>       s.hit(ray, range),
             Hittable::HittableList(l) => l.hit(ray, range),
             Hittable::BoundingBox(b) =>  b.hit(ray, range),
+            Hittable::BHVNode(n) =>      n.hit(ray, range),
         }
     }
 }
@@ -53,6 +57,7 @@ impl <'a>MaterialTrait for Hittable<'_> {
             Hittable::Sphere(s) =>       Some(&s.material),
             Hittable::HittableList(_) => None,
             Hittable::BoundingBox(_) =>  None,
+            Hittable::BHVNode(_) =>      None,
         }
     }
 }
@@ -60,16 +65,17 @@ impl <'a>MaterialTrait for Hittable<'_> {
 impl BoundingVolumeTrait for Hittable<'_> {
     fn bounding_volume(&self) -> Option<BoundingBoxStruct> {
         match self {
-            Hittable::Sphere(s) =>       s.bounding_volume(),
+            Hittable::Sphere(s) =>       Some(s.bounding_volume()),
             Hittable::HittableList(l) => l.bounding_volume(),
-            Hittable::BoundingBox(b) =>  b.bounding_volume(),
+            Hittable::BoundingBox(b) =>  Some(b.bounding_volume()),
+            Hittable::BHVNode(n) =>      Some(n.bounding_volume()),
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct HittableListStruct <'a>{
-    list: Vec<&'a Hittable<'a>>
+    pub list: Vec<&'a Hittable<'a>>
 }
 
 impl <'a>HittableListStruct<'a> {
@@ -155,11 +161,11 @@ impl <'a>SphereStruct<'_> {
     fn get_normal(&self, point_on_surface: Vec3) -> Vec3 {
         (point_on_surface - self.center) / self.radius
     }
-    pub fn bounding_volume(&self) -> Option<BoundingBoxStruct> {
-        Some(BoundingBoxStruct::new(
+    pub fn bounding_volume(&self) -> BoundingBoxStruct {
+        BoundingBoxStruct::new(
                self.center - self.radius*Vec3::ones(),
                self.center + self.radius*Vec3::ones()
-        ))
+        )
     }
 }
 
@@ -190,8 +196,8 @@ impl BoundingBoxStruct {
         );
         BoundingBoxStruct{min_corner, max_corner}
     }
-    pub fn bounding_volume(self) -> Option<BoundingBoxStruct> {
-        Some(self)
+    pub fn bounding_volume(self) -> BoundingBoxStruct {
+        self
     }
 
 
@@ -216,38 +222,66 @@ impl BoundingBoxStruct {
     }
 }
 
-
-pub struct BVHNode<'a> {
-    left: &'a Hittable<'a>,
-    right: &'a Hittable<'a>
+#[derive(Debug, Clone)]
+pub enum BVHNodeType<'a>{
+    BVHNode(Box<BVHNodeStruct<'a>>),
+    Hittable(&'a Hittable<'a>)
 }
 
-impl BVHNode<'_> {
-    pub fn new(objects: &mut HittableListStruct, start: usize, end: usize, axis: usize) -> BVHNode {
+impl <'a>BVHNodeType<'_> {
+    fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
+        match self {
+            BVHNodeType::BVHNode(n) =>  n.hit(ray, range),
+            BVHNodeType::Hittable(h) => h.hit(ray, range),
+        }
+    }
+    pub fn bounding_volume(&self) -> BoundingBoxStruct {
+        match self {
+            BVHNodeType::BVHNode(n) =>  n.bounding_volume(),
+            BVHNodeType::Hittable(h) => h.bounding_volume()
+                .expect("BVHNode hittable has no bounging volume"),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct BVHNodeStruct<'a> {
+    left:  BVHNodeType<'a>,
+    right: BVHNodeType<'a>,
+}
+
+impl <'a>BVHNodeStruct<'_> {
+    pub fn new(objects: &mut HittableListStruct<'a>, start: usize, end: usize) -> BVHNodeStruct<'a> {
+        let mut rng = rand::thread_rng();
+        let axis: usize = rng.gen_range(0..3);
         let object_span = end - start;
         if object_span == 1 {
-            return BVHNode{
-                left: objects.list[start],
-                right: objects.list[start],
+            return BVHNodeStruct{
+                left: BVHNodeType::Hittable(objects.list[start]),
+                right: BVHNodeType::Hittable(objects.list[start]),
             }
         }
         if object_span == 2 {
-            if Self::is_closer(objects.list[start], objects.list[start+1], axis) {
-                return BVHNode{
-                    left: objects.list[start],
-                    right: objects.list[start+1],
+            if Self::is_closer(objects.list[start], objects.list[start+1], axis).is_lt() {
+                return BVHNodeStruct{
+                    left: BVHNodeType::Hittable(objects.list[start]),
+                    right: BVHNodeType::Hittable(objects.list[start+1]),
                 }
             } else {
-                return BVHNode{
-                    left: objects.list[start+1],
-                    right: objects.list[start],
+                return BVHNodeStruct{
+                    left: BVHNodeType::Hittable(objects.list[start+1]),
+                    right: BVHNodeType::Hittable(objects.list[start]),
                 }
             }
         }
 
-        objects.list[start:end].sort_by(|a, b| Self::is_closer(a, b, axis));
-        
+        objects.list[start..end].sort_by(|a, b| Self::is_closer(a, b, axis));
+        let mid = start + object_span / 2;
+        let left =  BVHNodeType::BVHNode( Box::new(BVHNodeStruct::new(objects, start, mid)));
+        let right = BVHNodeType::BVHNode( Box::new(BVHNodeStruct::new(objects, mid, end)));
+        return BVHNodeStruct {left, right};
     }
+
     pub fn is_closer(obj_a: &Hittable, obj_b: &Hittable, axis: usize) -> Ordering {
         match obj_a.bounding_volume().zip(obj_b.bounding_volume()) {
             None => panic!("No bounding box in bvhnode init"),
@@ -256,5 +290,49 @@ impl BVHNode<'_> {
             }
         }
 
+    }
+    fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
+        match self.bounding_volume().hit(ray, range) {
+            HitType::None => return HitType::None,
+            _ => {
+                let left_hit =  self.left.hit(ray, range);
+                let right_hit = self.right.hit(ray, range);
+                match left_hit {
+                    HitType::None => {
+                        match right_hit {
+                            HitType::Hit(h) =>      return HitType::Hit(h),
+                            HitType::BoundingHit => return HitType::BoundingHit,
+                            HitType::None =>        return HitType::None,
+                        }
+                    },
+                    HitType::BoundingHit => {
+                        match right_hit {
+                            HitType::Hit(h) => return HitType::Hit(h),
+                            _ =>               return HitType::BoundingHit,
+                        }
+                    },
+                    HitType::Hit(lh) => {
+                        match right_hit {
+                            HitType::Hit(rh) => {
+                                if lh.t_hit < rh.t_hit {
+                                    return HitType::Hit(lh)
+                                } else {
+                                    return HitType::Hit(rh)
+                                }
+                            },
+                            _ => return HitType::Hit(lh),
+                        }
+                    },
+                }
+            }
+        }
+
+
+    }
+    pub fn bounding_volume(&self) -> BoundingBoxStruct {
+        return BoundingBoxStruct::surrounding(
+            self.left.bounding_volume(),
+            self.right.bounding_volume(),
+        )
     }
 }
