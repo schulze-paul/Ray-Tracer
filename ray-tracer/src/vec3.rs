@@ -1,4 +1,5 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, Neg, Sub, SubAssign};
+use std::iter::{Sum, Iterator};
 use std::cmp::PartialEq;
 
 use crate::random_float;
@@ -141,6 +142,7 @@ impl Add for Vec3{
             self[2]+rhs[2]);
     }
 }
+
 impl AddAssign for Vec3 {
     fn add_assign(&mut self, rhs: Self) {
         self[0] += rhs[0];

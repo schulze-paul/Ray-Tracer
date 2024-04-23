@@ -10,7 +10,7 @@ mod background;
 use std::f64;
 use rand::Rng;
 
-use hit_record::{HitType, HitRecord};
+use hit_record::{HitType, HitRecord, ScatterRecord};
 use ray::Ray;
 use vec3::{Vec3, dot, cross};
 use color::Color;
@@ -23,7 +23,7 @@ fn main() {
     // image and camera
     let width = 500;
     let height = 500;
-    let num_samples = 1;
+    let num_samples = 4;
     let image_data = ImageData::new(width, height, num_samples);
 
     // materials
@@ -97,7 +97,7 @@ fn main() {
 }
 
 fn cast_ray(ray_in: Ray, world: &Hittable, background: &GradientBackground, depth: i32) -> Color {
-    let max_depth = 16;
+    let max_depth = 8;
     if depth >= max_depth {
         return Color::black();
     }
@@ -105,10 +105,19 @@ fn cast_ray(ray_in: Ray, world: &Hittable, background: &GradientBackground, dept
 
     return match hit_record {
         HitType::Hit(h) => {
-            match h.material.zip(h.scattered) {
-                None => Color::black(),
-                Some((m, s)) => {
-                    m.attenuation() * cast_ray(s, world, background, depth+1)
+            match h.material {
+                None => return background.get_color(ray_in),
+                Some(m) => {
+                    let scatter_rec = m.scatter(&ray_in, &h);
+                    let colors: Vec<Color> = scatter_rec.probabilities.iter()
+                        .zip(scatter_rec.scattered.iter())
+                        .map(|(p, s)| *p * m.attenuation() * cast_ray(*s, world, background, depth+1))
+                        .collect();
+                    let mut color = Color::black();
+                    for c in colors {
+                        color += c;
+                    }
+                    return color
                 }
             }
         }
@@ -120,3 +129,5 @@ fn random_float(min: f64, max: f64) -> f64 {
     let mut rng = rand::thread_rng();
     return rng.gen_range(min..max);
 }
+
+

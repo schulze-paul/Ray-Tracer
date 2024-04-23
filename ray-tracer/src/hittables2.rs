@@ -1,8 +1,9 @@
 use std::cmp::Ordering;
+use std::borrow::Cow;
 
 use rand::Rng;
 
-use crate::{HitRecord, Material, Ray, Vec3, HitType};
+use crate::{hit_record, material, vec3, HitRecord, HitType, Material, Ray, Vec3};
 use crate::dot;
 
 
@@ -16,8 +17,6 @@ pub enum Hittable <'a>{
     XYRectangle(XYRectangleStruct<'a>),
     XZRectangle(XZRectangleStruct<'a>),
     YZRectangle(YZRectangleStruct<'a>),
-    Cuboid(CuboidStruct<'a>),
-
 }
 
 #[derive(Debug, Clone)]
@@ -52,10 +51,6 @@ impl <'a>Hit<'a> for Hittable<'a> {
             Hittable::HittableList(l) => l.hit(ray, range),
             Hittable::BoundingBox(b) =>  b.hit(ray, range),
             Hittable::BHVNode(n) =>      n.hit(ray, range),
-            Hittable::XYRectangle(r) =>  r.hit(ray, range),
-            Hittable::XZRectangle(r) =>  r.hit(ray, range),
-            Hittable::YZRectangle(r) =>  r.hit(ray, range),
-            Hittable::Cuboid(c) =>       c.hit(ray, range),
         }
     }
 }
@@ -67,10 +62,6 @@ impl <'a>MaterialTrait for Hittable<'_> {
             Hittable::HittableList(_) => None,
             Hittable::BoundingBox(_) =>  None,
             Hittable::BHVNode(_) =>      None,
-            Hittable::XYRectangle(r) =>  Some(&r.material),
-            Hittable::XZRectangle(r) =>  Some(&r.material),
-            Hittable::YZRectangle(r) =>  Some(&r.material),
-            Hittable::Cuboid(c)      =>  Some(&c.material),
         }
     }
 }
@@ -82,17 +73,13 @@ impl BoundingVolumeTrait for Hittable<'_> {
             Hittable::HittableList(l) => l.bounding_volume(),
             Hittable::BoundingBox(b) =>  Some(b.bounding_volume()),
             Hittable::BHVNode(n) =>      Some(n.bounding_volume()),
-            Hittable::XYRectangle(r) =>  Some(r.bounding_volume()),
-            Hittable::XZRectangle(r) =>  Some(r.bounding_volume()),
-            Hittable::YZRectangle(r) =>  Some(r.bounding_volume()),
-            Hittable::Cuboid(c) =>       Some(c.bounding_volume()),
         }
     }
 }
 
 #[derive(Debug, Clone)]
 pub struct HittableListStruct <'a>{
-    pub list: Vec<&'a Hittable<'a>>
+    pub list: Vec<Cow<'a, Hittable <'a>>>
 }
 
 impl <'a>HittableListStruct<'a> {
@@ -101,11 +88,19 @@ impl <'a>HittableListStruct<'a> {
             list: Vec::new() 
         }
     }
-    pub fn from(list: Vec<&'a Hittable<'a>>) -> HittableListStruct<'a> {
-        return HittableListStruct{list}
+    pub fn from_ref(list: Vec<&'a Hittable <'a>>) -> HittableListStruct<'a> {
+        let mut hittable_list = HittableListStruct::new();
+        for h in list {
+            hittable_list = hittable_list.push_ref(h);
+        }
+        return hittable_list;
     }
-    pub fn push(mut self, hittable: &'a Hittable<'a>) -> HittableListStruct<'a> {
-        self.list.push(hittable);
+    pub fn push_ref(mut self, hittable: &'a Hittable<'a>) -> HittableListStruct<'a> {
+        self.list.push(Cow::Borrowed(hittable));
+        return self;
+    }
+    pub fn push_owned(mut self, hittable: Hittable<'a>) -> HittableListStruct<'a> {
+        self.list.push(Cow::Owned(hittable));
         return self;
     }
     fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
@@ -242,7 +237,7 @@ impl BoundingBoxStruct {
 #[derive(Debug, Clone)]
 pub enum BVHNodeType<'a>{
     BVHNode(Box<BVHNodeStruct<'a>>),
-    Hittable(&'a Hittable<'a>)
+    Hittable(Hittable<'a>)
 }
 
 impl <'a>BVHNodeType<'_> {
@@ -268,7 +263,7 @@ pub struct BVHNodeStruct<'a> {
 }
 
 impl <'a>BVHNodeStruct<'_> {
-    pub fn new(objects: &mut HittableListStruct<'a>, start: usize, end: usize) -> BVHNodeStruct<'a> {
+    pub fn new(objects: &'a mut HittableListStruct<'a>, start: usize, end: usize) -> BVHNodeStruct<'a> {
         let mut rng = rand::thread_rng();
         let axis: usize = rng.gen_range(0..3);
         let object_span = end - start;
@@ -279,15 +274,15 @@ impl <'a>BVHNodeStruct<'_> {
             }
         }
         if object_span == 2 {
-            if Self::is_closer(objects.list[start], objects.list[start+1], axis).is_lt() {
+            if Self::is_closer(&objects.list[start], &objects.list[start+1], axis).is_lt() {
                 return BVHNodeStruct{
-                    left: BVHNodeType::Hittable(objects.list[start]),
-                    right: BVHNodeType::Hittable(objects.list[start+1]),
+                    left: BVHNodeType::Hittable(&objects.list[start]),
+                    right: BVHNodeType::Hittable(&objects.list[start+1]),
                 }
             } else {
                 return BVHNodeStruct{
-                    left: BVHNodeType::Hittable(objects.list[start+1]),
-                    right: BVHNodeType::Hittable(objects.list[start]),
+                    left: BVHNodeType::Hittable(&objects.list[start+1]),
+                    right: BVHNodeType::Hittable(&objects.list[start]),
                 }
             }
         }
@@ -353,6 +348,7 @@ impl <'a>BVHNodeStruct<'_> {
         )
     }
 }
+ 
 
 #[derive(Debug, Clone)]
 pub struct XYRectangleStruct<'a> {
@@ -483,15 +479,14 @@ impl <'a>YZRectangleStruct<'_> {
 
 
 #[derive(Debug, Clone)]
-pub struct CuboidStruct<'a> {
-    sides: Vec<Hittable<'a>>,
+pub struct Cuboid<'a> {
+    sides: HittableListStruct<'a>,
     v_max: Vec3,
-    v_min: Vec3,
-    material: &'a Material,
+    v_min: Vec3
 }
 
-impl <'a>CuboidStruct<'_> {
-    pub fn new(p0: Vec3, p1: Vec3, material: &'a Material) -> CuboidStruct<'a> {
+impl <'a>Cuboid<'_> {
+    pub fn new(p0: Vec3, p1: Vec3, material: &'a Material) -> Cuboid<'a> {
 
         let mut v_min = Vec3::zero();
         let mut v_max = Vec3::zero();
@@ -502,37 +497,19 @@ impl <'a>CuboidStruct<'_> {
         v_max[1] = f64::max(p0.y(), p1.y());
         v_max[2] = f64::max(p0.z(), p1.z());
 
-        let mut sides = Vec::new();
-        sides.push(Hittable::XYRectangle(XYRectangleStruct::new(v_min.x(), v_max.x(), v_min.y(), v_max.y(), v_min.z(), material)));
-        sides.push(Hittable::XYRectangle(XYRectangleStruct::new(v_min.x(), v_max.x(), v_min.y(), v_max.y(), v_max.z(), material)));
-        sides.push(Hittable::XZRectangle(XZRectangleStruct::new(v_min.x(), v_max.x(), v_min.z(), v_max.z(), v_min.y(), material)));
-        sides.push(Hittable::XZRectangle(XZRectangleStruct::new(v_min.x(), v_max.x(), v_min.z(), v_max.z(), v_max.y(), material)));
-        sides.push(Hittable::YZRectangle(YZRectangleStruct::new(v_min.y(), v_max.y(), v_min.z(), v_max.z(), v_min.x(), material)));
-        sides.push(Hittable::YZRectangle(YZRectangleStruct::new(v_min.y(), v_max.y(), v_min.z(), v_max.z(), v_max.x(), material)));
-        return CuboidStruct{sides, v_min, v_max, material};
+        let mut sides = HittableListStruct::new();
+        sides.push_owned(Hittable::XYRectangle(XYRectangleStruct::new(v_min.x(), v_max.x(), v_min.y(), v_max.y(), v_min.z(), material)));
+        sides.push_owned(Hittable::XYRectangle(XYRectangleStruct::new(v_min.x(), v_max.x(), v_min.y(), v_max.y(), v_max.z(), material)));
+        sides.push_owned(Hittable::XZRectangle(XZRectangleStruct::new(v_min.x(), v_max.x(), v_min.z(), v_max.z(), v_min.y(), material)));
+        sides.push_owned(Hittable::XZRectangle(XZRectangleStruct::new(v_min.x(), v_max.x(), v_min.z(), v_max.z(), v_max.y(), material)));
+        sides.push_owned(Hittable::YZRectangle(YZRectangleStruct::new(v_min.y(), v_max.y(), v_min.z(), v_max.z(), v_min.x(), material)));
+        sides.push_owned(Hittable::YZRectangle(YZRectangleStruct::new(v_min.y(), v_max.y(), v_min.z(), v_max.z(), v_max.x(), material)));
+        return Cuboid{sides: HittableListStruct::from(sides), v_min, v_max};
     }
     fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
-        let mut closest_hit_record = HitType::None;
-        for hittable in &self.sides {
-            let hit_record = hittable.hit(ray, range);
-            match hit_record {
-                HitType::Hit(h) => {
-                    match closest_hit_record {
-                        HitType::Hit(ref c) => {
-                            if h.t_hit < c.t_hit {
-                                closest_hit_record = HitType::Hit(h) 
-                            }
-                        }
-                        _ => closest_hit_record = HitType::Hit(h),
-                    }
-                }
-                _ => continue,
-            }
-        }
-        return closest_hit_record;
+        return self.sides.hit(ray, range);
     }
     fn bounding_volume(&self) -> BoundingBoxStruct {
         return BoundingBoxStruct::new(self.v_min, self.v_max);
     }
 }
-
