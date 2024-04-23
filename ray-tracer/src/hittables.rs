@@ -386,7 +386,10 @@ impl <'a>XYRectangleStruct<'_> {
         if dot(ray.direction, normal) > 0.0 {
             normal = -normal;
         }
-        return HitType::Hit(HitRecord::new(t, ray, normal));
+        return HitType::Hit(
+            HitRecord::new(t, ray, normal)
+                .with_material(self.material)
+        );
     }
     fn bounding_volume(&self) -> BoundingBoxStruct {
         return BoundingBoxStruct::new(
@@ -409,8 +412,8 @@ pub struct XZRectangleStruct<'a> {
 impl <'a>XZRectangleStruct<'_> {
     pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, material: &'a Material) -> XZRectangleStruct<'a> {
         let x_min = f64::min(x0, x1);
-        let z_min = f64::min(z0, z1);
         let x_max = f64::max(x0, x1);
+        let z_min = f64::min(z0, z1);
         let z_max = f64::max(z0, z1);
         XZRectangleStruct{x0: x_min, x1: x_max, z0: z_min, z1: z_max, k, material}
     }
@@ -428,7 +431,10 @@ impl <'a>XZRectangleStruct<'_> {
         if dot(ray.direction, normal) > 0.0 {
             normal = -normal;
         }
-        return HitType::Hit(HitRecord::new(t, ray, normal));
+        return HitType::Hit(
+            HitRecord::new(t, ray, normal)
+                .with_material(self.material)
+        );
     }
     fn bounding_volume(&self) -> BoundingBoxStruct {
         return BoundingBoxStruct::new(
@@ -471,7 +477,10 @@ impl <'a>YZRectangleStruct<'_> {
         if dot(ray.direction, normal) > 0.0 {
             normal = -normal;
         }
-        return HitType::Hit(HitRecord::new(t, ray, normal));
+        return HitType::Hit(
+            HitRecord::new(t, ray, normal)
+                .with_material(self.material)
+        );
     }
     fn bounding_volume(&self) -> BoundingBoxStruct {
         return BoundingBoxStruct::new(
@@ -532,7 +541,7 @@ impl <'a>CuboidStruct<'_> {
         return closest_hit_record;
     }
     fn bounding_volume(&self) -> BoundingBoxStruct {
-        return BoundingBoxStruct::new(self.v_min, self.v_max);
+        return BoundingBoxStruct::new(self.v_min - 0.0001*Vec3::ones(), self.v_max+0.0001*Vec3::ones());
     }
 }
 

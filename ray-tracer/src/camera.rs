@@ -127,12 +127,12 @@ pub struct ImageData {
 }
 
 impl ImageData {
-    pub fn new(width: usize, height: usize, num_samples: u16) -> ImageData{
+    pub fn new(width: usize, height: usize, num_samples: usize) -> ImageData{
         ImageData {
             pixels: vec![Color::black(); width*height],
             width,
             height,
-            num_samples
+            num_samples: num_samples.try_into().expect(""),
         }
     }
     pub fn set(&mut self, u: usize, v: usize, pixel_data: Color) {
