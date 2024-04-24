@@ -7,6 +7,7 @@ mod material;
 mod camera;
 mod background;
 mod shaders;
+mod image_data;
 
 use rand::Rng;
 
@@ -14,12 +15,15 @@ use hit_record::{HitType, HitRecord, ScatterRecord};
 use ray::Ray;
 use vec3::{Vec3, dot, cross};
 use color::Color;
-use camera::{Camera, ImageData};
+use camera::Camera;
+use image_data::ImageData;
+
 use hittables::Hit;
 use hittables::hittable_list::HittableListStruct;
 use hittables::sphere::SphereStruct;
 use hittables::cuboid::CuboidStruct;
 use hittables::bounding_volume::{BVHNodeStruct, BoundingBoxStruct};
+
 use background::GradientBackground;
 use material::{dielectric::DielectricStruct, lambertian::LambertianStruct, metal::MetalStruct, Scatter};
 use shaders::{Shader, RayTracer, NormalShader, DepthShader, ScatterShader};
