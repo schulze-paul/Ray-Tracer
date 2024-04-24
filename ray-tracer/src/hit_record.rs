@@ -10,8 +10,8 @@ pub enum HitType<'a> {
 
 pub struct HitRecord<'a> {
     pub t_hit: f64,
-    pub direction: Vec3,
     pub hit_point: Vec3,
+    pub direction: Vec3,
     pub normal: Vec3,
     pub material: Option<&'a dyn Scatter>,
 }
@@ -20,8 +20,8 @@ impl <'a>HitRecord<'a> {
     pub fn new(t_hit: f64, hit_point: Vec3, direction: Vec3, normal: Vec3) -> HitRecord<'a> {
         HitRecord{
             t_hit,
-            direction,
             hit_point,
+            direction,
             normal,
             material: None,
         }

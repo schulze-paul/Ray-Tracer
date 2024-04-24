@@ -15,7 +15,7 @@ use ray::Ray;
 use vec3::{Vec3, dot, cross};
 use color::Color;
 use camera::{Camera, ImageData};
-use hittables::{Hit, HittableListStruct, SphereStruct};
+use hittables::{Hit, HittableListStruct, SphereStruct, CuboidStruct};
 use background::GradientBackground;
 use material::{DielectricStruct, LambertianStruct, MetalStruct, Scatter};
 
@@ -34,41 +34,54 @@ fn main() {
 
     // objects
     let small_r = 2.0;
-    let sphere_center = small_r*Vec3::y_hat();
+    let box_spacing = 3.0*small_r;
+    let sphere_center = 0.5*box_spacing*Vec3::new(1.0, -2.0, -1.0) + small_r*Vec3::y_hat();
     let sphere_metal = SphereStruct::new(
             sphere_center,
             small_r,
             &metal
         );
     let sphere_red = SphereStruct::new(
-            sphere_center + 2.5*small_r*Vec3::x_hat(),
+            sphere_center + box_spacing*Vec3::new(0.0, 1.0, 1.0),
             small_r,
             &red_lambertian
         );
     let sphere_glass = SphereStruct::new(
-            sphere_center - 2.5*small_r*Vec3::x_hat(),
+            sphere_center + box_spacing*Vec3::new(-1.0, 1.0, 0.0),
             small_r,
             &dielectric
         );
-    /*
-    let ground = CuboidStruct::new(
-        Vec3::new(10.0, 0.0, 10.0),
-        Vec3::new(-10.0, -20.0, -10.0),
-        white_lambertian
+    
+    let box1 = CuboidStruct::new(
+        Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
+        Vec3::new(-1.0*box_spacing,  0.0*box_spacing, -1.0*box_spacing),
+        &white_lambertian
     );
+    let box2 = CuboidStruct::new(
+        Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
+        Vec3::new( 1.0*box_spacing,  0.0*box_spacing,  1.0*box_spacing),
+        &white_lambertian
+    );
+    let box3 = CuboidStruct::new(
+        Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
+        Vec3::new( 1.0*box_spacing, -2.0*box_spacing, -1.0*box_spacing),
+        &white_lambertian
+    );
+    
     let mut world = HittableListStruct::new()
-        .push(sphere_metal)
-        .push(sphere_red)
-        .push(sphere_glass)
-        .push(ground)
+        .push(&sphere_metal)
+        .push(&sphere_red)
+        .push(&sphere_glass)
+        .push(&box1)
+        .push(&box2)
+        .push(&box3)
     ;
-    */
 
 
     let mut camera = Camera::new(image_data)
-        .look_from(Vec3::new(10000.0, 10000.0, -10000.0))
-        .set_vfov(0.1)
-        .look_at(sphere_center-8.0*Vec3::y_hat())
+        .look_from(Vec3::new(12.0, 8.0, -12.0))
+        .set_vfov(90.0)
+        .look_at(sphere_center)
         .focus_on_look_at()
         .set_aperture(0.0);
     let background = GradientBackground::new(
@@ -90,7 +103,7 @@ fn main() {
                 let ray_in = camera.get_ray(u, v);
 
                 camera.image_data.add(index_u, index_v, 
-                    cast_ray(ray_in, &sphere_metal, &background, 0)
+                    cast_ray(ray_in, &world, &background, 0)
                 );
             }
         }
