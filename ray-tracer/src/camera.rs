@@ -1,6 +1,6 @@
 use std::fs;
 
-use crate::{Vec3, Color, Ray};
+use crate::{Color, DepthShader, Hit, NormalShader, Ray, RayTracer, ScatterShader, Shader, Vec3, GradientBackground};
 use crate::{dot, cross};
 
 
@@ -10,6 +10,7 @@ pub struct Camera {
     pub normal_image: ImageData,
     pub scatter_image: ImageData,
     pub depth_image: ImageData,
+    num_samples: usize,
     pub look_from: Vec3,
     pub look_at: Vec3,
     lower_left_corner: Vec3,
@@ -35,6 +36,7 @@ impl Camera {
             normal_image: image_data.clone(),
             scatter_image: image_data.clone(),
             depth_image: image_data.clone(),
+            num_samples: 1,
 
             look_from: Vec3::x_hat(),
             look_at: Vec3::zero(),
@@ -81,22 +83,26 @@ impl Camera {
         self.vertical   = self.v * self.focus_dist * self.viewport_height;
         self.lower_left_corner = self.look_from - self.horizontal / 2.0 - self.vertical / 2.0 - self.focus_dist * self.w;
     }
+    pub fn with_num_samples(mut self, num_samples: usize) -> Camera {
+        self.num_samples = num_samples;
+        return self;
+    }
 
-    pub fn set_vfov(mut self, vfov: f64) -> Camera {
+    pub fn with_vfov(mut self, vfov: f64) -> Camera {
         self.vfov = vfov;
         self.set_configuration();
         return self
     }
-    pub fn set_aspect_ratio(mut self, aspect_ratio: f64) -> Camera {
+    pub fn with_aspect_ratio(mut self, aspect_ratio: f64) -> Camera {
         self.aspect_ratio = aspect_ratio;
         self.set_configuration();
         return self
     }
-    pub fn set_aperture(mut self, aperture: f64) -> Camera {
+    pub fn with_aperture(mut self, aperture: f64) -> Camera {
         self.lens_radius = aperture/2.0;
         return self
     }
-    pub fn set_focus_dist(mut self, focus_dist: f64) -> Camera {
+    pub fn with_focus_dist(mut self, focus_dist: f64) -> Camera {
         self.focus_dist = focus_dist;
         self.set_configuration();
         return self
@@ -118,10 +124,48 @@ impl Camera {
         self.set_configuration();
         return self
     }
-    pub fn set_times(mut self, t_min: f64, t_max: f64) -> Camera {
+    pub fn with_times(mut self, t_min: f64, t_max: f64) -> Camera {
         self.t_min = t_min;
         self.t_max = t_max;
         return self
+    }
+    pub fn render(&mut self, world: &dyn Hit, background: GradientBackground) {
+
+        let mut ray_tracer = RayTracer{};
+        let mut normal_shader = NormalShader{};
+        let mut scatter_shader = ScatterShader{};
+        let mut depth_shader = DepthShader::new();
+        let mut progress = 0;
+        let max_progress = self.num_samples*(self.image.width as usize)*(self.image.height as usize);
+        for index_u in 0..self.image.height {
+            for index_v in 0..self.image.width {
+                let u: f64 = index_u as f64 / (self.image.width  - 1) as f64;
+                let v: f64 = index_v as f64 / (self.image.height - 1) as f64;
+
+                for i_samples in 0..self.num_samples {
+                    progress += 1;
+                    println!("{}%", (((1000*progress)/max_progress) as f64)/10.0);
+                    
+                    let ray_in = self.get_ray(u, v);
+
+                    self.image.add(index_u, index_v, 
+                        ray_tracer.get_color(ray_in, world, &background, 0)
+                    );
+                }
+                let ray_in = self.get_ray(u, v);
+                self.normal_image.add(index_u, index_v,
+                    normal_shader.get_color(ray_in, world, &background, 0)
+                );
+                self.scatter_image.add(index_u, index_v,
+                    scatter_shader.get_color(ray_in, world, &background, 0)
+                );
+                self.depth_image.add(index_u, index_v,
+                    depth_shader.get_color(ray_in, world, &background, 0)
+                );
+            }
+        }
+        self.depth_image.scale(f64::exp(-depth_shader.max_depth.unwrap()), f64::exp(-depth_shader.min_depth.unwrap()), 0.4, 1.0);
+
     }
 }
 
