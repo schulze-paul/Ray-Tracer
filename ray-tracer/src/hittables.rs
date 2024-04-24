@@ -367,15 +367,14 @@ impl<'a> Hit for CuboidStruct<'a> {
     }
 }
 
-/*
 #[derive(Clone)]
 pub enum BVHNodeType<'a>{
     BVHNode(Box<BVHNodeStruct<'a>>),
-    Hittable(&'a dyn Hit<'a>)
+    Hittable(&'a dyn Hit)
 }
 
 impl <'a>BVHNodeType<'a> {
-    fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
+    fn hit(&self, ray: &Ray, range: [f64;2]) -> HitType {
         match self {
             BVHNodeType::BVHNode(n) =>  n.hit(ray, range),
             BVHNodeType::Hittable(h) => h.hit(ray, range),
@@ -429,7 +428,7 @@ impl <'a>BVHNodeStruct<'_> {
         return BVHNodeStruct {left, right};
     }
 
-    pub fn is_closer(obj_a: &'a dyn Hit<'a>, obj_b: &dyn Hit, axis: usize) -> Ordering {
+    pub fn is_closer(obj_a: &'a dyn Hit, obj_b: &dyn Hit, axis: usize) -> Ordering {
         match obj_a.bounding_volume().zip(obj_b.bounding_volume()) {
             None => panic!("No bounding box in bvhnode init"),
             Some((a, b)) => {
@@ -439,8 +438,8 @@ impl <'a>BVHNodeStruct<'_> {
 
     }
 }
-impl<'a> Hit<'a> for BVHNodeStruct<'a> {
-    fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
+impl<'a> Hit for BVHNodeStruct<'a> {
+    fn hit(&self, ray: &Ray, range: [f64;2]) -> HitType {
         match self.bounding_volume().expect("bvh node has no bounding volume")
                 .hit(ray, range) {
             HitType::None => return HitType::None,
@@ -487,4 +486,3 @@ impl<'a> Hit<'a> for BVHNodeStruct<'a> {
     }
 }
 
-*/

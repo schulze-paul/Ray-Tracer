@@ -15,7 +15,7 @@ use ray::Ray;
 use vec3::{Vec3, dot, cross};
 use color::Color;
 use camera::{Camera, ImageData};
-use hittables::{Hit, HittableListStruct, SphereStruct, CuboidStruct};
+use hittables::{Hit, HittableListStruct, SphereStruct, CuboidStruct, BVHNodeStruct};
 use background::GradientBackground;
 use material::{DielectricStruct, LambertianStruct, MetalStruct, Scatter};
 
@@ -87,8 +87,8 @@ fn main() {
     let background = GradientBackground::new(
         Color::new(0.1, 0.5, 0.7), Color::white()
     );
-    //let world_size = world.list.len();
-    // let bvh = BVHNodeStruct::new(&mut world, 0, world_size);
+    let world_size = world.list.len();
+    let bvh = BVHNodeStruct::new(&mut world, 0, world_size);
 
     let mut progress = 0;
     let max_progress = num_samples*(camera.image_data.width as usize)*(camera.image_data.height as usize);
@@ -103,7 +103,7 @@ fn main() {
                 let ray_in = camera.get_ray(u, v);
 
                 camera.image_data.add(index_u, index_v, 
-                    cast_ray(ray_in, &world, &background, 0)
+                    cast_ray(ray_in, &bvh, &background, 0)
                 );
             }
         }
