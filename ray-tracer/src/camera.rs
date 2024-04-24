@@ -6,7 +6,10 @@ use crate::{dot, cross};
 
 #[derive(Debug, Clone)]
 pub struct Camera {
-    pub image_data: ImageData,
+    pub image: ImageData,
+    pub normal_image: ImageData,
+    pub scatter_image: ImageData,
+    pub depth_image: ImageData,
     pub look_from: Vec3,
     pub look_at: Vec3,
     lower_left_corner: Vec3,
@@ -28,7 +31,11 @@ pub struct Camera {
 impl Camera {
     pub fn new(image_data: ImageData) -> Camera{
         let mut camera = Camera {
-            image_data,
+            image: image_data.clone(),
+            normal_image: image_data.clone(),
+            scatter_image: image_data.clone(),
+            depth_image: image_data.clone(),
+
             look_from: Vec3::x_hat(),
             look_at: Vec3::zero(),
             lower_left_corner: Vec3::zero(),
@@ -133,6 +140,17 @@ impl ImageData {
             width,
             height,
             num_samples: num_samples.try_into().expect(""),
+        }
+    }
+    pub fn scale(&mut self, r_min: f64, r_max: f64, new_min: f64, new_max: f64) {
+        for i in 0..self.pixels.len() {
+            if self.pixels[i] != Color::black() {
+                self.pixels[i] = 
+                    (self.pixels[i] - Color::white()*r_min)
+                    / (r_max - r_min) 
+                    * (new_max - new_min) 
+                    + Color::white()*new_min;
+            }
         }
     }
     pub fn set(&mut self, u: usize, v: usize, pixel_data: Color) {

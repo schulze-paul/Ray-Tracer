@@ -90,40 +90,68 @@ fn main() {
     let world_size = world.list.len();
     let bvh = BVHNodeStruct::new(&mut world, 0, world_size);
 
-    let shader = NormalShader {};
+    let mut ray_tracer = RayTracer{};
+    let mut normal_shader = NormalShader{};
+    let mut scatter_shader = ScatterShader{};
+    let mut depth_shader = DepthShader::new();
 
 
     let mut progress = 0;
-    let max_progress = num_samples*(camera.image_data.width as usize)*(camera.image_data.height as usize);
-    for i_samples in 0..num_samples {
-        for index_u in 0..camera.image_data.height {
-            for index_v in 0..camera.image_data.width {
+    let max_progress = num_samples*(camera.image.width as usize)*(camera.image.height as usize);
+    for index_u in 0..camera.image.height {
+        for index_v in 0..camera.image.width {
+            let u: f64 = index_u as f64 / (camera.image.width  - 1) as f64;
+            let v: f64 = index_v as f64 / (camera.image.height - 1) as f64;
+
+            for i_samples in 0..num_samples {
                 progress += 1;
                 println!("{}%", (((1000*progress)/max_progress) as f64)/10.0);
-                let u: f64 = index_u as f64 / (camera.image_data.width  - 1) as f64;
-                let v: f64 = index_v as f64 / (camera.image_data.height - 1) as f64;
                 
                 let ray_in = camera.get_ray(u, v);
 
-                camera.image_data.add(index_u, index_v, 
-                    shader.get_color(ray_in, &bvh, &background, 0)
+                camera.image.add(index_u, index_v, 
+                    ray_tracer.get_color(ray_in, &bvh, &background, 0)
                 );
             }
+            let ray_in = camera.get_ray(u, v);
+            camera.normal_image.add(index_u, index_v,
+                normal_shader.get_color(ray_in, &bvh, &background, 0)
+            );
+            camera.scatter_image.add(index_u, index_v,
+                scatter_shader.get_color(ray_in, &bvh, &background, 0)
+            );
+            camera.depth_image.add(index_u, index_v,
+                depth_shader.get_color(ray_in, &bvh, &background, 0)
+            );
         }
     }
-    match camera.image_data.write(String::from("first_test.ppm")) {
+    camera.depth_image.scale(f64::exp(-depth_shader.max_depth.unwrap()), f64::exp(-depth_shader.min_depth.unwrap()), 0.4, 1.0);
+
+    match camera.image.write(String::from("ray_tracer.ppm")) {
+        Ok(_) => {println!("Ok");},
+        Err(e) => {println!("{}", e);},
+    };
+    match camera.normal_image.write(String::from("normals.ppm")) {
+        Ok(_) => {println!("Ok");},
+        Err(e) => {println!("{}", e);},
+    };
+    match camera.scatter_image.write(String::from("scatter.ppm")) {
+        Ok(_) => {println!("Ok");},
+        Err(e) => {println!("{}", e);},
+    };
+    match camera.depth_image.write(String::from("depth.ppm")) {
         Ok(_) => {println!("Ok");},
         Err(e) => {println!("{}", e);},
     };
 }
 
 trait Shader {
-    fn get_color<'a>(&self, ray_in: Ray, world: &'a dyn for <'b> Hit, background: &GradientBackground, depth: i32) -> Color;
+    fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, background: &GradientBackground, depth: i32) -> Color;
 }
 
 struct RayTracer{}
 impl Shader for RayTracer {
-    fn get_color<'a>(&self, ray_in: Ray, world: &'a dyn for <'b> Hit, background: &GradientBackground, depth: i32) -> Color {
+    fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, background: &GradientBackground, depth: i32) -> Color {
         let max_depth = 8;
         if depth >= max_depth {
             return Color::black();
@@ -156,7 +184,7 @@ impl Shader for RayTracer {
 
 struct NormalShader{}
 impl Shader for NormalShader{
-    fn get_color<'a>(&self, ray_in: Ray, world: &'a dyn for <'b> Hit, _background: &GradientBackground, _depth: i32) -> Color {
+    fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, _background: &GradientBackground, _depth: i32) -> Color {
        let hit_record = world.hit(&ray_in, [0.001, 1e20]);
        match hit_record {
             HitType::Hit(h) => return Color::from_vector(h.normal),
@@ -167,7 +195,7 @@ impl Shader for NormalShader{
 
 struct ScatterShader{}
 impl Shader for ScatterShader{
-    fn get_color<'a>(&self, ray_in: Ray, world: &'a dyn for <'b> Hit, _background: &GradientBackground, _depth: i32) -> Color {
+    fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, _background: &GradientBackground, _depth: i32) -> Color {
         let hit_record = world.hit(&ray_in, [0.001,1e20]);
         match hit_record {
             HitType::Hit(h) => {
@@ -191,6 +219,45 @@ impl Shader for ScatterShader{
     }
 }
 
+struct DepthShader{
+    min_depth: Option<f64>,
+    max_depth: Option<f64>
+}
+impl DepthShader {
+    fn new() -> DepthShader {
+        return DepthShader{min_depth: None, max_depth: None}
+    }
+    fn register(&mut self, t_hit: f64) {
+        match self.min_depth.zip(self.max_depth) {
+            Some((min, max)) => {
+                if t_hit < min {
+                    self.min_depth = Some(t_hit);
+                }
+                if t_hit > max {
+                    self.max_depth = Some(t_hit);
+                }
+            }
+            _ => {
+                self.min_depth = Some(t_hit);
+                self.max_depth = Some(t_hit);
+            }
+        }
+    }
+}
+
+impl Shader for DepthShader{
+    fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, _background: &GradientBackground, _depth: i32) -> Color {
+
+       let hit_record = world.hit(&ray_in, [0.001, 1e20]);
+       match hit_record {
+            HitType::Hit(h) => {
+                self.register(h.t_hit);
+                return Color::grey(f64::exp(-h.t_hit))
+            },
+            _ => return Color::black()
+       }
+    }
+}
 fn random_float(min: f64, max: f64) -> f64 {
     let mut rng = rand::thread_rng();
     return rng.gen_range(min..max);
