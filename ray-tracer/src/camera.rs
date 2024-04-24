@@ -164,7 +164,7 @@ impl Camera {
                 );
             }
         }
-        self.depth_image.scale(f64::exp(-depth_shader.max_depth.unwrap()), f64::exp(-depth_shader.min_depth.unwrap()), 0.4, 1.0);
+        self.depth_image.scale(depth_shader.max_depth, depth_shader.min_depth, 0.2, 1.0);
 
     }
 }

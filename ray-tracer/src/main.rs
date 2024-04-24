@@ -6,8 +6,8 @@ mod hittables;
 mod material;
 mod camera;
 mod background;
+mod shaders;
 
-use std::{f64, usize};
 use rand::Rng;
 
 use hit_record::{HitType, HitRecord, ScatterRecord};
@@ -15,9 +15,14 @@ use ray::Ray;
 use vec3::{Vec3, dot, cross};
 use color::Color;
 use camera::{Camera, ImageData};
-use hittables::{Hit, HittableListStruct, SphereStruct, CuboidStruct, BVHNodeStruct};
+use hittables::Hit;
+use hittables::hittable_list::HittableListStruct;
+use hittables::sphere::SphereStruct;
+use hittables::cuboid::CuboidStruct;
+use hittables::bounding_volume::{BVHNodeStruct, BoundingBoxStruct};
 use background::GradientBackground;
-use material::{DielectricStruct, LambertianStruct, MetalStruct, Scatter};
+use material::{dielectric::DielectricStruct, lambertian::LambertianStruct, metal::MetalStruct, Scatter};
+use shaders::{Shader, RayTracer, NormalShader, DepthShader, ScatterShader};
 
 fn main() {
     // image and camera
@@ -94,140 +99,14 @@ fn main() {
     camera.render(&bvh, background);
 
 
-    match camera.image.write(String::from("ray_tracer.ppm")) {
-        Ok(_) => {println!("Ok");},
-        Err(e) => {println!("{}", e);},
-    };
-    match camera.normal_image.write(String::from("normals.ppm")) {
-        Ok(_) => {println!("Ok");},
-        Err(e) => {println!("{}", e);},
-    };
-    match camera.scatter_image.write(String::from("scatter.ppm")) {
-        Ok(_) => {println!("Ok");},
-        Err(e) => {println!("{}", e);},
-    };
-    match camera.depth_image.write(String::from("depth.ppm")) {
-        Ok(_) => {println!("Ok");},
-        Err(e) => {println!("{}", e);},
-    };
+    camera.image.write(String::from("ray_tracer.ppm")).unwrap();
+    camera.normal_image.write(String::from("normals.ppm")).unwrap();
+    camera.scatter_image.write(String::from("scatter.ppm")).unwrap();
+    camera.depth_image.write(String::from("depth.ppm")).unwrap();
 }
 
-pub trait Shader {
-    fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, background: &GradientBackground, depth: i32) -> Color;
-}
-
-pub struct RayTracer{}
-impl Shader for RayTracer {
-    fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, background: &GradientBackground, depth: i32) -> Color {
-        let max_depth = 8;
-        if depth >= max_depth {
-            return Color::black();
-        }
-        let hit_record = world.hit(&ray_in, [0.001,1e20]);
-
-        match hit_record {
-            HitType::Hit(h) => {
-                match h.material {
-                    None => return background.get_color(&ray_in),
-                    Some(m) => {
-                        let scatter_rec = m.scatter(&ray_in, &h);
-                        let colors: Vec<Color> = scatter_rec.probabilities.iter()
-                            .zip(scatter_rec.scattered.iter())
-                            .map(|(p, s)| *p * m.attenuation() * self.get_color(*s, world, background, depth+1))
-                            .collect();
-                        let mut color = Color::black();
-                        for c in colors {
-                            color += c;
-                        }
-                        return color
-                    }
-                }
-            }
-            _ => return background.get_color(&ray_in),
-        }
-    }
-
-}
-
-pub struct NormalShader{}
-impl Shader for NormalShader{
-    fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, _background: &GradientBackground, _depth: i32) -> Color {
-        let hit_record = world.hit(&ray_in, [0.001, 1e20]);
-        match hit_record {
-            HitType::Hit(h) => return Color::from_vector(h.normal),
-            _ => return Color::black()
-        }
-    }
-}
-
-pub struct ScatterShader{}
-impl Shader for ScatterShader{
-    fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, _background: &GradientBackground, _depth: i32) -> Color {
-        let hit_record = world.hit(&ray_in, [0.001,1e20]);
-        match hit_record {
-            HitType::Hit(h) => {
-                match h.material {
-                    None => return Color::black(),
-                    Some(m) => {
-                        let scatter_rec = m.scatter(&ray_in, &h);
-                        let colors: Vec<Color> = scatter_rec.scattered.iter()
-                            .map(|s| Color::from_vector(s.direction))
-                            .collect();
-                        let mut color = Color::black();
-                        for c in colors {
-                            color += c;
-                        }
-                        return color
-                    }
-                }
-            }
-            _ => return Color::black(),
-        }
-    }
-}
-
-struct DepthShader{
-    min_depth: Option<f64>,
-    max_depth: Option<f64>
-}
-impl DepthShader {
-    fn new() -> DepthShader {
-        return DepthShader{min_depth: None, max_depth: None}
-    }
-    fn register(&mut self, t_hit: f64) {
-        match self.min_depth.zip(self.max_depth) {
-            Some((min, max)) => {
-                if t_hit < min {
-                    self.min_depth = Some(t_hit);
-                }
-                if t_hit > max {
-                    self.max_depth = Some(t_hit);
-                }
-            }
-            _ => {
-                self.min_depth = Some(t_hit);
-                self.max_depth = Some(t_hit);
-            }
-        }
-    }
-}
-
-impl Shader for DepthShader{
-    fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, _background: &GradientBackground, _depth: i32) -> Color {
-
-       let hit_record = world.hit(&ray_in, [0.001, 1e20]);
-       match hit_record {
-            HitType::Hit(h) => {
-                self.register(h.t_hit);
-                return Color::grey(f64::exp(-h.t_hit))
-            },
-            _ => return Color::black()
-       }
-    }
-}
 fn random_float(min: f64, max: f64) -> f64 {
     let mut rng = rand::thread_rng();
     return rng.gen_range(min..max);
 }
-
 
