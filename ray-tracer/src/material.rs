@@ -1,40 +1,12 @@
 use crate::{Vec3, Color, Ray, HitRecord, ScatterRecord};
 use crate::{dot, random_float};
 
-#[derive(Debug)]
-pub enum Material {
-    Metal(MetalStruct),
-    Dielectric(DielectricStruct),
-    Lambertian(LambertianStruct)
-}
-
-
 
 pub trait Scatter {
     fn scatter<'a>(&'a self, ray: &Ray, hit_record: &'a HitRecord) -> ScatterRecord;
-}
-impl Scatter for Material {
-    fn scatter<'a>(&'a self, ray: &Ray, hit_record: &'a HitRecord) -> ScatterRecord {
-        match self {
-            Material::Metal(m) =>      m.scatter(ray, hit_record),
-            Material::Dielectric(d) => d.scatter(ray, hit_record),
-            Material::Lambertian(l) => l.scatter(ray, hit_record),
-        }
-    }
-}
-
-pub trait Attenuation {
     fn attenuation(&self) -> Color;
 }
-impl Attenuation for Material {
-    fn attenuation(&self) -> Color {
-        match self {
-            Material::Metal(m) =>      m.attenuation(),
-            Material::Dielectric(d) => d.attenuation(),
-            Material::Lambertian(l) => l.attenuation(),
-        }
-    }        
-}
+
 
 #[derive(Debug)]
 pub struct MetalStruct {
@@ -45,6 +17,8 @@ impl MetalStruct {
     pub fn new(albedo: Color, fuzz: f64) -> MetalStruct {
         MetalStruct{albedo, fuzz}
     }
+}
+impl Scatter for MetalStruct {
     fn scatter<'a>(&'a self, ray: &Ray, hit_record: &'a HitRecord) -> ScatterRecord {
         ScatterRecord::new(hit_record)
             .push(1.0, reflect(ray.direction, hit_record.normal)
@@ -67,6 +41,8 @@ impl DielectricStruct {
     pub fn new(refractive_index: f64) -> DielectricStruct {
         DielectricStruct{refractive_index}
     }
+}
+impl Scatter for DielectricStruct {
     fn scatter<'a>(&'a self, ray: &Ray, hit_record: &'a HitRecord) -> ScatterRecord {
         let mut refraction_ratio = self.refractive_index;
         let mut unit_normal = -hit_record.normal;
@@ -119,10 +95,12 @@ impl LambertianStruct {
     pub fn new(color: Color) -> LambertianStruct {
         LambertianStruct{color}
     }
+}
+impl Scatter for LambertianStruct {
     fn scatter<'a>(&'a self, _ray: &Ray, hit_record: &'a HitRecord) -> ScatterRecord {
 
         let mut scattered = ScatterRecord::new(hit_record);
-        let num_scattered = 4;
+        let num_scattered = 1;
         for _ in 0..num_scattered {
             scattered = scattered.push(
                 1.0/(num_scattered as f64),

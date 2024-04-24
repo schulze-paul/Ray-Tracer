@@ -1,31 +1,12 @@
 use std::cmp::Ordering;
+use std::fmt::write;
 
 use rand::Rng;
 
-use crate::{HitRecord, Material, Ray, Vec3, HitType};
+use crate::{HitRecord, Scatter, Ray, Vec3, HitType};
 use crate::dot;
 
 
-
-#[derive(Debug, Clone)]
-pub enum Hittable <'a>{
-    HittableList(HittableListStruct<'a>),
-    Sphere(SphereStruct<'a>),
-    BoundingBox(BoundingBoxStruct),
-    BHVNode(BVHNodeStruct<'a>),
-    XYRectangle(XYRectangleStruct<'a>),
-    XZRectangle(XZRectangleStruct<'a>),
-    YZRectangle(YZRectangleStruct<'a>),
-    Cuboid(CuboidStruct<'a>),
-
-}
-
-#[derive(Debug, Clone)]
-pub struct SphereStruct <'a>{
-    pub center: Vec3, 
-    pub radius: f64, 
-    pub material: &'a Material,
-}
 
 #[derive(Debug, Clone, Copy)]
 pub struct BoundingBoxStruct {
@@ -33,66 +14,14 @@ pub struct BoundingBoxStruct {
     pub max_corner: Vec3,
 }
 
-pub trait Hit<'a> {
-    fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType;
-}
-
-pub trait MaterialTrait {
-    fn material(&self) -> Option<&Material>;
-}
-
-pub trait BoundingVolumeTrait {
+pub trait Hit {
+    fn hit(&self, ray: &Ray, range: [f64;2]) -> HitType;
     fn bounding_volume(&self) -> Option<BoundingBoxStruct>;
 }
 
-impl <'a>Hit<'a> for Hittable<'a> {
-    fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
-        match self {
-            Hittable::Sphere(s) =>       s.hit(ray, range),
-            Hittable::HittableList(l) => l.hit(ray, range),
-            Hittable::BoundingBox(b) =>  b.hit(ray, range),
-            Hittable::BHVNode(n) =>      n.hit(ray, range),
-            Hittable::XYRectangle(r) =>  r.hit(ray, range),
-            Hittable::XZRectangle(r) =>  r.hit(ray, range),
-            Hittable::YZRectangle(r) =>  r.hit(ray, range),
-            Hittable::Cuboid(c) =>       c.hit(ray, range),
-        }
-    }
-}
-
-impl <'a>MaterialTrait for Hittable<'_> {
-    fn material(&self) -> Option<&Material> {
-        match self {
-            Hittable::Sphere(s) =>       Some(&s.material),
-            Hittable::HittableList(_) => None,
-            Hittable::BoundingBox(_) =>  None,
-            Hittable::BHVNode(_) =>      None,
-            Hittable::XYRectangle(r) =>  Some(&r.material),
-            Hittable::XZRectangle(r) =>  Some(&r.material),
-            Hittable::YZRectangle(r) =>  Some(&r.material),
-            Hittable::Cuboid(c)      =>  Some(&c.material),
-        }
-    }
-}
-
-impl BoundingVolumeTrait for Hittable<'_> {
-    fn bounding_volume(&self) -> Option<BoundingBoxStruct> {
-        match self {
-            Hittable::Sphere(s) =>       Some(s.bounding_volume()),
-            Hittable::HittableList(l) => l.bounding_volume(),
-            Hittable::BoundingBox(b) =>  Some(b.bounding_volume()),
-            Hittable::BHVNode(n) =>      Some(n.bounding_volume()),
-            Hittable::XYRectangle(r) =>  Some(r.bounding_volume()),
-            Hittable::XZRectangle(r) =>  Some(r.bounding_volume()),
-            Hittable::YZRectangle(r) =>  Some(r.bounding_volume()),
-            Hittable::Cuboid(c) =>       Some(c.bounding_volume()),
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct HittableListStruct <'a>{
-    pub list: Vec<&'a Hittable<'a>>
+    pub list: Vec<&'a dyn Hit>
 }
 
 impl <'a>HittableListStruct<'a> {
@@ -101,14 +30,16 @@ impl <'a>HittableListStruct<'a> {
             list: Vec::new() 
         }
     }
-    pub fn from(list: Vec<&'a Hittable<'a>>) -> HittableListStruct<'a> {
+    pub fn from(list: Vec<&'a dyn Hit>) -> HittableListStruct<'a> {
         return HittableListStruct{list}
     }
-    pub fn push(mut self, hittable: &'a Hittable<'a>) -> HittableListStruct<'a> {
+    pub fn push(mut self, hittable: &'a dyn Hit) -> HittableListStruct<'a> {
         self.list.push(hittable);
         return self;
     }
-    fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
+}
+impl<'a> Hit for HittableListStruct<'a>{
+    fn hit(&self, ray: &Ray, range: [f64;2]) -> HitType {
         let mut closest_hit_record = HitType::None;
         for hittable in &self.list {
             let hit_record = hittable.hit(ray, range);
@@ -144,11 +75,23 @@ impl <'a>HittableListStruct<'a> {
     }
 }
 
+#[derive(Clone)]
+pub struct SphereStruct <'a>{
+    pub center: Vec3, 
+    pub radius: f64, 
+    pub material: &'a dyn Scatter,
+}
+
 impl <'a>SphereStruct<'_> {
-    pub fn new(center: Vec3, radius: f64, material: &Material) -> SphereStruct{
+    pub fn new(center: Vec3, radius: f64, material: &dyn Scatter) -> SphereStruct{
         SphereStruct{center, radius, material}
     }
-    pub fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
+    fn get_normal(&self, point_on_surface: Vec3) -> Vec3 {
+        (point_on_surface - self.center) / self.radius
+    }
+}
+impl<'a> Hit for SphereStruct<'a> {
+     fn hit(&self, ray: &Ray, range: [f64;2]) -> HitType {
         let oc = ray.origin - self.center;              // origin to center
         let a = dot(ray.direction, ray.direction);      // direction squared
         let b = 2.0 * dot(oc, ray.direction);           // 2 * alignment of center direction and ray direction
@@ -170,22 +113,19 @@ impl <'a>SphereStruct<'_> {
             }
         }
         let normal = self.get_normal(ray.at(hit_at_t));
-        let rec = HitRecord::new(hit_at_t ,ray, normal)
+        let hit_point = ray.at(hit_at_t);
+        let rec = HitRecord::new(hit_at_t, hit_point, ray.direction, normal)
             .with_material(self.material);
         return HitType::Hit(rec);
 
     }
-    fn get_normal(&self, point_on_surface: Vec3) -> Vec3 {
-        (point_on_surface - self.center) / self.radius
-    }
-    pub fn bounding_volume(&self) -> BoundingBoxStruct {
-        BoundingBoxStruct::new(
+    fn bounding_volume(&self) -> Option<BoundingBoxStruct> {
+        Some(BoundingBoxStruct::new(
                self.center - self.radius*Vec3::ones(),
                self.center + self.radius*Vec3::ones()
-        )
+        ))
     }
 }
-
 impl BoundingBoxStruct {
     pub fn new(corner_a: Vec3, corner_b: Vec3) -> BoundingBoxStruct {
         let min_corner = Vec3::new(
@@ -213,12 +153,9 @@ impl BoundingBoxStruct {
         );
         BoundingBoxStruct{min_corner, max_corner}
     }
-    pub fn bounding_volume(self) -> BoundingBoxStruct {
-        self
-    }
-
-
-    pub fn hit(self, ray: &Ray, range: [f64;2]) -> HitType {
+}
+impl Hit for BoundingBoxStruct {
+     fn hit(&self, ray: &Ray, range: [f64;2]) -> HitType {
         for dim in 0..3 {
             let inv_d = 1.0/ray.direction[dim];
             let mut t0 = (self.min_corner[dim] - ray.origin[dim]) * inv_d;
@@ -237,15 +174,19 @@ impl BoundingBoxStruct {
         }
         return HitType::None
     }
+    fn bounding_volume(&self) -> Option<BoundingBoxStruct> {
+        Some(*self)
+    }
 }
 
-#[derive(Debug, Clone)]
+/*
+#[derive(Clone)]
 pub enum BVHNodeType<'a>{
     BVHNode(Box<BVHNodeStruct<'a>>),
-    Hittable(&'a Hittable<'a>)
+    Hittable(&'a dyn Hit<'a>)
 }
 
-impl <'a>BVHNodeType<'_> {
+impl <'a>BVHNodeType<'a> {
     fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
         match self {
             BVHNodeType::BVHNode(n) =>  n.hit(ray, range),
@@ -254,14 +195,15 @@ impl <'a>BVHNodeType<'_> {
     }
     pub fn bounding_volume(&self) -> BoundingBoxStruct {
         match self {
-            BVHNodeType::BVHNode(n) =>  n.bounding_volume(),
+            BVHNodeType::BVHNode(n) =>  n.bounding_volume()
+                .expect("BVHNode hittable has no bounging volume"),
             BVHNodeType::Hittable(h) => h.bounding_volume()
                 .expect("BVHNode hittable has no bounging volume"),
         }
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct BVHNodeStruct<'a> {
     left:  BVHNodeType<'a>,
     right: BVHNodeType<'a>,
@@ -292,14 +234,14 @@ impl <'a>BVHNodeStruct<'_> {
             }
         }
 
-        objects.list[start..end].sort_by(|a, b| Self::is_closer(a, b, axis));
+        objects.list[start..end].sort_by(|a, b| Self::is_closer(*a, *b, axis));
         let mid = start + object_span / 2;
         let left =  BVHNodeType::BVHNode( Box::new(BVHNodeStruct::new(objects, start, mid)));
         let right = BVHNodeType::BVHNode( Box::new(BVHNodeStruct::new(objects, mid, end)));
         return BVHNodeStruct {left, right};
     }
 
-    pub fn is_closer(obj_a: &Hittable, obj_b: &Hittable, axis: usize) -> Ordering {
+    pub fn is_closer(obj_a: &'a dyn Hit<'a>, obj_b: &dyn Hit, axis: usize) -> Ordering {
         match obj_a.bounding_volume().zip(obj_b.bounding_volume()) {
             None => panic!("No bounding box in bvhnode init"),
             Some((a, b)) => {
@@ -308,8 +250,11 @@ impl <'a>BVHNodeStruct<'_> {
         }
 
     }
+}
+impl<'a> Hit<'a> for BVHNodeStruct<'a> {
     fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
-        match self.bounding_volume().hit(ray, range) {
+        match self.bounding_volume().expect("bvh node has no bounding volume")
+                .hit(ray, range) {
             HitType::None => return HitType::None,
             _ => {
                 let left_hit =  self.left.hit(ray, range);
@@ -346,161 +291,153 @@ impl <'a>BVHNodeStruct<'_> {
 
 
     }
-    pub fn bounding_volume(&self) -> BoundingBoxStruct {
-        return BoundingBoxStruct::surrounding(
+    fn bounding_volume(&self) -> Option<BoundingBoxStruct> {
+        return Some(BoundingBoxStruct::surrounding(
             self.left.bounding_volume(),
             self.right.bounding_volume(),
-        )
+        ))
     }
 }
 
-#[derive(Debug, Clone)]
-pub struct XYRectangleStruct<'a> {
-    x0: f64,
-    x1: f64,
-    y0: f64,
-    y1: f64,
-    k:  f64,
-    material: &'a Material
+#[derive(Clone)]
+pub enum Rectangle<'a> {
+    XY(RectangleStruct<'a>),
+    XZ(RectangleStruct<'a>),
+    YZ(RectangleStruct<'a>),
 }
 
-impl <'a>XYRectangleStruct<'_> {
-    pub fn new(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, material: &'a Material) -> XYRectangleStruct<'a> {
+#[derive(Clone)]
+struct RectangleStruct<'a>{
+    a_min: f64,
+    a_max: f64,
+    b_min: f64,
+    b_max: f64,
+    k: f64,
+    material: &'a dyn Scatter
+}
+
+impl RectangleStruct<'_> {
+    fn new(a_min: f64, a_max: f64, b_min: f64, b_max: f64, k: f64, material: &dyn Scatter) -> RectangleStruct {
+        return RectangleStruct{a_min, a_max, b_min, b_max, k, material}
+    }
+}
+
+impl <'a>Rectangle<'_> {
+    pub fn new_xy(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, material: &'a dyn Scatter) -> Rectangle<'a> {
         let x_min = f64::min(x0, x1);
-        let y_min = f64::min(y0, y1);
         let x_max = f64::max(x0, x1);
+        let y_min = f64::min(y0, y1);
         let y_max = f64::max(y0, y1);
-        XYRectangleStruct{x0: x_min, x1: x_max, y0: y_min, y1: y_max, k, material}
+        Rectangle::XY(RectangleStruct::new(x_min,x_max,y_min, y_max, k, material))
     }
-    fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
-        let t = (self.k - ray.origin.z()) / ray.direction.z();
-        if t < range[0] || t > range[1] {
-            return HitType::None
-        }
-        let x = ray.origin.x() + t * ray.direction.x();
-        let y = ray.origin.y() + t * ray.direction.y();
-        if x < self.x0 || x > self.x1 || y < self.y0 || y > self.y1 {
-            return HitType::None;
-        }
-        let mut normal = Vec3::z_hat();
-        if dot(ray.direction, normal) > 0.0 {
-            normal = -normal;
-        }
-        return HitType::Hit(
-            HitRecord::new(t, ray, normal)
-                .with_material(self.material)
-        );
-    }
-    fn bounding_volume(&self) -> BoundingBoxStruct {
-        return BoundingBoxStruct::new(
-            Vec3::new(self.x0, self.y0, self.k-0.0001),
-            Vec3::new(self.x1, self.y1, self.k+0.0001),
-        )
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct XZRectangleStruct<'a> {
-    x0: f64,
-    x1: f64,
-    z0: f64,
-    z1: f64,
-    k:  f64,
-    material: &'a Material
-}
-
-impl <'a>XZRectangleStruct<'_> {
-    pub fn new(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, material: &'a Material) -> XZRectangleStruct<'a> {
+    pub fn new_xz(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, material: &'a dyn Scatter) -> Rectangle<'a> {
         let x_min = f64::min(x0, x1);
         let x_max = f64::max(x0, x1);
         let z_min = f64::min(z0, z1);
         let z_max = f64::max(z0, z1);
-        XZRectangleStruct{x0: x_min, x1: x_max, z0: z_min, z1: z_max, k, material}
+        Rectangle::XY(RectangleStruct::new(x_min,x_max,z_min, z_max, k, material))
     }
-    fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
-        let t = (self.k - ray.origin.y()) / ray.direction.y();
-        if t < range[0] || t > range[1] {
-            return HitType::None
-        }
-        let x = ray.origin.x() + t * ray.direction.x();
-        let z = ray.origin.z() + t * ray.direction.z();
-        if x < self.x0 || x > self.x1 || z < self.z0 || z > self.z1 {
-            return HitType::None;
-        }
-        let mut normal = Vec3::y_hat();
-        if dot(ray.direction, normal) > 0.0 {
-            normal = -normal;
-        }
-        return HitType::Hit(
-            HitRecord::new(t, ray, normal)
-                .with_material(self.material)
-        );
-    }
-    fn bounding_volume(&self) -> BoundingBoxStruct {
-        return BoundingBoxStruct::new(
-            Vec3::new(self.x0, self.z0, self.k-0.0001),
-            Vec3::new(self.x1, self.z1, self.k+0.0001),
-        )
-    }
-}
-
-
-#[derive(Debug, Clone)]
-pub struct YZRectangleStruct<'a> {
-    y0: f64,
-    y1: f64,
-    z0: f64,
-    z1: f64,
-    k:  f64,
-    material: &'a Material
-}
-
-impl <'a>YZRectangleStruct<'_> {
-    pub fn new(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, material: &'a Material) -> YZRectangleStruct<'a> {
+    pub fn new_yz(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, material: &'a dyn Scatter) -> Rectangle<'a> {
         let y_min = f64::min(y0, y1);
-        let z_min = f64::min(z0, z1);
         let y_max = f64::max(y0, y1);
+        let z_min = f64::min(z0, z1);
         let z_max = f64::max(z0, z1);
-        YZRectangleStruct{y0: y_min, y1: y_max, z0: z_min, z1: z_max, k, material}
+        Rectangle::XY(RectangleStruct::new(y_min,y_max,y_min, y_max, k, material))
     }
-    fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
-        let t = (self.k - ray.origin.x()) / ray.direction.x();
+}
+
+impl<'a> Hit<'_> for Rectangle<'a> {
+    fn hit(&self, ray: &Ray, range: [f64;2]) -> HitType {
+        let dim_a;
+        let dim_b;
+        let dim_c;
+        let mut rect: &RectangleStruct;
+        match self {
+            Self::XY(r) => {
+                dim_a = 0;
+                dim_b = 1;
+                dim_c = 2;
+                rect = r;
+            }
+            Self::XZ(r) => {
+                dim_a = 0;
+                dim_b = 2;
+                dim_c = 1;
+                rect = r;
+            }
+            Self::YZ(r) => {
+                dim_a = 1;
+                dim_b = 2;
+                dim_c = 0;
+                rect = r;
+            }
+        }
+        let t = (rect.k - ray.origin[dim_c]) / ray.direction[dim_c];
         if t < range[0] || t > range[1] {
             return HitType::None
         }
-        let y = ray.origin.y() + t * ray.direction.y();
-        let z = ray.origin.z() + t * ray.direction.z();
-        if y < self.y0 || y > self.y1 || z < self.z0 || z > self.z1 {
+        let a = ray.origin[dim_a] + t * ray.direction[dim_a];
+        let b = ray.origin[dim_b] + t * ray.direction[dim_a];
+        if a < rect.a_min || a > rect.a_max || b < rect.b_min || b > rect.b_max {
             return HitType::None;
         }
-        let mut normal = Vec3::x_hat();
+        let mut normal = Vec3::zero();
+        normal[dim_c] = 1.0;
         if dot(ray.direction, normal) > 0.0 {
             normal = -normal;
         }
         return HitType::Hit(
             HitRecord::new(t, ray, normal)
-                .with_material(self.material)
+                .with_material(rect.material)
         );
     }
-    fn bounding_volume(&self) -> BoundingBoxStruct {
-        return BoundingBoxStruct::new(
-            Vec3::new(self.y0, self.z0, self.k-0.0001),
-            Vec3::new(self.y1, self.z1, self.k+0.0001),
-        )
+    fn bounding_volume(&self) -> Option<BoundingBoxStruct> {
+        let dim_a;
+        let dim_b;
+        let dim_c;
+        let mut rect: &RectangleStruct;
+        match self {
+            Self::XY(r) => {
+                dim_a = 0;
+                dim_b = 1;
+                dim_c = 2;
+                rect = r;
+            }
+            Self::XZ(r) => {
+                dim_a = 0;
+                dim_b = 2;
+                dim_c = 1;
+                rect = r;
+            }
+            Self::YZ(r) => {
+                dim_a = 1;
+                dim_b = 2;
+                dim_c = 0;
+                rect = r;
+            }
+        }
+        let mut v_min = Vec3::zero();
+        v_min[dim_a] = rect.a_min;
+        v_min[dim_b] = rect.b_min;
+        v_min[dim_c] = rect.k-0.0001;
+        let mut v_max = Vec3::zero();
+        v_max[dim_a] = rect.a_max;
+        v_max[dim_b] = rect.b_max;
+        v_max[dim_c] = rect.k+0.0001;
+        return Some(BoundingBoxStruct::new(v_min, v_max));
     }
 }
 
-
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct CuboidStruct<'a> {
-    sides: Vec<Hittable<'a>>,
+    sides: [Rectangle<'a>; 6],
     v_max: Vec3,
     v_min: Vec3,
-    material: &'a Material,
+    material: &'a dyn Scatter,
 }
 
 impl <'a>CuboidStruct<'_> {
-    pub fn new(p0: Vec3, p1: Vec3, material: &'a Material) -> CuboidStruct<'a> {
+    pub fn new(p0: Vec3, p1: Vec3, material: &'a dyn Scatter) -> CuboidStruct<'a> {
 
         let mut v_min = Vec3::zero();
         let mut v_max = Vec3::zero();
@@ -511,16 +448,19 @@ impl <'a>CuboidStruct<'_> {
         v_max[1] = f64::max(p0.y(), p1.y());
         v_max[2] = f64::max(p0.z(), p1.z());
 
-        let mut sides = Vec::new();
-        sides.push(Hittable::XYRectangle(XYRectangleStruct::new(v_min.x(), v_max.x(), v_min.y(), v_max.y(), v_min.z(), material)));
-        sides.push(Hittable::XYRectangle(XYRectangleStruct::new(v_min.x(), v_max.x(), v_min.y(), v_max.y(), v_max.z(), material)));
-        sides.push(Hittable::XZRectangle(XZRectangleStruct::new(v_min.x(), v_max.x(), v_min.z(), v_max.z(), v_min.y(), material)));
-        sides.push(Hittable::XZRectangle(XZRectangleStruct::new(v_min.x(), v_max.x(), v_min.z(), v_max.z(), v_max.y(), material)));
-        sides.push(Hittable::YZRectangle(YZRectangleStruct::new(v_min.y(), v_max.y(), v_min.z(), v_max.z(), v_min.x(), material)));
-        sides.push(Hittable::YZRectangle(YZRectangleStruct::new(v_min.y(), v_max.y(), v_min.z(), v_max.z(), v_max.x(), material)));
+        let sides = [
+            Rectangle::new_xy(v_min.x(), v_max.x(), v_min.y(), v_max.y(), v_min.z(), material),
+            Rectangle::new_xy(v_min.x(), v_max.x(), v_min.y(), v_max.y(), v_max.z(), material),
+            Rectangle::new_xz(v_min.x(), v_max.x(), v_min.z(), v_max.z(), v_min.y(), material),
+            Rectangle::new_xz(v_min.x(), v_max.x(), v_min.z(), v_max.z(), v_max.y(), material),
+            Rectangle::new_yz(v_min.y(), v_max.y(), v_min.z(), v_max.z(), v_min.x(), material),
+            Rectangle::new_yz(v_min.y(), v_max.y(), v_min.z(), v_max.z(), v_max.x(), material),
+        ];
         return CuboidStruct{sides, v_min, v_max, material};
     }
-    fn hit(&'a self, ray: &'a Ray, range: [f64;2]) -> HitType {
+}
+impl<'a> Hit<'_> for CuboidStruct<'a> {
+    fn hit(&'a self, ray: &Ray, range: [f64;2]) -> HitType {
         let mut closest_hit_record = HitType::None;
         for hittable in &self.sides {
             let hit_record = hittable.hit(ray, range);
@@ -540,8 +480,12 @@ impl <'a>CuboidStruct<'_> {
         }
         return closest_hit_record;
     }
-    fn bounding_volume(&self) -> BoundingBoxStruct {
-        return BoundingBoxStruct::new(self.v_min - 0.0001*Vec3::ones(), self.v_max+0.0001*Vec3::ones());
+    fn bounding_volume(&self) -> Option<BoundingBoxStruct> {
+        return Some(
+            BoundingBoxStruct::new(
+                self.v_min - 0.0001*Vec3::ones(), 
+                self.v_max+0.0001*Vec3::ones()
+            ));
     }
 }
-
+*/
