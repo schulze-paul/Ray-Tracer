@@ -3,6 +3,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Index, IndexMut, Mul, MulAssign, 
 use std::cmp::PartialEq;
 
 use crate::random_float;
+use crate::vec3::Vec3;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Color {
@@ -14,6 +15,12 @@ impl Color {
         Color {
             e: [r, g, b]
         }
+    }
+    pub fn from_vector(vec: Vec3) -> Color {
+        let normalized = 0.5*vec.unit() + 0.5*Vec3::ones();
+        Color {
+            e: [normalized.x(), normalized.y(), normalized.z()]
+        } 
     }
     pub fn black() -> Color {
         Color{e: [0.0,0.0,0.0]}
