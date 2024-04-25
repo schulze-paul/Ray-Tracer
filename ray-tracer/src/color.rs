@@ -17,7 +17,7 @@ impl Color {
         }
     }
     pub fn from_vector(vec: Vec3) -> Color {
-        let normalized = vec.unit() + Vec3::ones();
+        let normalized = 0.5*vec.unit() + 0.5*Vec3::ones();
         Color {
             e: [normalized.x(), normalized.y(), normalized.z()]
         } 

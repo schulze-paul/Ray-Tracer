@@ -1,4 +1,4 @@
-use crate::{Vec3, Ray, Color, Hit, HitType, GradientBackground};
+use crate::{Vec3, Ray, Color, Hit, GradientBackground, Interval};
 
 pub trait Shader {
     fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, background: &GradientBackground, depth: i32) -> Color;
@@ -11,12 +11,11 @@ impl Shader for RayTracer {
         if depth >= max_depth {
             return Color::black();
         }
-        let hit_record = world.hit(&ray_in, [0.001,1e20]);
+        let hit_record = world.hit(&ray_in, Interval::new(0.001,1e20));
 
         match hit_record {
-            HitType::Hit(h) => {
+            Some(h) => {
                 match h.material {
-                    None => return background.get_color(&ray_in),
                     Some(m) => {
                         let scatter_rec = m.scatter(&ray_in, &h);
                         let colors: Vec<Color> = scatter_rec.probabilities.iter()
@@ -27,8 +26,9 @@ impl Shader for RayTracer {
                         for c in colors {
                             color += c;
                         }
-                        return color
+                        return color + m.emittance();
                     }
+                    None => return background.get_color(&ray_in),
                 }
             }
             _ => return background.get_color(&ray_in),
@@ -40,10 +40,10 @@ impl Shader for RayTracer {
 pub struct NormalShader{}
 impl Shader for NormalShader{
     fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, _background: &GradientBackground, _depth: i32) -> Color {
-        let hit_record = world.hit(&ray_in, [0.001, 1e20]);
+        let hit_record = world.hit(&ray_in, Interval::new(0.001, 1e20));
         match hit_record {
-            HitType::Hit(h) => return Color::from_vector(h.normal),
-            _ => return Color::black()
+            Some(h) => return Color::from_vector(h.normal),
+            None => return Color::black()
         }
     }
 }
@@ -51,11 +51,10 @@ impl Shader for NormalShader{
 pub struct ScatterShader{}
 impl Shader for ScatterShader{
     fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, _background: &GradientBackground, _depth: i32) -> Color {
-        let hit_record = world.hit(&ray_in, [0.001,1e20]);
+        let hit_record = world.hit(&ray_in, Interval::new(0.001, 1e20));
         match hit_record {
-            HitType::Hit(h) => {
+            Some(h) => {
                 match h.material {
-                    None => return Color::black(),
                     Some(m) => {
                         let scatter_rec = m.scatter(&ray_in, &h);
                         let colors: Vec<Color> = scatter_rec.scattered.iter()
@@ -67,6 +66,7 @@ impl Shader for ScatterShader{
                         }
                         return color
                     }
+                    None => return Color::black(),
                 }
             }
             _ => return Color::black(),
@@ -95,13 +95,13 @@ impl DepthShader {
 impl Shader for DepthShader{
     fn get_color<'a>(&mut self, ray_in: Ray, world: &'a dyn for <'b> Hit, _background: &GradientBackground, _depth: i32) -> Color {
 
-       let hit_record = world.hit(&ray_in, [0.001, 1e20]);
+       let hit_record = world.hit(&ray_in, Interval::new(0.001,1e20));
        match hit_record {
-            HitType::Hit(h) => {
+            Some(h) => {
                 self.register(h.t_hit);
                 return Color::grey(h.t_hit)
             },
-            _ => return Color::black()
+            None => return Color::black()
        }
     }
 }

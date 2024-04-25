@@ -16,11 +16,11 @@ impl ImageData {
             pixels: vec![Color::black(); width*height],
             width,
             height,
-            num_samples: num_samples.try_into().unwrap(),
+            num_samples: num_samples.try_into().expect(""),
         }
     }
-    pub fn with_num_samples(mut self, num_samples: usize) -> ImageData {
-        self.num_samples = num_samples.try_into().unwrap();
+    pub fn with_num_samples(mut self, num_samples: u16) -> ImageData {
+        self.num_samples = num_samples;
         return self;
     }
     pub fn scale(&mut self, r_min: f64, r_max: f64, new_min: f64, new_max: f64) {

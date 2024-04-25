@@ -4,10 +4,19 @@ use crate::dot;
 pub mod metal;
 pub mod dielectric;
 pub mod lambertian;
+pub mod emissive;
 
 pub trait Scatter {
     fn scatter<'a>(&'a self, ray: &Ray, hit_record: &'a HitRecord) -> ScatterRecord;
     fn attenuation(&self) -> Color;
+    fn emittance(&self) -> Color;
+}
+
+use core::fmt::Debug;
+impl Debug for dyn Scatter {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "Material")
+    }
 }
 
 

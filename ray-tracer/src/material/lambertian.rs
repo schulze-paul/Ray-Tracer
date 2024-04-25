@@ -2,16 +2,16 @@ use crate::{Vec3, Color, Ray, HitRecord, ScatterRecord};
 use crate::material::Scatter;
 
 #[derive(Debug)]
-pub struct LambertianStruct {
+pub struct Lambertian {
     color: Color
 }
 
-impl LambertianStruct {
-    pub fn new(color: Color) -> LambertianStruct {
-        LambertianStruct{color}
+impl Lambertian {
+    pub fn new(color: Color) -> Lambertian {
+        Lambertian{color}
     }
 }
-impl Scatter for LambertianStruct {
+impl Scatter for Lambertian {
     fn scatter<'a>(&'a self, _ray: &Ray, hit_record: &'a HitRecord) -> ScatterRecord {
 
         let mut scattered = ScatterRecord::new(hit_record);
@@ -26,6 +26,9 @@ impl Scatter for LambertianStruct {
     }
     fn attenuation(&self) -> Color {
         return self.color;
+    }
+    fn emittance(&self) -> Color {
+        return Color::black();
     }
 }
 

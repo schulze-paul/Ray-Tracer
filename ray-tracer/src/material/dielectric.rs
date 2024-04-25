@@ -4,15 +4,15 @@ use crate::material::Scatter;
 use crate::material::{reflectance, reflect, refract};
 
 #[derive(Debug)]
-pub struct DielectricStruct {
+pub struct Dielectric {
     refractive_index: f64
 }
-impl DielectricStruct {
-    pub fn new(refractive_index: f64) -> DielectricStruct {
-        DielectricStruct{refractive_index}
+impl Dielectric {
+    pub fn new(refractive_index: f64) -> Dielectric {
+        Dielectric{refractive_index}
     }
 }
-impl Scatter for DielectricStruct {
+impl Scatter for Dielectric {
     fn scatter<'a>(&'a self, ray: &Ray, hit_record: &'a HitRecord) -> ScatterRecord {
         let mut refraction_ratio = self.refractive_index;
         let mut unit_normal = -hit_record.normal;
@@ -37,5 +37,8 @@ impl Scatter for DielectricStruct {
     }
     fn attenuation(&self) -> Color {
         return Color::white();
+    }
+    fn emittance(&self) -> Color {
+        return Color::black();
     }
 }

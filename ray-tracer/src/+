@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use rand::Rng;
 
-use crate::{hit_record::HitRecord, Hit, HittableList, Interval, Ray, Vec3}; 
+use crate::{hit_record::HitRecord, Hit, HitType, HittableList, Interval, Ray, Vec3}; 
 
 #[derive(Debug, Clone, Copy)]
 pub struct BoundingBox {
@@ -135,12 +135,17 @@ impl<'a> Hit for BVHNode<'a> {
         }
         let left_hit =  self.left.hit(ray, range);
         let right_hit = self.right.hit(ray, range);
-        return match (left_hit, right_hit) {
-            (None, None) =>         None,
-            (Some(lh), None) =>     Some(lh),
-            (None, Some(rh)) =>     Some(rh),
-            (Some(lh), Some(rh)) => Some(HitRecord::get_closer(lh, rh)),
-            
+        match (left_hit, right_hit) {
+            (None, None) =>     return None,
+            (Some(lh), None) => return left_hit,
+            (None, Some(rh)) => return left_hit,
+            (Some(lh), Some(rh)) => {
+                        if lh.t_hit < rh.t_hit {
+                            return Some(lh)
+                        } else {
+                            return Some(rh)
+                        }
+            },
         }
     }
     fn bounding_volume(&self) -> Option<BoundingBox> {
@@ -148,12 +153,6 @@ impl<'a> Hit for BVHNode<'a> {
             self.left.bounding_volume(),
             self.right.bounding_volume(),
         ))
-    }
-    fn pdf_value(&self, origin: Vec3, direction: Vec3) -> f64 {
-        return 0.0;
-    }
-    fn random_to_surface(&self, origin: Vec3) -> Option<Vec3> {
-        return None;
     }
 }
 

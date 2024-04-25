@@ -32,9 +32,9 @@ impl Camera {
     pub fn new(image_data: ImageData) -> Camera{
         let mut camera = Camera {
             image: image_data.clone(),
-            normal_image: image_data.clone(),
-            scatter_image: image_data.clone(),
-            depth_image: image_data.clone(),
+            normal_image: image_data.clone().with_num_samples(1),
+            scatter_image: image_data.clone().with_num_samples(1),
+            depth_image: image_data.clone().with_num_samples(1),
             num_samples: 1,
 
             look_from: Vec3::x_hat(),

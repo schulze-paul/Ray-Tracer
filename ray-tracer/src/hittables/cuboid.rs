@@ -1,190 +1,133 @@
-use crate::{Vec3, Ray, Hit, Scatter, HitType, HitRecord, BoundingBoxStruct};
+use crate::vec3::cross;
+use crate::{random_float, random_usize, BoundingBox, Hit, HitRecord, Interval, Ray, Scatter, Vec3};
 use crate::dot;
 
 #[derive(Clone)]
-pub enum Rectangle<'a> {
-    XY(RectangleStruct<'a>),
-    XZ(RectangleStruct<'a>),
-    YZ(RectangleStruct<'a>),
+pub struct Quad<'a> {
+    corner: Vec3,
+    u: Vec3,
+    v: Vec3,
+    w: Vec3,
+    normal: Vec3,
+    d: f64,
+    area: f64,
+    material: &'a dyn Scatter,
 }
+
+impl<'a> Quad<'_> {
+    pub fn new(corner: Vec3, u: Vec3, v: Vec3, material: &dyn Scatter) -> Quad {
+        let n = cross(u, v);
+        let normal = n.unit();
+        let d = dot(normal, corner);
+        let w = n/dot(n,n);
+        let area = n.length();
+        return Quad {corner, u, v, w, normal, d, area, material};
+    }
+    fn contains(&self, alpha: f64, beta: f64) -> bool {
+        let inside = Interval::new(0.0, 1.0);
+        return inside.contains(beta) && !inside.contains(alpha);
+    }
+}
+
+impl Hit for Quad<'_> {
+    fn hit(&self, ray: &Ray, range: Interval) -> Option<HitRecord> {
+        let denom = dot(self.normal, ray.direction);
+        if denom.abs() < 1e-8 {
+            return None // parallel to plane
+        }
+        let t = (self.d - dot(self.normal, ray.origin))/denom;
+
+        if !range.contains(t) {
+            return None;
+        }
+        let intersection = ray.at(t);
+        let local_hitpoint = intersection - self.corner;
+        let alpha = dot(self.w, cross(local_hitpoint, self.v));
+        let beta = dot(self.w, cross(self.u, local_hitpoint));
+
+        if !self.contains(alpha, beta) {
+            return None;
+        }
+        return Some(HitRecord::new(t, intersection, ray.direction, self.normal));
+    } 
+    fn bounding_volume(&self) -> Option<BoundingBox> {
+        return Some(BoundingBox::surrounding(
+            BoundingBox::new(self.corner, self.corner + self.u + self.v),
+            BoundingBox::new(self.corner + self.u, self.corner + self.v),
+        ));
+    }
+    fn pdf_value(&self, origin: Vec3, direction: Vec3) -> f64 {
+        match self.hit(&Ray::new(origin, direction), Interval::new(0.001, f64::INFINITY)) {
+            Some(h) => {
+                let distance_squared = h.t_hit * h.t_hit * direction.length_squared();
+                let cosine = dot(direction, h.normal) / direction.length();
+                return distance_squared / (cosine * self.area);
+            },
+            _ => return 0.0,
+        }
+    }
+    fn random_to_surface(&self, origin: Vec3) -> Option<Vec3> {
+        let point = self.corner 
+            + random_float(0.0, 1.0) * self.u
+            + random_float(0.0, 1.0) * self.w;
+        return Some(point - origin);
+    }
+}
+
 
 #[derive(Clone)]
-struct RectangleStruct<'a>{
-    a_min: f64,
-    a_max: f64,
-    b_min: f64,
-    b_max: f64,
-    k: f64,
-    material: &'a dyn Scatter
+pub struct Cuboid<'a> {
+    sides: [Quad<'a>; 6],
+    p0: Vec3,
+    p1: Vec3,
 }
 
-impl RectangleStruct<'_> {
-    fn new(a_min: f64, a_max: f64, b_min: f64, b_max: f64, k: f64, material: &dyn Scatter) -> RectangleStruct {
-        return RectangleStruct{a_min, a_max, b_min, b_max, k, material}
-    }
-}
-
-impl <'a>Rectangle<'_> {
-    pub fn new_xy(x0: f64, x1: f64, y0: f64, y1: f64, k: f64, material: &'a dyn Scatter) -> Rectangle<'a> {
-        let x_min = f64::min(x0, x1);
-        let x_max = f64::max(x0, x1);
-        let y_min = f64::min(y0, y1);
-        let y_max = f64::max(y0, y1);
-        Rectangle::XY(RectangleStruct::new(x_min,x_max,y_min, y_max, k, material))
-    }
-    pub fn new_xz(x0: f64, x1: f64, z0: f64, z1: f64, k: f64, material: &'a dyn Scatter) -> Rectangle<'a> {
-        let x_min = f64::min(x0, x1);
-        let x_max = f64::max(x0, x1);
-        let z_min = f64::min(z0, z1);
-        let z_max = f64::max(z0, z1);
-        Rectangle::XZ(RectangleStruct::new(x_min,x_max,z_min, z_max, k, material))
-    }
-    pub fn new_yz(y0: f64, y1: f64, z0: f64, z1: f64, k: f64, material: &'a dyn Scatter) -> Rectangle<'a> {
-        let y_min = f64::min(y0, y1);
-        let y_max = f64::max(y0, y1);
-        let z_min = f64::min(z0, z1);
-        let z_max = f64::max(z0, z1);
-        Rectangle::YZ(RectangleStruct::new(y_min,y_max,z_min, z_max, k, material))
-    }
-}
-
-impl<'a> Hit for Rectangle<'a> {
-    fn hit(&self, ray: &Ray, range: [f64;2]) -> HitType {
-        let dim_a;
-        let dim_b;
-        let dim_c;
-        let rect: &RectangleStruct;
-        match self {
-            Self::XY(r) => {
-                dim_a = 0;
-                dim_b = 1;
-                dim_c = 2;
-                rect = r;
-            }
-            Self::XZ(r) => {
-                dim_a = 0;
-                dim_b = 2;
-                dim_c = 1;
-                rect = r;
-            }
-            Self::YZ(r) => {
-                dim_a = 1;
-                dim_b = 2;
-                dim_c = 0;
-                rect = r;
-            }
-        }
-        let t = (rect.k - ray.origin[dim_c]) / ray.direction[dim_c];
-        if t < range[0] || t > range[1] {
-            return HitType::None
-        }
-        let a = ray.origin[dim_a] + t * ray.direction[dim_a];
-        let b = ray.origin[dim_b] + t * ray.direction[dim_b];
-        if a < rect.a_min || a > rect.a_max || b < rect.b_min || b > rect.b_max {
-            return HitType::None;
-        }
-        let mut normal = Vec3::zero();
-        normal[dim_c] = 1.0;
-        if dot(ray.direction, normal) > 0.0 {
-            normal = -normal;
-        }
-        let hit_point = ray.at(t);
-        return HitType::Hit(
-            HitRecord::new(t, hit_point, ray.direction, normal)
-                .with_material(rect.material)
-        );
-    }
-    fn bounding_volume(&self) -> Option<BoundingBoxStruct> {
-        let dim_a;
-        let dim_b;
-        let dim_c;
-        let rect: &RectangleStruct;
-        match self {
-            Self::XY(r) => {
-                dim_a = 0;
-                dim_b = 1;
-                dim_c = 2;
-                rect = r;
-            }
-            Self::XZ(r) => {
-                dim_a = 0;
-                dim_b = 2;
-                dim_c = 1;
-                rect = r;
-            }
-            Self::YZ(r) => {
-                dim_a = 1;
-                dim_b = 2;
-                dim_c = 0;
-                rect = r;
-            }
-        }
-        let mut v_min = Vec3::zero();
-        v_min[dim_a] = rect.a_min;
-        v_min[dim_b] = rect.b_min;
-        v_min[dim_c] = rect.k-0.0001;
-        let mut v_max = Vec3::zero();
-        v_max[dim_a] = rect.a_max;
-        v_max[dim_b] = rect.b_max;
-        v_max[dim_c] = rect.k+0.0001;
-        return Some(BoundingBoxStruct::new(v_min, v_max));
-    }
-}
-
-#[derive(Clone)]
-pub struct CuboidStruct<'a> {
-    sides: [Rectangle<'a>; 6],
-    v_max: Vec3,
-    v_min: Vec3,
-}
-
-impl <'a>CuboidStruct<'_> {
-    pub fn new(p0: Vec3, p1: Vec3, material: &'a dyn Scatter) -> CuboidStruct<'a> {
-
-        let mut v_min = Vec3::zero();
-        let mut v_max = Vec3::zero();
-        for i in 0..3 {
-            v_min[i] = f64::min(p0[i], p1[i]);
-            v_max[i] = f64::max(p0[i], p1[i]);
-        }
+impl <'a>Cuboid<'_> {
+    pub fn new(p0: Vec3, p1: Vec3, material: &'a dyn Scatter) -> Cuboid<'a> {
+        
+        let x_diff = (p1 - p0).x() * Vec3::x_hat();
+        let y_diff = (p1 - p0).y() * Vec3::y_hat();
+        let z_diff = (p1 - p0).z() * Vec3::z_hat();
 
         let sides = [
-            Rectangle::new_xy(v_min.x(), v_max.x(), v_min.y(), v_max.y(), v_min.z(), material),
-            Rectangle::new_xy(v_min.x(), v_max.x(), v_min.y(), v_max.y(), v_max.z(), material),
-            Rectangle::new_xz(v_min.x(), v_max.x(), v_min.z(), v_max.z(), v_min.y(), material),
-            Rectangle::new_xz(v_min.x(), v_max.x(), v_min.z(), v_max.z(), v_max.y(), material),
-            Rectangle::new_yz(v_min.y(), v_max.y(), v_min.z(), v_max.z(), v_min.x(), material),
-            Rectangle::new_yz(v_min.y(), v_max.y(), v_min.z(), v_max.z(), v_max.x(), material),
+            Quad::new(p0, x_diff, y_diff, material),
+            Quad::new(p0, x_diff, z_diff, material),
+            Quad::new(p0, y_diff, z_diff, material),
+            Quad::new(p1,-x_diff,-y_diff, material),
+            Quad::new(p1,-x_diff,-z_diff, material),
+            Quad::new(p1,-y_diff,-z_diff, material),
         ];
-        return CuboidStruct{sides, v_min, v_max};
+        return Cuboid{sides, p0, p1};
     }
 }
-impl<'a> Hit for CuboidStruct<'a> {
-    fn hit(&self, ray: &Ray, range: [f64;2]) -> HitType {
-        let mut closest_hit_record = HitType::None;
+impl<'a> Hit for Cuboid<'a> {
+    fn hit(&self, ray: &Ray, range: Interval) -> Option<HitRecord> {
+        let mut closest_hit_record = None;
         for hittable in &self.sides {
             let hit_record = hittable.hit(ray, range);
-            match hit_record {
-                HitType::Hit(h) => {
-                    match closest_hit_record {
-                        HitType::Hit(ref c) => {
-                            if h.t_hit < c.t_hit {
-                                closest_hit_record = HitType::Hit(h) 
-                            }
-                        }
-                        _ => closest_hit_record = HitType::Hit(h),
-                    }
-                }
+            match (closest_hit_record, hit_record) {
+                (None, Some(_)) => 
+                    closest_hit_record = hit_record,
+                (Some(ch), Some(h)) => 
+                    closest_hit_record = Some(ch.get_closer(h)),
                 _ => continue,
             }
         }
         return closest_hit_record;
     }
-    fn bounding_volume(&self) -> Option<BoundingBoxStruct> {
+    fn bounding_volume(&self) -> Option<BoundingBox> {
         return Some(
-            BoundingBoxStruct::new(
-                self.v_min - 0.0001*Vec3::ones(), 
-                self.v_max+0.0001*Vec3::ones()
+            BoundingBox::new(
+                self.p0-0.0001*Vec3::ones(), 
+                self.p1+0.0001*Vec3::ones()
             ));
+    }
+    fn pdf_value(&self, origin: crate::vec3::Vec3, direction: crate::vec3::Vec3) -> f64 {
+        let weight = 1.0/(self.sides.len() as f64);
+        return self.sides.iter().map(|ref s| weight * s.pdf_value(origin, direction)).sum();
+    }
+    fn random_to_surface(&self, origin: crate::vec3::Vec3) -> Option<Vec3> {
+        let random_index = random_usize(0, self.sides.len());
+        return self.sides[random_index].random_to_surface(origin);
     }
 }

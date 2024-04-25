@@ -4,16 +4,16 @@ use crate::material::Scatter;
 use crate::material::reflect;
 
 #[derive(Debug)]
-pub struct MetalStruct {
+pub struct Metal {
     albedo: Color,
     fuzz: f64
 }
-impl MetalStruct {
-    pub fn new(albedo: Color, fuzz: f64) -> MetalStruct {
-        MetalStruct{albedo, fuzz}
+impl Metal {
+    pub fn new(albedo: Color, fuzz: f64) -> Metal {
+        Metal{albedo, fuzz}
     }
 }
-impl Scatter for MetalStruct {
+impl Scatter for Metal {
     fn scatter<'a>(&'a self, ray: &Ray, hit_record: &'a HitRecord) -> ScatterRecord {
         ScatterRecord::new(hit_record)
             .push(1.0, reflect(ray.direction, hit_record.normal)
@@ -21,5 +21,8 @@ impl Scatter for MetalStruct {
     }
     fn attenuation(&self) -> Color {
         return self.albedo;
+    }
+    fn emittance(&self) -> Color {
+        return Color::black();
     }
 }
