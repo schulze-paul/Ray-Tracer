@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use rand::Rng;
 
 mod ray;
@@ -38,11 +40,11 @@ fn main() {
     let image_data = ImageData::new(width as usize, height as usize, num_samples);
 
     // materials
-    let metal = Metal::new(Color::white(), 0.0);
-    let dielectric = Dielectric::new(1.4);
-    let red_lambertian = Lambertian::new(Color::red());
-    let white_lambertian = Lambertian::new(Color::white());
-    let emissive = Emissive::new(10.0*Color::white());
+    let metal = Rc::new(Metal::new(Color::white(), 0.0));
+    let dielectric = Rc::new(Dielectric::new(1.4));
+    let red_lambertian = Rc::new(Lambertian::new(Color::red()));
+    let white_lambertian = Rc::new(Lambertian::new(Color::white()));
+    let emissive = Rc::new(Emissive::new(10.0*Color::white()));
 
     // objects
     let small_r = 2.0;
@@ -51,37 +53,37 @@ fn main() {
     let sphere_metal = Sphere::new(
             sphere_center,
             small_r,
-            Box::new(metal)
+            metal
         );
     let sphere_red = Sphere::new(
             sphere_center + box_spacing*Vec3::new(0.0, 1.0, 1.0),
             small_r,
-            Box::new(red_lambertian)
+            red_lambertian
         );
     let sphere_glass = Sphere::new(
             sphere_center + box_spacing*Vec3::new(-1.0, 1.0, 0.0),
             small_r,
-            Box::new(dielectric)
+        dielectric
         );
     let sphere_emissive = Sphere::new(
             sphere_center + box_spacing*Vec3::new(0.0, 4.0, 2.0),
             small_r,
-            Box::new(emissive)
+        emissive
         );
     let box1 = Cuboid::new(
         Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
         Vec3::new(-1.0*box_spacing,  0.0*box_spacing, -1.0*box_spacing),
-        Box::new(white_lambertian)
+        white_lambertian.clone()
     );
     let box2 = Cuboid::new(
         Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
         Vec3::new( 1.0*box_spacing,  0.0*box_spacing,  1.0*box_spacing),
-        Box::new(white_lambertian)
+        white_lambertian.clone()
     );
     let box3 = Cuboid::new(
         Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
         Vec3::new( 1.0*box_spacing, -2.0*box_spacing, -1.0*box_spacing),
-        Box::new(white_lambertian)
+        white_lambertian.clone()
     );
     
     let mut world = HittableList::new()

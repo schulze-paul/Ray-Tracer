@@ -117,7 +117,7 @@ impl<'a> Hit for BVHNode<'a> {
          }
         let left_hit =  self.left.hit(ray, range);
         let right_hit = self.right.hit(ray, range);
-        return match (left_hit, right_hit) {
+        return match (left_hit.clone(), right_hit.clone()) {
             (None, None) =>         None,
             (Some(_), None) =>      left_hit,
             (None, Some(_)) =>      right_hit,

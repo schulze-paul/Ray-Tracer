@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use dyn_clone;
 
 use crate::vec3::cross;
@@ -12,11 +14,11 @@ pub struct Quad {
     normal: Vec3,
     d: f64,
     area: f64,
-    material: Box<dyn Scatter>,
+    material: Rc<dyn Scatter>,
 }
 
 impl<'a> Quad {
-    pub fn new(corner: Vec3, u: Vec3, v: Vec3, material: Box<dyn Scatter>) -> Quad {
+    pub fn new(corner: Vec3, u: Vec3, v: Vec3, material: Rc<dyn Scatter>) -> Quad {
         let n = cross(u, v);
         let normal = n.unit();
         let d = dot(normal, corner);
@@ -49,7 +51,7 @@ impl Hit for Quad {
         if !self.contains(alpha, beta) {
             return None;
         }
-        return Some(HitRecord::new(t, intersection, ray.direction, self.normal, &self.material));
+        return Some(HitRecord::new(t, intersection, ray.direction, self.normal, self.material.clone()));
     } 
     fn bounding_volume(&self) -> BoundingBox {
         return BoundingBox::surrounding(
@@ -83,19 +85,19 @@ pub struct Cuboid {
 }
 
 impl <'a>Cuboid {
-    pub fn new(p0: Vec3, p1: Vec3, material: Box<dyn Scatter>) -> Cuboid {
+    pub fn new(p0: Vec3, p1: Vec3, material: Rc<dyn Scatter>) -> Cuboid {
         
         let x_diff = (p1 - p0).x() * Vec3::x_hat();
         let y_diff = (p1 - p0).y() * Vec3::y_hat();
         let z_diff = (p1 - p0).z() * Vec3::z_hat();
 
         let sides = [
-            Quad::new(p0, x_diff, y_diff, dyn_clone::clone_box(&*material)),
-            Quad::new(p0, x_diff, z_diff, dyn_clone::clone_box(&*material)),
-            Quad::new(p0, y_diff, z_diff, dyn_clone::clone_box(&*material)),
-            Quad::new(p1,-x_diff,-y_diff, dyn_clone::clone_box(&*material)),
-            Quad::new(p1,-x_diff,-z_diff, dyn_clone::clone_box(&*material)),
-            Quad::new(p1,-y_diff,-z_diff, dyn_clone::clone_box(&*material)),
+            Quad::new(p0, x_diff, y_diff, material.clone()),
+            Quad::new(p0, x_diff, z_diff, material.clone()),
+            Quad::new(p0, y_diff, z_diff, material.clone()),
+            Quad::new(p1,-x_diff,-y_diff, material.clone()),
+            Quad::new(p1,-x_diff,-z_diff, material.clone()),
+            Quad::new(p1,-y_diff,-z_diff, material.clone()),
         ];
         return Cuboid{sides, p0, p1};
     }
@@ -105,7 +107,7 @@ impl<'a> Hit for Cuboid {
         let mut closest_hit_record = None;
         for hittable in &self.sides {
             let hit_record = hittable.hit(ray, range);
-            match (closest_hit_record, hit_record) {
+            match (closest_hit_record.clone(), hit_record.clone()) {
                 (None, Some(_)) => 
                     closest_hit_record = hit_record,
                 (Some(ch), Some(h)) => {

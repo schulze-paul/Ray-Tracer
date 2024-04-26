@@ -1,17 +1,19 @@
+use std::rc::Rc;
+
 use crate::{Vec3, Color, Ray, Scatter};
 use crate::dot;
 
-#[derive(Copy, Clone, Debug)]
-pub struct HitRecord<'a> {
+#[derive(Clone, Debug)]
+pub struct HitRecord {
     pub t_hit: f64,
     pub hit_point: Vec3,
     pub direction: Vec3,
     pub normal: Vec3,
-    pub material: &'a Box<dyn Scatter>,
+    pub material: Rc<dyn Scatter>,
 }
 
-impl <'a>HitRecord<'_> {
-    pub fn new(t_hit: f64, hit_point: Vec3, direction: Vec3, normal: Vec3, material: &'a Box<dyn Scatter>) -> HitRecord<'a> {
+impl <'a>HitRecord {
+    pub fn new(t_hit: f64, hit_point: Vec3, direction: Vec3, normal: Vec3, material: Rc<dyn Scatter>) -> HitRecord {
         HitRecord{
             t_hit,
             hit_point,
@@ -30,7 +32,7 @@ impl <'a>HitRecord<'_> {
 }
 
 pub struct ScatterRecord<'a> {
-    pub hit_record: &'a HitRecord<'a>,
+    pub hit_record: &'a HitRecord,
     pub probabilities: Vec<f64>,
     pub scattered: Vec<Ray>,
     pub emitted: Color,
