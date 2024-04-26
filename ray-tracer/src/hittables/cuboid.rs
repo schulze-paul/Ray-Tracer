@@ -26,7 +26,7 @@ impl<'a> Quad {
     }
     fn contains(&self, alpha: f64, beta: f64) -> bool {
         let inside = Interval::new(0.0, 1.0);
-        return inside.contains(beta) && !inside.contains(alpha);
+        return inside.contains(beta) && inside.contains(alpha);
     }
 }
 
@@ -51,11 +51,11 @@ impl Hit for Quad {
         }
         return Some(HitRecord::new(t, intersection, ray.direction, self.normal, &self.material));
     } 
-    fn bounding_volume(&self) -> Option<BoundingBox> {
-        return Some(BoundingBox::surrounding(
+    fn bounding_volume(&self) -> BoundingBox {
+        return BoundingBox::surrounding(
             BoundingBox::new(self.corner, self.corner + self.u + self.v),
             BoundingBox::new(self.corner + self.u, self.corner + self.v),
-        ));
+        );
     }
     fn pdf_value(&self, origin: Vec3, direction: Vec3) -> f64 {
         match self.hit(&Ray::new(origin, direction), Interval::new(0.001, f64::INFINITY)) {
@@ -118,12 +118,11 @@ impl<'a> Hit for Cuboid {
         }
         return closest_hit_record;
     }
-    fn bounding_volume(&self) -> Option<BoundingBox> {
-        return Some(
-            BoundingBox::new(
+    fn bounding_volume(&self) -> BoundingBox {
+        return BoundingBox::new(
                 self.p0-0.0001*Vec3::ones(), 
                 self.p1+0.0001*Vec3::ones()
-            ));
+            );
     }
     fn pdf_value(&self, origin: crate::vec3::Vec3, direction: crate::vec3::Vec3) -> f64 {
         let weight = 1.0/(self.sides.len() as f64);

@@ -19,10 +19,10 @@ use vec3::{Vec3, dot, cross};
 use color::Color;
 use camera::Camera;
 use image_data::ImageData;
-use hittables::{Hit, Interval};
+use hittables::{hittable_list, Hit, Interval};
 use hittables::hittable_list::HittableList;
 use hittables::sphere::Sphere;
-use hittables::cuboid::Cuboid;
+use hittables::cuboid::{Cuboid, Quad};
 use hittables::bounding_volume::{BVHNode, BoundingBox};
 use background::GradientBackground;
 use material::{Scatter, dielectric::Dielectric, lambertian::Lambertian, metal::Metal, emissive::Emissive};
@@ -32,8 +32,8 @@ use pdf::PDF;
 
 fn main() {
     // image and camera
-    let height = 500;
-    let width = 500;
+    let height = 1000;
+    let width = 1000;
     let num_samples: usize = 128;
     let image_data = ImageData::new(width as usize, height as usize, num_samples);
 
@@ -64,11 +64,16 @@ fn main() {
             Box::new(dielectric)
         );
     let sphere_emissive = Sphere::new(
-            sphere_center + box_spacing*Vec3::new(0.0, 2.0, 2.0),
+            sphere_center + box_spacing*Vec3::new(0.0, 4.0, 2.0),
             small_r,
             Box::new(emissive)
         );
-    
+    let plane1 = Quad::new(
+        Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
+        box_spacing*Vec3::x_hat(),
+        box_spacing*Vec3::y_hat(),
+        Box::new(white_lambertian)
+    );
     let box1 = Cuboid::new(
         Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
         Vec3::new(-1.0*box_spacing,  0.0*box_spacing, -1.0*box_spacing),
@@ -90,6 +95,7 @@ fn main() {
         .push(&sphere_red)
         .push(&sphere_glass)
         .push(&sphere_emissive)
+        //.push(&plane1)
         .push(&box1)
         .push(&box2)
         .push(&box3)
@@ -103,16 +109,18 @@ fn main() {
         .focus_on_look_at()
         .with_aperture(0.0)
         .with_num_samples(num_samples);
-    let background = GradientBackground::new(
+    let black_background = GradientBackground::new(
         Color::black(),
         Color::black()
-    //    Color::new(0.1, 0.5, 0.7), 
-    //    Color::white()
+    );
+    let day_background = GradientBackground::new(
+        Color::new(0.1, 0.5, 0.7), 
+        Color::white()
     );
     let world_size = world.list.len();
     let bvh = BVHNode::new(&mut world, 0, world_size);
 
-    camera.render(&bvh, background);
+    camera.render(&world, day_background);
 
 
     camera.image.write(String::from("rendered/ray_tracer.ppm")).unwrap();

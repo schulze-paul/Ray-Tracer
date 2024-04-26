@@ -11,7 +11,7 @@ use bounding_volume::BoundingBox;
 
 pub trait Hit {
     fn hit(&self, ray: &Ray, range: Interval) -> Option<HitRecord>;
-    fn bounding_volume(&self) -> Option<BoundingBox>;
+    fn bounding_volume(&self) -> BoundingBox;
     fn random_to_surface(&self, origin: Vec3) -> Option<Vec3>;
     fn pdf_value(&self, origin: Vec3, direction: Vec3) -> f64;
 }

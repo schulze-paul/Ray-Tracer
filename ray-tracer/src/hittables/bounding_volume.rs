@@ -65,15 +65,19 @@ impl <'a>BVHNodeType<'a> {
     fn hit(&self, ray: &Ray, range: Interval) -> Option<HitRecord> {
         match self {
             BVHNodeType::BVHNode(n) =>  n.hit(ray, range),
-            BVHNodeType::Hittable(h) => h.hit(ray, range),
+            BVHNodeType::Hittable(h) => {
+                if h.bounding_volume().hit(ray, range) {
+                    h.hit(ray, range)
+                } else {
+                    None
+                }
+            }
         }
     }
     pub fn bounding_volume(&self) -> BoundingBox {
         match self {
-            BVHNodeType::BVHNode(n) =>  n.bounding_volume()
-                .expect("BVHNode hittable has no bounging volume"),
-            BVHNodeType::Hittable(h) => h.bounding_volume()
-                .expect("BVHNode hittable has no bounging volume"),
+            BVHNodeType::BVHNode(n) =>  n.bounding_volume(),
+            BVHNodeType::Hittable(h) => h.bounding_volume(),
         }
     }
 }
@@ -117,19 +121,12 @@ impl <'a>BVHNode<'_> {
     }
 
     pub fn is_closer(obj_a: &'a dyn Hit, obj_b: &dyn Hit, axis: usize) -> Ordering {
-        match obj_a.bounding_volume().zip(obj_b.bounding_volume()) {
-            None => panic!("No bounding box in bvhnode init"),
-            Some((a, b)) => {
-                return a.min_corner[axis].partial_cmp(&b.min_corner[axis]).expect("no ordering found");
-            }
-        }
-
+        return obj_a.bounding_volume().min_corner[axis].partial_cmp(&obj_b.bounding_volume().min_corner[axis]).expect("no ordering found");
     }
 }
 impl<'a> Hit for BVHNode<'a> {
     fn hit(&self, ray: &Ray, range: Interval) -> Option<HitRecord> {
         if !self.bounding_volume()
-            .expect("BVH node has no bounding volume")
             .hit(ray, range) {
             return None;
         }
@@ -137,8 +134,8 @@ impl<'a> Hit for BVHNode<'a> {
         let right_hit = self.right.hit(ray, range);
         return match (left_hit, right_hit) {
             (None, None) =>         None,
-            (Some(_), None) =>     left_hit,
-            (None, Some(_)) =>     right_hit,
+            (Some(_), None) =>      left_hit,
+            (None, Some(_)) =>      right_hit,
             (Some(lh), Some(rh)) => {
                 if lh.is_closer_than(rh) {
                     left_hit
@@ -149,11 +146,11 @@ impl<'a> Hit for BVHNode<'a> {
             
         }
     }
-    fn bounding_volume(&self) -> Option<BoundingBox> {
-        return Some(BoundingBox::surrounding(
+    fn bounding_volume(&self) -> BoundingBox {
+        return BoundingBox::surrounding(
             self.left.bounding_volume(),
             self.right.bounding_volume(),
-        ))
+        )
     }
     fn pdf_value(&self, origin: Vec3, direction: Vec3) -> f64 {
         return 0.0;

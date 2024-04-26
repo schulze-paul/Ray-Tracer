@@ -41,19 +41,19 @@ impl<'a> Hit for HittableList<'a>{
         }
         return closest_hit_record;
     }
-    fn bounding_volume(&self) -> Option<BoundingBox> {
+    fn bounding_volume(&self) -> BoundingBox {
         if self.list.len() == 0 {
-            return None;
+            return BoundingBox::new(Vec3::zero(), Vec3::zero());
         }
-        let mut bbox: BoundingBox = self.list[0].bounding_volume()?;
+        let mut bbox: BoundingBox = self.list[0].bounding_volume();
 
         for object in &self.list {
             bbox = BoundingBox::surrounding(
                 bbox, 
-                object.bounding_volume()?
+                object.bounding_volume()
             )
         }
-        return Some(bbox);
+        return bbox;
     }
     fn pdf_value(&self, origin: crate::vec3::Vec3, direction: crate::vec3::Vec3) -> f64 {
         let weight = 1.0/(self.list.len() as f64);

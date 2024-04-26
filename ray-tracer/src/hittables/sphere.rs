@@ -57,11 +57,11 @@ impl<'a> Hit for Sphere {
         return Some(rec);
 
     }
-    fn bounding_volume(&self) -> Option<BoundingBox> {
-        Some(BoundingBox::new(
+    fn bounding_volume(&self) -> BoundingBox {
+        BoundingBox::new(
                self.center - self.radius*Vec3::ones(),
                self.center + self.radius*Vec3::ones()
-        ))
+        )
     }
     fn random_to_surface(&self, origin: Vec3) -> Option<Vec3> {
         let direction = self.center - origin;
