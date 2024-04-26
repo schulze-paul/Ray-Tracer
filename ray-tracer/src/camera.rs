@@ -1,3 +1,4 @@
+use indicatif::ProgressBar;
 
 use crate::{DepthShader, Hit, NormalShader, Ray, RayTracer, ScatterShader, Shader, Vec3, GradientBackground, ImageData};
 use crate::cross;
@@ -134,16 +135,15 @@ impl Camera {
         let mut normal_shader = NormalShader{};
         let mut scatter_shader = ScatterShader{};
         let mut depth_shader = DepthShader::new();
-        let mut progress = 0;
-        let max_progress = self.num_samples*(self.image.width as usize)*(self.image.height as usize);
+        let total_iterations: u64 = <usize as TryInto<u64>>::try_into(self.num_samples*self.image.width*self.image.height).unwrap();
+        let bar = ProgressBar::new(total_iterations);
         for index_u in 0..self.image.height {
             for index_v in 0..self.image.width {
                 let u: f64 = index_u as f64 / (self.image.width  - 1) as f64;
                 let v: f64 = index_v as f64 / (self.image.height - 1) as f64;
 
                 for i_samples in 0..self.num_samples {
-                    progress += 1;
-                    println!("{}%", (((1000*progress)/max_progress) as f64)/10.0);
+                    bar.inc(1);
                     
                     let ray_in = self.get_ray(u, v);
 
@@ -163,6 +163,7 @@ impl Camera {
                 );
             }
         }
+        bar.finish();
         self.depth_image.scale(depth_shader.max_depth, depth_shader.min_depth, 0.2, 1.0);
 
     }

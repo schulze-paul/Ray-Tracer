@@ -102,6 +102,7 @@ fn main() {
         .focus_on_look_at()
         .with_aperture(0.0)
         .with_num_samples(num_samples);
+    
     let black_background = GradientBackground::new(
         Color::black(),
         Color::black()
