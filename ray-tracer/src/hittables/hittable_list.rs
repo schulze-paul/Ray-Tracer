@@ -25,18 +25,14 @@ impl<'a> Hit for HittableList<'a>{
         let mut closest_hit_record: Option<HitRecord> = None;
         for hittable in &self.list {
             let hit_record = hittable.hit(ray, range);
-            match hit_record {
-                Some(h) => {
-                    match closest_hit_record {
-                        Some(ref c) => {
-                            if h.t_hit < c.t_hit {
-                                closest_hit_record = Some(h) 
-                            }
-                        }
-                        _ => closest_hit_record = Some(h),
+            match (closest_hit_record, hit_record) {
+                (Some(ch), Some(h)) => {
+                    if h.t_hit < ch.t_hit {
+                        closest_hit_record = Some(h) 
                     }
                 }
-                None => continue,
+                (Some(_), None) => continue,
+                _ => closest_hit_record = hit_record
             }
         }
         return closest_hit_record;

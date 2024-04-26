@@ -34,7 +34,7 @@ fn main() {
     // image and camera
     let height = 1000;
     let width = 1000;
-    let num_samples: usize = 128;
+    let num_samples: usize = 1;
     let image_data = ImageData::new(width as usize, height as usize, num_samples);
 
     // materials
@@ -68,12 +68,6 @@ fn main() {
             small_r,
             Box::new(emissive)
         );
-    let plane1 = Quad::new(
-        Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
-        box_spacing*Vec3::x_hat(),
-        box_spacing*Vec3::y_hat(),
-        Box::new(white_lambertian)
-    );
     let box1 = Cuboid::new(
         Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
         Vec3::new(-1.0*box_spacing,  0.0*box_spacing, -1.0*box_spacing),
@@ -95,7 +89,6 @@ fn main() {
         .push(&sphere_red)
         .push(&sphere_glass)
         .push(&sphere_emissive)
-        //.push(&plane1)
         .push(&box1)
         .push(&box2)
         .push(&box3)
@@ -120,7 +113,7 @@ fn main() {
     let world_size = world.list.len();
     let bvh = BVHNode::new(&mut world, 0, world_size);
 
-    camera.render(&world, day_background);
+    camera.render(&bvh, day_background);
 
 
     camera.image.write(String::from("rendered/ray_tracer.ppm")).unwrap();

@@ -24,10 +24,28 @@ pub struct Interval {
 
 impl Interval {
     pub fn new(min: f64, max: f64) -> Interval {
-        return Interval{min, max}
+        return Interval{
+            min: f64::min(min, max), 
+            max: f64::max(min, max), 
+        }
     }
     pub fn contains(&self, num: f64) -> bool {
         return num > self.min && num < self.max
+    }
+    pub fn outer(range_a: Interval, range_b: Interval) -> Interval{
+        return Interval::new(
+            f64::min(range_a.min, range_b.min),
+            f64::max(range_a.max, range_b.max),
+        ) 
+    }
+    pub fn inner(range_a: Interval, range_b: Interval) -> Interval{
+        return Interval::new(
+            f64::max(range_a.min, range_b.min),
+            f64::min(range_a.max, range_b.max),
+        ) 
+    }
+    pub fn do_overlap(range_a: Interval, range_b: Interval) -> bool {
+        return range_a.contains(range_b.min) || range_a.contains(range_b.max)
     }
 }
 
