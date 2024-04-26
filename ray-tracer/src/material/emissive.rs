@@ -1,7 +1,7 @@
 use crate::{Color, Ray, Scatter, HitRecord, ScatterRecord};
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Emissive {
     color: Color
 }

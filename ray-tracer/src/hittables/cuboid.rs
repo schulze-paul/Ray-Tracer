@@ -1,9 +1,10 @@
+use dyn_clone;
+
 use crate::vec3::cross;
 use crate::{random_float, random_usize, BoundingBox, Hit, HitRecord, Interval, Ray, Scatter, Vec3};
 use crate::dot;
 
-#[derive(Clone)]
-pub struct Quad<'a> {
+pub struct Quad {
     corner: Vec3,
     u: Vec3,
     v: Vec3,
@@ -11,11 +12,11 @@ pub struct Quad<'a> {
     normal: Vec3,
     d: f64,
     area: f64,
-    material: &'a dyn Scatter,
+    material: Box<dyn Scatter>,
 }
 
-impl<'a> Quad<'_> {
-    pub fn new(corner: Vec3, u: Vec3, v: Vec3, material: &dyn Scatter) -> Quad {
+impl<'a> Quad {
+    pub fn new(corner: Vec3, u: Vec3, v: Vec3, material: Box<dyn Scatter>) -> Quad {
         let n = cross(u, v);
         let normal = n.unit();
         let d = dot(normal, corner);
@@ -29,7 +30,7 @@ impl<'a> Quad<'_> {
     }
 }
 
-impl Hit for Quad<'_> {
+impl Hit for Quad {
     fn hit(&self, ray: &Ray, range: Interval) -> Option<HitRecord> {
         let denom = dot(self.normal, ray.direction);
         if denom.abs() < 1e-8 {
@@ -48,7 +49,7 @@ impl Hit for Quad<'_> {
         if !self.contains(alpha, beta) {
             return None;
         }
-        return Some(HitRecord::new(t, intersection, ray.direction, self.normal));
+        return Some(HitRecord::new(t, intersection, ray.direction, self.normal, &self.material));
     } 
     fn bounding_volume(&self) -> Option<BoundingBox> {
         return Some(BoundingBox::surrounding(
@@ -75,32 +76,31 @@ impl Hit for Quad<'_> {
 }
 
 
-#[derive(Clone)]
-pub struct Cuboid<'a> {
-    sides: [Quad<'a>; 6],
+pub struct Cuboid {
+    sides: [Quad; 6],
     p0: Vec3,
     p1: Vec3,
 }
 
-impl <'a>Cuboid<'_> {
-    pub fn new(p0: Vec3, p1: Vec3, material: &'a dyn Scatter) -> Cuboid<'a> {
+impl <'a>Cuboid {
+    pub fn new(p0: Vec3, p1: Vec3, material: Box<dyn Scatter>) -> Cuboid {
         
         let x_diff = (p1 - p0).x() * Vec3::x_hat();
         let y_diff = (p1 - p0).y() * Vec3::y_hat();
         let z_diff = (p1 - p0).z() * Vec3::z_hat();
 
         let sides = [
-            Quad::new(p0, x_diff, y_diff, material),
-            Quad::new(p0, x_diff, z_diff, material),
-            Quad::new(p0, y_diff, z_diff, material),
-            Quad::new(p1,-x_diff,-y_diff, material),
-            Quad::new(p1,-x_diff,-z_diff, material),
-            Quad::new(p1,-y_diff,-z_diff, material),
+            Quad::new(p0, x_diff, y_diff, dyn_clone::clone_box(&*material)),
+            Quad::new(p0, x_diff, z_diff, dyn_clone::clone_box(&*material)),
+            Quad::new(p0, y_diff, z_diff, dyn_clone::clone_box(&*material)),
+            Quad::new(p1,-x_diff,-y_diff, dyn_clone::clone_box(&*material)),
+            Quad::new(p1,-x_diff,-z_diff, dyn_clone::clone_box(&*material)),
+            Quad::new(p1,-y_diff,-z_diff, dyn_clone::clone_box(&*material)),
         ];
         return Cuboid{sides, p0, p1};
     }
 }
-impl<'a> Hit for Cuboid<'a> {
+impl<'a> Hit for Cuboid {
     fn hit(&self, ray: &Ray, range: Interval) -> Option<HitRecord> {
         let mut closest_hit_record = None;
         for hittable in &self.sides {
@@ -108,8 +108,11 @@ impl<'a> Hit for Cuboid<'a> {
             match (closest_hit_record, hit_record) {
                 (None, Some(_)) => 
                     closest_hit_record = hit_record,
-                (Some(ch), Some(h)) => 
-                    closest_hit_record = Some(ch.get_closer(h)),
+                (Some(ch), Some(h)) => {
+                    if h.is_closer_than(ch) {
+                        closest_hit_record = hit_record
+                    }
+                }
                 _ => continue,
             }
         }

@@ -1,3 +1,5 @@
+use dyn_clone::DynClone;
+
 use crate::{Vec3, Color, Ray, HitRecord, ScatterRecord};
 use crate::dot;
 
@@ -6,7 +8,7 @@ pub mod dielectric;
 pub mod lambertian;
 pub mod emissive;
 
-pub trait Scatter {
+pub trait Scatter: DynClone {
     fn scatter<'a>(&'a self, ray: &Ray, hit_record: &'a HitRecord) -> ScatterRecord;
     fn attenuation(&self) -> Color;
     fn emittance(&self) -> Color;

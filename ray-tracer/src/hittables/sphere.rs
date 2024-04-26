@@ -3,15 +3,15 @@ use std::f64::consts::PI;
 use crate::{random_float, BoundingBox, Hit, HitRecord, Ray, Scatter, Vec3, ONB, Interval};
 use crate::dot;
 
-#[derive(Clone)]
+// #[derive(Clone)]
 pub struct Sphere{
     pub center: Vec3, 
     pub radius: f64, 
-    pub material: &'static dyn Scatter,
+    pub material: Box<dyn Scatter>,
 }
 
-impl <'a>Sphere{
-    pub fn new(center: Vec3, radius: f64, material: &'static dyn Scatter) -> Sphere{
+impl <'a>Sphere<>{
+    pub fn new(center: Vec3, radius: f64, material: Box<dyn Scatter>) -> Sphere{
         Sphere{center, radius, material}
     }
     fn get_normal(&self, point_on_surface: Vec3) -> Vec3 {
@@ -53,8 +53,7 @@ impl<'a> Hit for Sphere {
         }
         let normal = self.get_normal(ray.at(hit_at_t));
         let hit_point = ray.at(hit_at_t);
-        let rec = HitRecord::new(hit_at_t, hit_point, ray.direction, normal)
-            .with_material(self.material);
+        let rec = HitRecord::new(hit_at_t, hit_point, ray.direction, normal, &self.material);
         return Some(rec);
 
     }
@@ -72,7 +71,7 @@ impl<'a> Hit for Sphere {
     }
     fn pdf_value(&self, origin: Vec3, direction: Vec3) -> f64 {
         match self.hit(&Ray::new(origin, direction), Interval::new(0.01, 1e20)) {
-            Some(h) => {
+            Some(_) => {
                 let cos_theta_max = (1.0 - self.radius.powi(2)/(self.center - origin).length_squared()).sqrt();
                 let solid_angle = 2.0*PI*(1.0 - cos_theta_max);
                 return 1.0/solid_angle;

@@ -3,7 +3,7 @@ use crate::dot;
 use crate::material::Scatter;
 use crate::material::{reflectance, reflect, refract};
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Dielectric {
     refractive_index: f64
 }

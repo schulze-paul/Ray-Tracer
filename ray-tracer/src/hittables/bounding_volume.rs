@@ -137,9 +137,15 @@ impl<'a> Hit for BVHNode<'a> {
         let right_hit = self.right.hit(ray, range);
         return match (left_hit, right_hit) {
             (None, None) =>         None,
-            (Some(lh), None) =>     Some(lh),
-            (None, Some(rh)) =>     Some(rh),
-            (Some(lh), Some(rh)) => Some(HitRecord::get_closer(lh, rh)),
+            (Some(_), None) =>     left_hit,
+            (None, Some(_)) =>     right_hit,
+            (Some(lh), Some(rh)) => {
+                if lh.is_closer_than(rh) {
+                    left_hit
+                } else {
+                    right_hit
+                }
+            },
             
         }
     }

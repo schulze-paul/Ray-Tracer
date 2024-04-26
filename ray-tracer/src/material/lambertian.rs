@@ -1,7 +1,7 @@
 use crate::{Vec3, Color, Ray, HitRecord, ScatterRecord};
 use crate::material::Scatter;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Lambertian {
     color: Color
 }

@@ -15,21 +15,16 @@ impl Shader for RayTracer {
 
         match hit_record {
             Some(h) => {
-                match h.material {
-                    Some(m) => {
-                        let scatter_rec = m.scatter(&ray_in, &h);
-                        let colors: Vec<Color> = scatter_rec.probabilities.iter()
-                            .zip(scatter_rec.scattered.iter())
-                            .map(|(p, s)| *p * m.attenuation() * self.get_color(*s, world, background, depth+1))
-                            .collect();
-                        let mut color = Color::black();
-                        for c in colors {
-                            color += c;
-                        }
-                        return color + m.emittance();
-                    }
-                    None => return background.get_color(&ray_in),
+                let scatter_rec = h.material.scatter(&ray_in, &h);
+                let colors: Vec<Color> = scatter_rec.probabilities.iter()
+                    .zip(scatter_rec.scattered.iter())
+                    .map(|(p, s)| *p * h.material.attenuation() * self.get_color(*s, world, background, depth+1))
+                    .collect();
+                let mut color = Color::black();
+                for c in colors {
+                    color += c;
                 }
+                return color + h.material.emittance();
             }
             _ => return background.get_color(&ray_in),
         }
@@ -54,20 +49,15 @@ impl Shader for ScatterShader{
         let hit_record = world.hit(&ray_in, Interval::new(0.001, 1e20));
         match hit_record {
             Some(h) => {
-                match h.material {
-                    Some(m) => {
-                        let scatter_rec = m.scatter(&ray_in, &h);
-                        let colors: Vec<Color> = scatter_rec.scattered.iter()
-                            .map(|s| Color::from_vector(s.direction))
-                            .collect();
-                        let mut color = Color::black();
-                        for c in colors {
-                            color += c;
-                        }
-                        return color
-                    }
-                    None => return Color::black(),
+                let scatter_rec = h.material.scatter(&ray_in, &h);
+                let colors: Vec<Color> = scatter_rec.scattered.iter()
+                    .map(|s| Color::from_vector(s.direction))
+                    .collect();
+                let mut color = Color::black();
+                for c in colors {
+                    color += c;
                 }
+                return color
             }
             _ => return Color::black(),
         }

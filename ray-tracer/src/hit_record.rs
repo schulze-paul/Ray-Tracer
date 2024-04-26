@@ -2,42 +2,35 @@ use crate::{Vec3, Color, Ray, Scatter};
 use crate::dot;
 
 #[derive(Copy, Clone, Debug)]
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     pub t_hit: f64,
     pub hit_point: Vec3,
     pub direction: Vec3,
     pub normal: Vec3,
-    pub material: Option<&'static dyn Scatter>,
+    pub material: &'a Box<dyn Scatter>,
 }
 
-impl <'a>HitRecord {
-    pub fn new(t_hit: f64, hit_point: Vec3, direction: Vec3, normal: Vec3) -> HitRecord {
+impl <'a>HitRecord<'_> {
+    pub fn new(t_hit: f64, hit_point: Vec3, direction: Vec3, normal: Vec3, material: &'a Box<dyn Scatter>) -> HitRecord<'a> {
         HitRecord{
             t_hit,
             hit_point,
             direction,
             normal,
-            material: None,
+            material,
         }
-    }
-    pub fn with_material(mut self, material: &'static dyn Scatter) -> HitRecord {
-        self.material = Some(material);
-        return self;
     }
 
     pub fn is_front_face(&self, ray: &Ray) -> bool {
         return dot(ray.direction, self.normal) < 0.0;
     }
-    pub fn get_closer(self, other: HitRecord) -> HitRecord {
-        if self.t_hit > other.t_hit {
-            return other;
-        }
-        return self;
+    pub fn is_closer_than(self, other: HitRecord) -> bool {
+        return self.t_hit < other.t_hit
     }
 }
 
 pub struct ScatterRecord<'a> {
-    pub hit_record: &'a HitRecord,
+    pub hit_record: &'a HitRecord<'a>,
     pub probabilities: Vec<f64>,
     pub scattered: Vec<Ray>,
     pub emitted: Color,

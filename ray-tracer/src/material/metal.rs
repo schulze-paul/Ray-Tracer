@@ -3,7 +3,7 @@ use crate::{Color, Ray, HitRecord, ScatterRecord};
 use crate::material::Scatter;
 use crate::material::reflect;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct Metal {
     albedo: Color,
     fuzz: f64

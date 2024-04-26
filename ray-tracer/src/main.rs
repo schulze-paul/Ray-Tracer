@@ -51,38 +51,38 @@ fn main() {
     let sphere_metal = Sphere::new(
             sphere_center,
             small_r,
-            &metal
+            Box::new(metal)
         );
     let sphere_red = Sphere::new(
             sphere_center + box_spacing*Vec3::new(0.0, 1.0, 1.0),
             small_r,
-            &red_lambertian
+            Box::new(red_lambertian)
         );
     let sphere_glass = Sphere::new(
             sphere_center + box_spacing*Vec3::new(-1.0, 1.0, 0.0),
             small_r,
-            &dielectric
+            Box::new(dielectric)
         );
     let sphere_emissive = Sphere::new(
             sphere_center + box_spacing*Vec3::new(0.0, 2.0, 2.0),
             small_r,
-            &emissive
+            Box::new(emissive)
         );
     
     let box1 = Cuboid::new(
         Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
         Vec3::new(-1.0*box_spacing,  0.0*box_spacing, -1.0*box_spacing),
-        &white_lambertian
+        Box::new(white_lambertian)
     );
     let box2 = Cuboid::new(
         Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
         Vec3::new( 1.0*box_spacing,  0.0*box_spacing,  1.0*box_spacing),
-        &white_lambertian
+        Box::new(white_lambertian)
     );
     let box3 = Cuboid::new(
         Vec3::new( 0.0*box_spacing, -1.0*box_spacing,  0.0*box_spacing),
         Vec3::new( 1.0*box_spacing, -2.0*box_spacing, -1.0*box_spacing),
-        &white_lambertian
+        Box::new(white_lambertian)
     );
     
     let mut world = HittableList::new()
