@@ -67,7 +67,7 @@ fn main() {
         );
     let sphere_emissive = Sphere::new(
             sphere_center + box_spacing*Vec3::new(0.0, 4.0, 2.0),
-            small_r,
+            2.0*small_r,
         emissive
         );
     let box1 = Cuboid::new(
@@ -100,7 +100,8 @@ fn main() {
     let mut camera = Camera::new(image_data)
         .look_from(Vec3::new(12.0, 8.0, -12.0))
         .with_vfov(90.0)
-        .look_at(sphere_center)
+        .look_at(10000.0*Vec3::y_hat())
+        //.look_at(sphere_center)
         .focus_on_look_at()
         .with_aperture(0.0)
         .with_num_samples(num_samples);
